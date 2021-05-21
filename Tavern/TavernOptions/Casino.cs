@@ -14,9 +14,8 @@ namespace GreatPyramidTreasureConsoleRPG
                 {
                     Console.WriteLine("Co chcesz zrobić:");
                     Console.WriteLine("1: Ruletka.");
-                    Console.WriteLine("2: Pokerek. //To do - do zrobienia");
-                    Console.WriteLine("3. Automat do gry. //To do - do zrobienia");
-                    Console.WriteLine("4. Wyjdź z kasyna.");
+                    Console.WriteLine("2. Jednoręki bandyta.");
+                    Console.WriteLine("3. Wyjdź z kasyna.");
                     int choice = StandardFunctions.ToInt32(Console.ReadLine());
                     Console.Clear();
                     switch (choice)
@@ -26,14 +25,10 @@ namespace GreatPyramidTreasureConsoleRPG
                             break;
 
                         case 2:
-                            Casino.Poker();
+                            Casino.SlotMachine(characterClass);
                             break;
 
                         case 3:
-                            Casino.SlotMachine();
-                            break;
-
-                        case 4:
                             value = StandardFunctions.ExitRoom();
                             break;
 
@@ -94,7 +89,7 @@ namespace GreatPyramidTreasureConsoleRPG
 
                     if (gold > 0)
                     {
-                        Console.WriteLine("1. Czarne. / 2. Czerwone.");
+                        Console.WriteLine("1: Czarne. / 2. Czerwone.");
                         int color = StandardFunctions.ToInt32(Console.ReadLine());
 
                         List<int> roulette = new List<int> { 1, 2 };
@@ -147,14 +142,153 @@ namespace GreatPyramidTreasureConsoleRPG
             }
         }
 
-        private static void Poker()
+        private static void SlotMachine(IClass characterClass)
         {
-            ////To do
-        }
+            bool ifSlotMachine = true;
+            while (ifSlotMachine)
+            {
+                Console.WriteLine("Co chcesz zrobić:");
+                Console.WriteLine("1: Zagraj.");
+                Console.WriteLine("2: Zrezygnuj.");
+                int choice = StandardFunctions.ToInt32(Console.ReadLine());
+                Console.Clear();
+                bool ifPlay;
+                if (choice == 1)
+                {
+                    ifPlay = true;
+                }
+                else
+                {
+                    ifPlay = false;
+                    ifSlotMachine = false;
+                }
 
-        private static void SlotMachine()
-        {
-            ////TO DOs
+                while (ifPlay && ifSlotMachine)
+                {
+                    bool ifGold = true;
+                    int gold = 0;
+                    while (ifGold)
+                    {
+                        Console.WriteLine("Ile chcesz postawić? / 0 - zrezygnuj.");
+
+                        ////Zrobić reszte try / catch
+                        gold = StandardFunctions.ToInt32(Console.ReadLine());
+                        if (gold == 0)
+                        {
+                            ifPlay = false;
+                            break;
+                        }
+
+                        if (gold > characterClass.Gold)
+                        {
+                            Dialogues.NoGold();
+                        }
+                        else
+                        {
+                            ifGold = false;
+                        }
+                    }
+
+                    if (gold > 0)
+                    {
+
+                        List<int> slotMachine = new List<int> { 1, 2, 3, 4, 5, 6, 7};
+                        int firstReel = slotMachine.RandomElement();
+                        int secondReel = slotMachine.RandomElement();
+                        int thirdReel = slotMachine.RandomElement();
+                        characterClass.Gold -= gold;
+
+                        if(firstReel == secondReel)
+                        {
+                            if(firstReel == secondReel && firstReel == thirdReel)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Green;
+                                Console.WriteLine($"{firstReel}, {secondReel}, {thirdReel}");                                
+                                switch (firstReel)
+                                {
+                                    case 1:
+                                        gold *= 3;
+                                        characterClass.Gold += gold;
+                                        break;
+                                    case 2:
+                                        gold *= 4;
+                                        characterClass.Gold += gold;
+                                        break;
+                                    case 3:
+                                        gold *= 5;
+                                        characterClass.Gold += gold;
+                                        break;
+                                    case 4:
+                                        gold *= 6;
+                                        characterClass.Gold += gold;
+                                        break;
+                                    case 5:
+                                        gold *= 7;
+                                        characterClass.Gold += gold;
+                                        break;
+                                    case 6:
+                                        gold *= 8;
+                                        characterClass.Gold += gold;
+                                        break;
+                                    case 7:
+                                        gold *= 9;
+                                        characterClass.Gold += gold;
+                                        break;
+                                }
+                                Console.WriteLine($"Wygrałeś linię! +{gold} złota");
+                                Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.ForegroundColor = ConsoleColor.Green;
+                                Console.WriteLine($"{firstReel}, {secondReel}, {thirdReel}");
+                                switch (firstReel)
+                                {
+                                    case 1:
+                                        characterClass.Gold += gold;
+                                        break;
+                                    case 2:
+                                        characterClass.Gold += gold;
+                                        break;
+                                    case 3:
+                                        characterClass.Gold += gold;
+                                        break;
+                                    case 4:
+                                        gold *= 3;
+                                        characterClass.Gold += gold;
+                                        break;
+                                    case 5:
+                                        gold *= 5;
+                                        characterClass.Gold += gold;
+                                        break;
+                                    case 6:
+                                        gold *= 7;
+                                        characterClass.Gold += gold;
+                                        break;
+                                    case 7:
+                                        gold *= 9;
+                                        characterClass.Gold += gold;
+                                        break;
+                                }
+                                Console.WriteLine($"Wygrałeś 2 z lini! +{gold} złota");
+                                Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
+                                Console.ResetColor();
+                            }
+                        }
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine($"{firstReel}, {secondReel}, {thirdReel}");
+                            Console.WriteLine("Przegrałeś!");
+                            Console.ResetColor();
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
+                            Console.ResetColor();
+                        }                     
+                    }
+                }
+            }
         }
     }
 }
