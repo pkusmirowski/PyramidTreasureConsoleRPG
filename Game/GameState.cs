@@ -63,7 +63,8 @@ namespace GreatPyramidTreasureConsoleRPG
                     switch (choice)
                     {
                         case 1:
-                            this.FightOpponents();
+                            if(GameStatus.CheckGameStatus(this.characterClass))
+                                this.FightOpponents();
                             break;
 
                         case 2:

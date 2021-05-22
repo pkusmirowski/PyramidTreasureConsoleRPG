@@ -25,6 +25,7 @@ namespace GreatPyramidTreasureConsoleRPG
             this.AttakChance = 50;
             this.CriticalAttackChance = 20;
             this.ClassType = 2;
+            this.GameStatus = 0;
             this.Inventory = new List<IItem>();
         }
 
@@ -59,6 +60,8 @@ namespace GreatPyramidTreasureConsoleRPG
         public double CriticalAttackChance { get; set; }
 
         public int ClassType { get; set; }
+
+        public int GameStatus { get; set; }
 
         public List<IItem> Inventory { get; }
 

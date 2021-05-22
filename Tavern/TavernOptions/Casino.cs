@@ -192,18 +192,18 @@ namespace GreatPyramidTreasureConsoleRPG
                     if (gold > 0)
                     {
 
-                        List<int> slotMachine = new List<int> { 1, 2, 3, 4, 5, 6, 7};
+                        List<int> slotMachine = new List<int> { 1, 2, 3, 4, 5, 6, 7 };
                         int firstReel = slotMachine.RandomElement();
                         int secondReel = slotMachine.RandomElement();
                         int thirdReel = slotMachine.RandomElement();
                         characterClass.Gold -= gold;
 
-                        if(firstReel == secondReel)
+                        if (firstReel == secondReel)
                         {
-                            if(firstReel == secondReel && firstReel == thirdReel)
+                            if (firstReel == secondReel && firstReel == thirdReel)
                             {
                                 Console.ForegroundColor = ConsoleColor.Green;
-                                Console.WriteLine($"{firstReel}, {secondReel}, {thirdReel}");                                
+                                Console.WriteLine($"{firstReel}, {secondReel}, {thirdReel}");
                                 switch (firstReel)
                                 {
                                     case 1:
@@ -285,7 +285,7 @@ namespace GreatPyramidTreasureConsoleRPG
                             Console.ForegroundColor = ConsoleColor.Yellow;
                             Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
                             Console.ResetColor();
-                        }                     
+                        }
                     }
                 }
             }

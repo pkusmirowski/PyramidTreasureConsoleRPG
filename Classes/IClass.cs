@@ -37,6 +37,8 @@ namespace GreatPyramidTreasureConsoleRPG
 
         public int ClassType { get; set; }
 
+        public int GameStatus { get; set; }
+
         public void Attack(IEnemy enemy);
 
         public void AddLevel();

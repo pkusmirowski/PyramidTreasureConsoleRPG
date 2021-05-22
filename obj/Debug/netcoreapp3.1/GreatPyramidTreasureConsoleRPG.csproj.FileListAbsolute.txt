@@ -34,7 +34,6 @@ C:\Users\Paweł\Desktop\GreatPyramidTreasureConsoleRPG-master\GreatPyramidTreasu
 C:\Users\Paweł\Desktop\GreatPyramidTreasureConsoleRPG-master\GreatPyramidTreasureConsoleRPG\bin\Debug\netcoreapp3.1\runtimes\unix\lib\netcoreapp3.0\System.Drawing.Common.dll
 C:\Users\Paweł\Desktop\GreatPyramidTreasureConsoleRPG-master\GreatPyramidTreasureConsoleRPG\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll
 C:\Users\Paweł\Desktop\GreatPyramidTreasureConsoleRPG-master\GreatPyramidTreasureConsoleRPG\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll
-C:\Users\Paweł\Desktop\GreatPyramidTreasureConsoleRPG-master\GreatPyramidTreasureConsoleRPG\obj\Debug\netcoreapp3.1\GreatPyramidTreasureConsoleRPG.csproj.AssemblyReference.cache
 C:\Users\Paweł\Desktop\GreatPyramidTreasureConsoleRPG-master\GreatPyramidTreasureConsoleRPG\obj\Debug\netcoreapp3.1\GreatPyramidTreasureConsoleRPG.AssemblyInfoInputs.cache
 C:\Users\Paweł\Desktop\GreatPyramidTreasureConsoleRPG-master\GreatPyramidTreasureConsoleRPG\obj\Debug\netcoreapp3.1\GreatPyramidTreasureConsoleRPG.AssemblyInfo.cs
 C:\Users\Paweł\Desktop\GreatPyramidTreasureConsoleRPG-master\GreatPyramidTreasureConsoleRPG\obj\Debug\netcoreapp3.1\GreatPyramidTreasureConsoleRPG.csproj.CoreCompileInputs.cache
