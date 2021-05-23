@@ -1,0 +1,5 @@
+C:\Users\Paweł\Desktop\GreatPyramidTreasureConsoleRPG-master\GreatPyramidTreasureConsoleRPG\obj\Debug\net5.0\GreatPyramidTreasureConsoleRPG.csproj.AssemblyReference.cache
+C:\Users\Paweł\Desktop\GreatPyramidTreasureConsoleRPG-master\GreatPyramidTreasureConsoleRPG\obj\Debug\net5.0\GreatPyramidTreasureConsoleRPG.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Paweł\Desktop\GreatPyramidTreasureConsoleRPG-master\GreatPyramidTreasureConsoleRPG\obj\Debug\net5.0\GreatPyramidTreasureConsoleRPG.AssemblyInfoInputs.cache
+C:\Users\Paweł\Desktop\GreatPyramidTreasureConsoleRPG-master\GreatPyramidTreasureConsoleRPG\obj\Debug\net5.0\GreatPyramidTreasureConsoleRPG.AssemblyInfo.cs
+C:\Users\Paweł\Desktop\GreatPyramidTreasureConsoleRPG-master\GreatPyramidTreasureConsoleRPG\obj\Debug\net5.0\GreatPyramidTreasureConsoleRPG.csproj.CoreCompileInputs.cache

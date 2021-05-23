@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "0bX66Jo5+UcJ+05sq3Jtkh9IjxQnVorK29IMWwnSk8/eg4SWCv/unoN70axYFeCeT2k6OYxf/nKDSXEuXyxITQ==",
+  "dgSpecHash": "i8+XC+994/4iAo2tTHGvHzQPjSRJ4gkIzhR6ZYF1erEwORfcigJOiRTyye95059RGG0I7HleFVdbpqvW7rjKGQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Paweł\\Desktop\\GreatPyramidTreasureConsoleRPG-master\\GreatPyramidTreasureConsoleRPG\\GreatPyramidTreasureConsoleRPG.csproj",
+  "projectFilePath": "C:\\Users\\Paweł\\Desktop\\GreatPyramidTreasureConsoleRPG-master\\GreatPyramidTreasureConsoleRPG\\PyramidTreasureConsoleRPG.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Paweł\\.nuget\\packages\\microsoft.netcore.platforms\\5.0.0\\microsoft.netcore.platforms.5.0.0.nupkg.sha512",
     "C:\\Users\\Paweł\\.nuget\\packages\\microsoft.netcore.targets\\1.1.3\\microsoft.netcore.targets.1.1.3.nupkg.sha512",

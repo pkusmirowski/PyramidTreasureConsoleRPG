@@ -4,9 +4,9 @@
     {
         public static void Main()
         {
-            string dir = "\\Audio\\ancient_egypt.wav";
+            const string dir = "\\Audio\\ancient_egypt.wav";
             StandardFunctions.SoundPlayer(dir);
-            Game game = new Game();
+            Game game = new();
             game.StartGame();
         }
     }

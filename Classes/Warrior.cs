@@ -67,7 +67,7 @@ namespace GreatPyramidTreasureConsoleRPG
 
         public void Attack(IEnemy enemy)
         {
-            Console.WriteLine($"\nAtakuj:");
+            Console.WriteLine("\nAtakuj:");
             Console.WriteLine($"1. Normalny atak ({this.MinDmg} - {this.MaxDmg}dmg). Szansa na trafienie {this.AttakChance + 20}.");
             Console.WriteLine($"2. Silny atak. Szansa na trafienie {this.AttakChance}. Szansa na trafienie krytyczne {this.CriticalAttackChance}.");
             Console.WriteLine($"3. Trzystronne cięcie ({this.MinDmg + this.Dex} - {this.MaxDmg + this.Dex}dmg). Szansa na trafienie {this.AttakChance}.");

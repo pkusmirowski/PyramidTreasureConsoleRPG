@@ -2,7 +2,6 @@
 
 namespace GreatPyramidTreasureConsoleRPG
 {
-
     public static class Shop
     {
         public static void PotionShop(IClass characterClass)

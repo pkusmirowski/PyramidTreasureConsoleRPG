@@ -1,0 +1,13 @@
+C:\Users\Paweł\Desktop\Game\Audio\ancient_egypt.wav
+C:\Users\Paweł\Desktop\Game\PyramidTreasureConsoleRPG.exe
+C:\Users\Paweł\Desktop\Game\PyramidTreasureConsoleRPG.dll
+C:\Users\Paweł\Desktop\Game\PyramidTreasureConsoleRPG.runtimeconfig.json
+C:\Users\Paweł\Desktop\Game\PyramidTreasureConsoleRPG.pdb
+C:\Users\Paweł\Desktop\Game\Microsoft.Win32.SystemEvents.dll
+C:\Users\Paweł\Desktop\Game\System.Drawing.Common.dll
+C:\Users\Paweł\Desktop\Game\System.Windows.Extensions.dll
+C:\Users\Paweł\Desktop\Game\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\Paweł\Desktop\Game\runtimes\unix\lib\netcoreapp3.0\System.Drawing.Common.dll
+C:\Users\Paweł\Desktop\Game\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll
+C:\Users\Paweł\Desktop\Game\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll
+C:\Users\Paweł\Desktop\Game\PyramidTreasureConsoleRPG.deps.json

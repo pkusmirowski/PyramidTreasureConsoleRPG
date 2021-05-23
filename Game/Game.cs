@@ -2,7 +2,6 @@
 
 namespace GreatPyramidTreasureConsoleRPG
 {
-
     public class Game
     {
         private bool End { get; set; }

@@ -2,7 +2,6 @@
 
 namespace GreatPyramidTreasureConsoleRPG
 {
-
     public static class Rest
     {
         public static void RestOptions(IClass characterClass)

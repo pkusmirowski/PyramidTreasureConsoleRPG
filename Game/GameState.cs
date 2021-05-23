@@ -4,12 +4,11 @@ using System.Linq;
 
 namespace GreatPyramidTreasureConsoleRPG
 {
-
     public class GameState
     {
-        private readonly ClassState stateVariables = new ClassState();
+        private readonly ClassState stateVariables = new();
 
-        private List<IEnemy> enemy = new List<IEnemy>();
+        private List<IEnemy> enemy = new();
 
         private IClass characterClass;
 
@@ -63,7 +62,7 @@ namespace GreatPyramidTreasureConsoleRPG
                     switch (choice)
                     {
                         case 1:
-                            if(GameStatus.CheckGameStatus(this.characterClass))
+                            if (GameStatus.CheckGameStatus(this.characterClass))
                                 this.FightOpponents();
                             break;
 
@@ -184,6 +183,7 @@ namespace GreatPyramidTreasureConsoleRPG
             foreach (var enemy in new List<IEnemy>(this.enemy))
             {
                 Console.WriteLine($"\nSpokałeś przeciwnika: {enemy.Name}. Przygotuj się do walki!!!");
+                StandardFunctions.Sleep();
                 while (enemy.IsAlive())
                 {
                     Console.WriteLine($"{enemy.Name} atakuje!");

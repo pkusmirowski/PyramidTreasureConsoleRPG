@@ -4,8 +4,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace GreatPyramidTreasureConsoleRPG
 {
-
-
     public static class DataSave
     {
         public static void LoadGame(ref IClass characterClass, ClassState stateVariables)
@@ -19,8 +17,10 @@ namespace GreatPyramidTreasureConsoleRPG
                 if (File.Exists(dataFile))
                 {
                     using Stream stateStream = File.OpenRead(dataFile);
-                    BinaryFormatter deserializer = new BinaryFormatter();
+                    BinaryFormatter deserializer = new();
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
                     stateVariables = (ClassState)deserializer.Deserialize(stateStream);
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
                 }
 
                 var classType = stateVariables.ClassType;
@@ -76,8 +76,10 @@ namespace GreatPyramidTreasureConsoleRPG
                     Directory.CreateDirectory(folder);
                     string dataFile = Path.Combine(folder, "DataSave");
                     using Stream stateStream = File.Create(dataFile);
-                    BinaryFormatter serializer = new BinaryFormatter();
+                    BinaryFormatter serializer = new();
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
                     serializer.Serialize(stateStream, stateVariables);
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
                 }
 
                 Console.ForegroundColor = ConsoleColor.Green;

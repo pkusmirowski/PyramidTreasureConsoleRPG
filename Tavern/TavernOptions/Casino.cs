@@ -92,7 +92,7 @@ namespace GreatPyramidTreasureConsoleRPG
                         Console.WriteLine("1: Czarne. / 2. Czerwone.");
                         int color = StandardFunctions.ToInt32(Console.ReadLine());
 
-                        List<int> roulette = new List<int> { 1, 2 };
+                        List<int> roulette = new() { 1, 2 };
                         int index = roulette.RandomElement();
                         characterClass.Gold -= gold;
                         if (index == color)
@@ -191,8 +191,7 @@ namespace GreatPyramidTreasureConsoleRPG
 
                     if (gold > 0)
                     {
-
-                        List<int> slotMachine = new List<int> { 1, 2, 3, 4, 5, 6, 7 };
+                        List<int> slotMachine = new() { 1, 2, 3, 4, 5, 6, 7 };
                         int firstReel = slotMachine.RandomElement();
                         int secondReel = slotMachine.RandomElement();
                         int thirdReel = slotMachine.RandomElement();

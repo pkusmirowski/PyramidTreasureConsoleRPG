@@ -7,7 +7,7 @@ namespace GreatPyramidTreasureConsoleRPG
 {
     public static class StandardFunctions
     {
-        private static readonly Random RandomDmg = new Random();
+        private static readonly Random RandomDmg = new();
 
         public static void NoOption()
         {
@@ -65,6 +65,11 @@ namespace GreatPyramidTreasureConsoleRPG
             player.Dispose();
             player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + dir;
             player.Play();
+        }
+
+        public static void Sleep()
+        {
+            Thread.Sleep(4000);
         }
     }
 }

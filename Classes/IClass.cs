@@ -2,7 +2,6 @@
 
 namespace GreatPyramidTreasureConsoleRPG
 {
-
     public interface IClass
     {
         public int Hp { get; set; }

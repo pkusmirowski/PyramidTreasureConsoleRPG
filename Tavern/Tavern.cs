@@ -2,7 +2,6 @@
 
 namespace GreatPyramidTreasureConsoleRPG
 {
-
     public static class Tavern
     {
         public static void TavernOptions(IClass characterClass)

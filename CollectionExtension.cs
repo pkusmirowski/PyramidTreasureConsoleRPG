@@ -3,11 +3,9 @@ using System.Collections.Generic;
 
 namespace GreatPyramidTreasureConsoleRPG
 {
-
-
     public static class CollectionExtension
     {
-        private static readonly Random Rng = new Random();
+        private static readonly Random Rng = new();
 
         public static T RandomElement<T>(this IList<T> list)
         {
