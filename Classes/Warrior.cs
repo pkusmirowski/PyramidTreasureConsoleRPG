@@ -239,5 +239,8 @@ namespace GreatPyramidTreasureConsoleRPG
                 Console.ResetColor();
             }
         }
+
+
+
     }
 }
