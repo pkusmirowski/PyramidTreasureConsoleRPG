@@ -9,25 +9,26 @@ namespace GreatPyramidTreasureConsoleRPG
 
         public Assassin(string name)
         {
-            this.Vit = 9;
-            this.Hp = this.Vit * 13;
-            this.MaxHP = this.Vit * 13;
+            this.Vit = 10;
+            this.Hp = this.Vit * 12;
+            this.MaxHP = this.Vit * 12;
             this.Str = 2;
             this.Dex = 2;
             this.Exp = 0;
-            this.MaxExp = 500;
+            this.MaxExp = 1000;
             this.Level = 0;
             this.Name = name;
             this.Gold = 1;
-            this.MinDmg = 1;
-            this.MaxDmg = 3;
+            this.MinDmg = 3;
+            this.MaxDmg = 6;
             this.Armor = 0;
-            this.AttakChance = 50;
-            this.CriticalAttackChance = 20;
+            this.AttakChance = 60;
+            this.CriticalAttackChance = 25;
             this.ClassType = 3;
             this.GameStatus = 0;
             this.Inventory = new List<IItem>();
         }
+
 
         public int Hp { get; set; }
 
@@ -116,7 +117,9 @@ namespace GreatPyramidTreasureConsoleRPG
             this.MinDmg += (this.Dex + this.Str) / 3;
             this.MaxDmg += (this.Dex + this.Str) / 3;
             this.Armor += this.Dex - 2;
+            this.AttakChance += this.Dex; // zwiększenie szansy na trafienie wroga w zależności od zwinności
         }
+
 
         private static void DealDmg(IEnemy enemy, int realDmg)
         {

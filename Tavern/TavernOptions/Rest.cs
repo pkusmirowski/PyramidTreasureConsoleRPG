@@ -44,7 +44,7 @@ namespace GreatPyramidTreasureConsoleRPG
             if (characterClass.Hp == characterClass.MaxHP)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"Masz maksymalną liczbe pkt zdrowia: {characterClass.Hp}");
+                Console.WriteLine($"Nie potrzebujesz odpoczynku, masz maksymalną liczbę punktów zdrowia: {characterClass.Hp}");
                 Console.ResetColor();
             }
             else if (characterClass.Gold < 10)
@@ -55,10 +55,10 @@ namespace GreatPyramidTreasureConsoleRPG
             {
                 characterClass.Gold -= 10;
                 characterClass.Hp = characterClass.MaxHP;
-                Console.WriteLine("Po długiej nocy czujesz się wypoczęty ...");
+                Console.WriteLine("Po długiej nocy czujesz się wypoczęty i pełen energii!");
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"Twoje punkty zdrowia {characterClass.Hp}");
-                Console.WriteLine($"Twoje złoto {characterClass.Gold}");
+                Console.WriteLine($"Twoje punkty zdrowia zostały przywrócone do maksymalnej wartości: {characterClass.Hp}");
+                Console.WriteLine($"Zostało ci {characterClass.Gold} złota.");
                 Console.ResetColor();
             }
         }

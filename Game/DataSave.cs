@@ -6,58 +6,59 @@ namespace GreatPyramidTreasureConsoleRPG
 {
     public static class DataSave
     {
-        public static void LoadGame(ref IClass characterClass, ClassState stateVariables)
+        public static ClassState LoadGame(ref IClass characterClass)
         {
-            if (stateVariables != null)
+            ClassState stateVariables = null;
+            string folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            folder = Path.Combine(folder, "GreatPyramidTreasureRPG_DataSave");
+            Directory.CreateDirectory(folder);
+            string dataFile = Path.Combine(folder, "DataSave");
+            if (File.Exists(dataFile))
             {
-                string folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                folder = Path.Combine(folder, "GreatPyramidTreasureRPG_DataSave");
-                Directory.CreateDirectory(folder);
-                string dataFile = Path.Combine(folder, "DataSave");
-                if (File.Exists(dataFile))
-                {
-                    using Stream stateStream = File.OpenRead(dataFile);
-                    BinaryFormatter deserializer = new();
+                using Stream stateStream = File.OpenRead(dataFile);
+                BinaryFormatter deserializer = new();
 #pragma warning disable SYSLIB0011 // Type or member is obsolete
-                    stateVariables = (ClassState)deserializer.Deserialize(stateStream);
+                stateVariables = (ClassState)deserializer.Deserialize(stateStream);
 #pragma warning restore SYSLIB0011 // Type or member is obsolete
-                }
-
-                var classType = stateVariables.ClassType;
-                bool value = true;
-
-                while (value)
-                {
-                    switch (classType)
-                    {
-                        case 1:
-                            characterClass = new Warrior(stateVariables.Name);
-                            ConvertStatsToClass(characterClass, stateVariables);
-                            value = false;
-                            break;
-
-                        case 2:
-                            characterClass = new Archer(stateVariables.Name);
-                            ConvertStatsToClass(characterClass, stateVariables);
-                            value = false;
-                            break;
-
-                        case 3:
-                            characterClass = new Assassin(stateVariables.Name);
-                            ConvertStatsToClass(characterClass, stateVariables);
-                            value = false;
-                            break;
-
-                        default:
-                            StandardFunctions.NoOption();
-                            break;
-                    }
-                }
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Gra została wczytana!\n");
-                Console.ResetColor();
             }
+
+            var classType = stateVariables.ClassType;
+            bool value = true;
+
+            while (value)
+            {
+                switch (classType)
+                {
+                    case 1:
+                        characterClass = new Warrior(stateVariables.Name);
+                        ConvertStatsToClass(characterClass, stateVariables);
+                        value = false;
+                        break;
+
+                    case 2:
+                        characterClass = new Archer(stateVariables.Name);
+                        ConvertStatsToClass(characterClass, stateVariables);
+                        value = false;
+                        break;
+
+                    case 3:
+                        characterClass = new Assassin(stateVariables.Name);
+                        ConvertStatsToClass(characterClass, stateVariables);
+                        value = false;
+                        break;
+
+                    default:
+                        StandardFunctions.NoOption();
+                        break;
+                }
+            }
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Gra została wczytana!\n");
+            Console.ResetColor();
+
+            return stateVariables;
         }
+
 
         public static void SaveGame(IClass characterClass, ClassState stateVariables)
         {

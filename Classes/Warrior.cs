@@ -9,25 +9,26 @@ namespace GreatPyramidTreasureConsoleRPG
 
         public Warrior(string name)
         {
-            this.Vit = 12;
+            this.Vit = 15;
             this.Hp = this.Vit * 15;
             this.MaxHP = this.Vit * 15;
-            this.Str = 3;
-            this.Dex = 1;
+            this.Str = 4;
+            this.Dex = 2;
             this.Exp = 0;
-            this.MaxExp = 500;
+            this.MaxExp = 1000;
             this.Level = 0;
             this.Name = name;
             this.Gold = 1;
-            this.MinDmg = 1;
-            this.MaxDmg = 5;
+            this.MinDmg = 2;
+            this.MaxDmg = 7;
             this.Armor = 0;
-            this.AttakChance = 50;
-            this.CriticalAttackChance = 20;
+            this.AttakChance = 60;
+            this.CriticalAttackChance = 25;
             this.ClassType = 1;
             this.GameStatus = 0;
             this.Inventory = new List<IItem>();
         }
+
 
         public int Hp { get; set; }
 
@@ -113,10 +114,11 @@ namespace GreatPyramidTreasureConsoleRPG
         {
             this.Hp = this.Vit * 15;
             this.MaxHP = this.Vit * 15;
-            this.MinDmg += this.Str / 4;
+            this.MinDmg += this.Str / 3;
             this.MaxDmg += this.Str / 2;
-            this.Armor += this.Dex;
+            this.Armor += this.Dex / 2;
         }
+
 
         private static void DealDmg(IEnemy enemy, int realDmg)
         {
@@ -239,8 +241,5 @@ namespace GreatPyramidTreasureConsoleRPG
                 Console.ResetColor();
             }
         }
-
-
-
     }
 }

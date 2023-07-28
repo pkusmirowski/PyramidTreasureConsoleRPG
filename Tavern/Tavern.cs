@@ -6,17 +6,18 @@ namespace GreatPyramidTreasureConsoleRPG
     {
         public static void TavernOptions(IClass characterClass)
         {
-            bool value = true;
             var bar = new Bar();
-            while (value)
+            while (true)
             {
-                Console.WriteLine("Co chcesz zrobić:");
-                Console.WriteLine("1: Podejdź do baru.");
-                Console.WriteLine("2: Podejdź do kasyna.");
-                Console.WriteLine("3. Zapytaj się o pokój. /Możliwość ulczenia się");
+                Console.WriteLine("Witaj w tawernie! Co chcesz zrobić?");
+                Console.WriteLine("1. Podejdź do baru i porozmawiaj z barmanem.");
+                Console.WriteLine("2. Podejdź do kasyna i spróbuj szczęścia w grach hazardowych.");
+                Console.WriteLine("3. Zapytaj się o pokój, żeby się przespać i zregenerować siły.");
                 Console.WriteLine("4. Wyjdź z tawerny.");
-                int choice = StandardFunctions.ToInt32(Console.ReadLine());
+
+                var choice = StandardFunctions.ToInt32(Console.ReadLine());
                 Console.Clear();
+
                 switch (choice)
                 {
                     case 1:
@@ -32,8 +33,8 @@ namespace GreatPyramidTreasureConsoleRPG
                         break;
 
                     case 4:
-                        value = StandardFunctions.ExitRoom();
-                        break;
+                        Console.WriteLine("Do zobaczenia!");
+                        return;
 
                     default:
                         StandardFunctions.NoOption();

@@ -1,34 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GreatPyramidTreasureConsoleRPG
 {
     public static class CollectionExtension
     {
-        private static readonly Random Rng = new();
-
-        public static T RandomElement<T>(this IList<T> list)
+        public static T GetRandomElement<T>(this ICollection<T> collection)
         {
-            if (list != null)
-            {
-                return list[Rng.Next(list.Count)];
-            }
-            else
-            {
-                return default;
-            }
-        }
-
-        public static T RandomElement<T>(this T[] array)
-        {
-            if (array != null)
-            {
-                return array[Rng.Next(array.Length)];
-            }
-            else
-            {
-                return default;
-            }
+            Random rng = new();
+            return collection != null ? collection.ElementAt(rng.Next(collection.Count)) : default;
         }
     }
 }

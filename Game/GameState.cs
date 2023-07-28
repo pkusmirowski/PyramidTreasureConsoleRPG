@@ -31,7 +31,7 @@ namespace GreatPyramidTreasureConsoleRPG
                     break;
 
                 case 2:
-                    DataSave.LoadGame(ref this.characterClass, this.stateVariables);
+                    DataSave.LoadGame(ref this.characterClass);
                     break;
 
                 default:
@@ -45,20 +45,23 @@ namespace GreatPyramidTreasureConsoleRPG
         public void StartGame()
         {
             this.game = true;
+
             while (this.game)
             {
                 if (this.characterClass.Level < 20)
                 {
                     Console.WriteLine("Co chcesz zrobić:");
-                    Console.WriteLine("1: Udaj się w droge.");
+                    Console.WriteLine("1: Udaj się w drogę.");
                     Console.WriteLine("2: Idź do tawerny.");
-                    Console.WriteLine("3. Idź do sklepu.");
-                    Console.WriteLine("4. Pokaż statystyki bochatera.");
-                    Console.WriteLine("5. Ekwipunek.");
-                    Console.WriteLine("6. Zapisz gre.");
-                    Console.WriteLine("7. Zakończ gre.");
+                    Console.WriteLine("3: Idź do sklepu.");
+                    Console.WriteLine("4: Pokaż statystyki bohatera.");
+                    Console.WriteLine("5: Ekwipunek.");
+                    Console.WriteLine("6: Zapisz grę.");
+                    Console.WriteLine("7: Zakończ grę.");
+
                     int choice = StandardFunctions.ToInt32(Console.ReadLine());
                     Console.Clear();
+
                     switch (choice)
                     {
                         case 1:
@@ -71,7 +74,6 @@ namespace GreatPyramidTreasureConsoleRPG
                             break;
 
                         case 3:
-
                             Shop.PotionShop(this.characterClass);
                             break;
 
@@ -101,12 +103,14 @@ namespace GreatPyramidTreasureConsoleRPG
                     Console.WriteLine("Co chcesz zrobić:");
                     Console.WriteLine("1: Wyrusz z karawaną do piramid.");
                     Console.WriteLine("2: Idź do tawerny.");
-                    Console.WriteLine("3. Pokaż statystyki bochatera.");
-                    Console.WriteLine("4. Ekwipunek.");
-                    Console.WriteLine("5. Zapisz gre.");
-                    Console.WriteLine("6. Zakończ gre.");
+                    Console.WriteLine("3: Pokaż statystyki bohatera.");
+                    Console.WriteLine("4: Ekwipunek.");
+                    Console.WriteLine("5: Zapisz grę.");
+                    Console.WriteLine("6: Zakończ grę.");
+
                     int choice = StandardFunctions.ToInt32(Console.ReadLine());
                     Console.Clear();
+
                     switch (choice)
                     {
                         case 1:
@@ -140,7 +144,7 @@ namespace GreatPyramidTreasureConsoleRPG
                 }
                 else if (this.characterClass.Level > 20)
                 {
-                    Console.WriteLine("Wygrałeś! Możesz wyłączyć gre.");
+                    Console.WriteLine("Wygrałeś! Możesz wyłączyć grę.");
                     this.game = false;
                 }
 
@@ -152,6 +156,7 @@ namespace GreatPyramidTreasureConsoleRPG
                 }
             }
         }
+
 
         private void FightOpponents()
         {
@@ -222,9 +227,9 @@ namespace GreatPyramidTreasureConsoleRPG
             while (this.game)
             {
                 Console.WriteLine("Wybierz klasę:");
-                Console.WriteLine("1: Wojownik.    Poziom trudności: Łatwy");
-                Console.WriteLine("2: Łucznik.     Poziom trudności: Średni");
-                Console.WriteLine("3. Skrytobójca. Poziom trudności: Trudny");
+                Console.WriteLine("1: Wojownik.");
+                Console.WriteLine("2: Łucznik.");
+                Console.WriteLine("3. Asasyn.");
                 int choice = StandardFunctions.ToInt32(Console.ReadLine());
                 Console.Clear();
                 switch (choice)
@@ -256,20 +261,22 @@ namespace GreatPyramidTreasureConsoleRPG
             Console.WriteLine("-------------------");
             Console.WriteLine($"Imię: {this.characterClass.Name}");
             Console.WriteLine($"Punkty zdrowia: {this.characterClass.Hp}/{this.characterClass.MaxHP}");
+            Console.WriteLine($"Poziom: {this.characterClass.Level}");
+
             if (this.characterClass.Level < 20)
             {
-                Console.WriteLine($"Poziom: {this.characterClass.Level}");
+                Console.WriteLine($"Punkty doświadczenia: {this.characterClass.Exp}/{this.characterClass.MaxExp}");
             }
             else
             {
                 Console.WriteLine($"Masz maksymalny poziom: {this.characterClass.Level}");
             }
 
-            Console.WriteLine($"Punkty doświadczenia: {this.characterClass.Exp}/{this.characterClass.MaxExp}");
             Console.WriteLine($"Atak: {this.characterClass.MinDmg} - {this.characterClass.MaxDmg}");
             Console.WriteLine($"Pancerz: {this.characterClass.Armor}");
             Console.WriteLine($"Złoto: {this.characterClass.Gold}");
             Console.WriteLine("-------------------");
         }
+
     }
 }

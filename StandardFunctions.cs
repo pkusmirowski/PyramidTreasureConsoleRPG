@@ -39,8 +39,8 @@ namespace GreatPyramidTreasureConsoleRPG
                 return 0;
             }
 
-            bool flag = true;
-            while (flag)
+            bool flag;
+            do
             {
                 try
                 {
@@ -54,16 +54,14 @@ namespace GreatPyramidTreasureConsoleRPG
                     Thread.Sleep(700);
                     flag = false;
                 }
-            }
+            } while (flag);
 
             return 0;
         }
 
         public static void SoundPlayer(string dir)
         {
-            var player = new SoundPlayer();
-            player.Dispose();
-            player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + dir;
+            var player = new SoundPlayer(AppDomain.CurrentDomain.BaseDirectory + dir);
             player.Play();
         }
 

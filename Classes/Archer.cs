@@ -15,7 +15,7 @@ namespace GreatPyramidTreasureConsoleRPG
             this.Str = 1;
             this.Dex = 3;
             this.Exp = 0;
-            this.MaxExp = 500;
+            this.MaxExp = 1000;
             this.Level = 0;
             this.Name = name;
             this.Gold = 1;
@@ -28,6 +28,7 @@ namespace GreatPyramidTreasureConsoleRPG
             this.GameStatus = 0;
             this.Inventory = new List<IItem>();
         }
+
 
         public int Hp { get; set; }
 
@@ -113,9 +114,9 @@ namespace GreatPyramidTreasureConsoleRPG
         {
             this.Hp = this.Vit * 12;
             this.MaxHP = this.Vit * 12;
-            this.MinDmg += this.Dex / 4;
-            this.MaxDmg += this.Dex / 2;
-            this.Armor += this.Dex - 2;
+            this.MinDmg += this.Dex / 3;
+            this.MaxDmg += this.Dex / 3;
+            this.Armor += this.Dex - 1;
         }
 
         private static void DealDmg(IEnemy enemy, int realDmg)
@@ -141,13 +142,19 @@ namespace GreatPyramidTreasureConsoleRPG
             int realDmg;
             if (chance < this.AttakChance)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("\nCelnie trafiłeś!");
+                Console.ResetColor();
+                realDmg = StandardFunctions.RandDmg(this.MinDmg + this.Dex, this.MaxDmg + this.Dex);
+                DealDmg(enemy, realDmg);
+
                 chance = StandardFunctions.RandDmg(0, 100);
-                if (chance < this.AttakChance)
+                if (chance < this.CriticalAttackChance)
                 {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("\nCelnie trafiłeś!");
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine("\nCelnie trafiłeś krytycznie!");
                     Console.ResetColor();
-                    realDmg = StandardFunctions.RandDmg(this.MinDmg + this.Dex, this.MaxDmg + this.Dex);
+                    realDmg = StandardFunctions.RandDmg(this.MinDmg + this.Dex, this.MaxDmg + this.Dex) * 2;
                     DealDmg(enemy, realDmg);
                 }
                 else
