@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.Json;
 
 namespace GreatPyramidTreasureConsoleRPG
 {
@@ -12,46 +12,33 @@ namespace GreatPyramidTreasureConsoleRPG
             string folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             folder = Path.Combine(folder, "GreatPyramidTreasureRPG_DataSave");
             Directory.CreateDirectory(folder);
-            string dataFile = Path.Combine(folder, "DataSave");
+            string dataFile = Path.Combine(folder, "DataSave.json");
             if (File.Exists(dataFile))
             {
-                using Stream stateStream = File.OpenRead(dataFile);
-                BinaryFormatter deserializer = new();
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-                stateVariables = (ClassState)deserializer.Deserialize(stateStream);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
+                string json = File.ReadAllText(dataFile);
+                stateVariables = JsonSerializer.Deserialize<ClassState>(json);
             }
 
-            var classType = stateVariables.ClassType;
-            bool value = true;
-
-            while (value)
+            if (stateVariables != null)
             {
-                switch (classType)
+                switch (stateVariables.ClassType)
                 {
                     case 1:
                         characterClass = new Warrior(stateVariables.Name);
-                        ConvertStatsToClass(characterClass, stateVariables);
-                        value = false;
                         break;
-
                     case 2:
                         characterClass = new Archer(stateVariables.Name);
-                        ConvertStatsToClass(characterClass, stateVariables);
-                        value = false;
                         break;
-
                     case 3:
                         characterClass = new Assassin(stateVariables.Name);
-                        ConvertStatsToClass(characterClass, stateVariables);
-                        value = false;
                         break;
-
                     default:
                         StandardFunctions.NoOption();
                         break;
                 }
+                ConvertStatsToClass(characterClass, stateVariables);
             }
+
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Gra została wczytana!\n");
             Console.ResetColor();
@@ -75,12 +62,9 @@ namespace GreatPyramidTreasureConsoleRPG
                     string folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                     folder = Path.Combine(folder, "GreatPyramidTreasureRPG_DataSave");
                     Directory.CreateDirectory(folder);
-                    string dataFile = Path.Combine(folder, "DataSave");
-                    using Stream stateStream = File.Create(dataFile);
-                    BinaryFormatter serializer = new();
-#pragma warning disable SYSLIB0011 // Type or member is obsolete
-                    serializer.Serialize(stateStream, stateVariables);
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
+                    string dataFile = Path.Combine(folder, "DataSave.json");
+                    string json = JsonSerializer.Serialize(stateVariables);
+                    File.WriteAllText(dataFile, json);
                 }
 
                 Console.ForegroundColor = ConsoleColor.Green;

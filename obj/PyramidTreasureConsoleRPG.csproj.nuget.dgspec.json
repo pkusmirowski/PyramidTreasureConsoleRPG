@@ -1,36 +1,36 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Paweł\\Documents\\GitHub\\PyramidTreasureConsoleRPG\\PyramidTreasureConsoleRPG.csproj": {}
+    "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\PyramidTreasureConsoleRPG.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Paweł\\Documents\\GitHub\\PyramidTreasureConsoleRPG\\PyramidTreasureConsoleRPG.csproj": {
+    "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\PyramidTreasureConsoleRPG.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Paweł\\Documents\\GitHub\\PyramidTreasureConsoleRPG\\PyramidTreasureConsoleRPG.csproj",
+        "projectUniqueName": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\PyramidTreasureConsoleRPG.csproj",
         "projectName": "PyramidTreasureConsoleRPG",
-        "projectPath": "C:\\Users\\Paweł\\Documents\\GitHub\\PyramidTreasureConsoleRPG\\PyramidTreasureConsoleRPG.csproj",
-        "packagesPath": "C:\\Users\\Paweł\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Paweł\\Documents\\GitHub\\PyramidTreasureConsoleRPG\\obj\\",
+        "projectPath": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\PyramidTreasureConsoleRPG.csproj",
+        "packagesPath": "C:\\Users\\pawel\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Paweł\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\pawel\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net6.0"
+          "net8.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net6.0": {
-            "targetAlias": "net6.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {}
           }
         },
@@ -39,21 +39,26 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
         }
       },
       "frameworks": {
-        "net6.0": {
-          "targetAlias": "net6.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
             "NAudio": {
               "target": "Package",
-              "version": "[2.1.0, )"
+              "version": "[2.2.1, )"
             },
             "Roslynator.Analyzers": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[4.3.0, )"
+              "version": "[4.12.0, )"
             },
             "System.Runtime.Extensions": {
               "target": "Package",
@@ -61,7 +66,7 @@
             },
             "System.Windows.Extensions": {
               "target": "Package",
-              "version": "[7.0.0, )"
+              "version": "[8.0.0, )"
             }
           },
           "imports": [
@@ -80,7 +85,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.109\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.202/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

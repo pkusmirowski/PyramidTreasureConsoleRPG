@@ -8,7 +8,6 @@ namespace GreatPyramidTreasureConsoleRPG
 
         public void StartGame()
         {
-            Dialogues.Intro();
             this.MainGame();
         }
 

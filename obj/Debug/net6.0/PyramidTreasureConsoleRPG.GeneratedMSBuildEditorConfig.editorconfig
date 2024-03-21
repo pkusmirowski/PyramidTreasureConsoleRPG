@@ -8,4 +8,6 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = PyramidTreasureConsoleRPG
-build_property.ProjectDir = C:\Users\Paweł\Documents\GitHub\PyramidTreasureConsoleRPG\
+build_property.ProjectDir = C:\Users\pawel\Desktop\GithubProjects\PyramidTreasureConsoleRPG\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 

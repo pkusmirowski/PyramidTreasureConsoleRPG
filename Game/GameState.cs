@@ -23,6 +23,7 @@ namespace GreatPyramidTreasureConsoleRPG
             switch (choice)
             {
                 case 1:
+                    Dialogues.Intro();
                     Console.WriteLine("Podaj swoje imie: ");
                     var name = Console.ReadLine();
                     Console.Clear();
