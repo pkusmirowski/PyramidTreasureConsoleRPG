@@ -6,44 +6,46 @@ namespace GreatPyramidTreasureConsoleRPG
 {
     public static class Casino
     {
+        private const int MaxScore = 21;
+        private const int DealerMaxScore = 17;
+        private const int MinBet = 1;
+        private const int MaxBet = 100;
+
         public static void CasinoOptions(IClass characterClass)
         {
-            if (characterClass != null)
+            if (characterClass == null) return;
+
+            bool value = true;
+            while (value)
             {
-                bool value = true;
-                while (value)
+                Console.WriteLine("Co chcesz zrobić:");
+                Console.WriteLine("1: Ruletka.");
+                Console.WriteLine("2. Jednoręki bandyta.");
+                Console.WriteLine("3. BlackJack.");
+                Console.WriteLine("4. Kości.");
+                Console.WriteLine("5. Wyjdź z kasyna.");
+                int choice = StandardFunctions.ToInt32(Console.ReadLine());
+                Console.Clear();
+                switch (choice)
                 {
-                    Console.WriteLine("Co chcesz zrobić:");
-                    Console.WriteLine("1: Ruletka.");
-                    Console.WriteLine("2. Jednoręki bandyta.");
-                    Console.WriteLine("3. BlackJack.");
-                    Console.WriteLine("4. Kości.");
-                    Console.WriteLine("5. Wyjdź z kasyna.");
-                    int choice = StandardFunctions.ToInt32(Console.ReadLine());
-                    Console.Clear();
-                    switch (choice)
-                    {
-                        case 1:
-                            Casino.Roulette(characterClass);
-                            break;
-
-                        case 2:
-                            Casino.SlotMachine(characterClass);
-                            break;
-
-                        case 3:
-                            Casino.Blackjack(characterClass);
-                            break;
-                        case 4:
-                            Casino.Craps(characterClass);
-                            break;
-                        case 5:
-                            value = StandardFunctions.ExitRoom();
-                            break;
-                        default:
-                            StandardFunctions.NoOption();
-                            break;
-                    }
+                    case 1:
+                        Roulette(characterClass);
+                        break;
+                    case 2:
+                        SlotMachine(characterClass);
+                        break;
+                    case 3:
+                        Blackjack(characterClass);
+                        break;
+                    case 4:
+                        Craps(characterClass);
+                        break;
+                    case 5:
+                        value = StandardFunctions.ExitRoom();
+                        break;
+                    default:
+                        StandardFunctions.NoOption();
+                        break;
                 }
             }
         }
@@ -58,112 +60,116 @@ namespace GreatPyramidTreasureConsoleRPG
                 Console.WriteLine("2: Zrezygnuj.");
                 int choice = StandardFunctions.ToInt32(Console.ReadLine());
                 Console.Clear();
-                bool ifPlay;
-                if (choice == 1)
-                {
-                    ifPlay = true;
-                }
-                else
-                {
-                    ifPlay = false;
-                    ifRoulette = false;
-                }
+                bool ifPlay = choice == 1;
 
                 while (ifPlay && ifRoulette)
                 {
-                    bool ifGold = true;
-                    int gold = 0;
-                    while (ifGold)
+                    int gold = GetBetAmount(characterClass);
+                    if (gold == 0)
                     {
-                        Console.WriteLine("Ile chcesz postawić? / 0 - zrezygnuj.");
-                        gold = StandardFunctions.ToInt32(Console.ReadLine());
-
-                        if (gold == 0)
-                        {
-                            ifPlay = false;
-                            break;
-                        }
-
-                        if (gold > characterClass.Gold)
-                        {
-                            Dialogues.NoGold();
-                        }
-                        else
-                        {
-                            ifGold = false;
-                        }
+                        ifPlay = false;
+                        break;
                     }
 
-                    if (gold > 0)
+                    Console.WriteLine("1: Czarne. / 2. Czerwone. / 3. Wybierz numer.");
+                    int choice2 = StandardFunctions.ToInt32(Console.ReadLine());
+
+                    if (choice2 == 1 || choice2 == 2)
                     {
-                        Console.WriteLine("1: Czarne. / 2. Czerwone. / 3. Wybierz numer.");
-                        int choice2 = StandardFunctions.ToInt32(Console.ReadLine());
-
-                        if (choice2 == 1 || choice2 == 2)
-                        {
-                            int[] blackNumbers = { 2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35 };
-                            int[] redNumbers = { 1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36 };
-                            int winningNumber = new Random().Next(0, 37);
-
-                            if ((choice2 == 1 && blackNumbers.Contains(winningNumber)) || (choice2 == 2 && redNumbers.Contains(winningNumber)))
-                            {
-                                Console.ForegroundColor = ConsoleColor.Green;
-                                Console.WriteLine($"Wylosowano {winningNumber} - Gratulacje, wygrałeś!");
-                                gold *= 2;
-                                characterClass.Gold += gold;
-                                Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
-                                Console.ResetColor();
-                            }
-                            else
-                            {
-                                Console.ForegroundColor = ConsoleColor.Red;
-                                Console.WriteLine($"Wylosowano {winningNumber} - Niestety, przegrałeś!");
-                                Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
-                                Console.ResetColor();
-                            }
-                        }
-                        else if (choice2 == 3)
-                        {
-                            bool ifNumber = true;
-                            int number = 0;
-                            while (ifNumber)
-                            {
-                                Console.WriteLine("Który numer chcesz obstawić (0-36)?");
-                                number = StandardFunctions.ToInt32(Console.ReadLine());
-
-                                if (number < 0 || number > 36)
-                                {
-                                    Console.WriteLine("Niepoprawny numer. Spróbuj ponownie.");
-                                }
-                                else
-                                {
-                                    ifNumber = false;
-                                }
-                            }
-
-                            int winningNumber = new Random().Next(0, 37);
-                            characterClass.Gold -= gold;
-
-                            if (winningNumber == number)
-                            {
-                                Console.ForegroundColor = ConsoleColor.Green;
-                                Console.WriteLine($"Wylosowano {winningNumber} - Gratulacje, wygrałeś!");
-                                gold *= 36;
-                                characterClass.Gold += gold;
-                                Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
-                                Console.ResetColor();
-                            }
-                            else
-                            {
-                                Console.ForegroundColor = ConsoleColor.Red;
-                                Console.WriteLine($"Wylosowano {winningNumber} - Niestety, przegrałeś!");
-                                Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
-                                Console.ResetColor();
-                            }
-                        }
+                        PlayRouletteColor(characterClass, gold, choice2);
+                    }
+                    else if (choice2 == 3)
+                    {
+                        PlayRouletteNumber(characterClass, gold);
                     }
                 }
             }
+        }
+
+        private static void PlayRouletteColor(IClass characterClass, int gold, int choice2)
+        {
+            int[] blackNumbers = { 2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35 };
+            int[] redNumbers = { 1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36 };
+            int winningNumber = new Random().Next(0, 37);
+
+            if ((choice2 == 1 && blackNumbers.Contains(winningNumber)) || (choice2 == 2 && redNumbers.Contains(winningNumber)))
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"Wylosowano {winningNumber} - Gratulacje, wygrałeś!");
+                gold *= 2;
+                characterClass.Gold += gold;
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Wylosowano {winningNumber} - Niestety, przegrałeś!");
+            }
+            Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
+            Console.ResetColor();
+        }
+
+        private static void PlayRouletteNumber(IClass characterClass, int gold)
+        {
+            int number = GetRouletteNumber();
+            int winningNumber = new Random().Next(0, 37);
+            characterClass.Gold -= gold;
+
+            if (winningNumber == number)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"Wylosowano {winningNumber} - Gratulacje, wygrałeś!");
+                gold *= 36;
+                characterClass.Gold += gold;
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Wylosowano {winningNumber} - Niestety, przegrałeś!");
+            }
+            Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
+            Console.ResetColor();
+        }
+
+        private static int GetRouletteNumber()
+        {
+            int number = -1; // Initialize number to a default value
+            bool ifNumber = true;
+            while (ifNumber)
+            {
+                Console.WriteLine("Który numer chcesz obstawić (0-36)?");
+                number = StandardFunctions.ToInt32(Console.ReadLine());
+
+                if (number >= 0 && number <= 36)
+                {
+                    ifNumber = false;
+                }
+                else
+                {
+                    Console.WriteLine("Niepoprawny numer. Spróbuj ponownie.");
+                }
+            }
+            return number;
+        }
+
+        private static int GetBetAmount(IClass characterClass)
+        {
+            int gold = 0;
+            bool ifGold = true;
+            while (ifGold)
+            {
+                Console.WriteLine("Ile chcesz postawić? / 0 - zrezygnuj.");
+                gold = StandardFunctions.ToInt32(Console.ReadLine());
+
+                if (gold == 0 || gold <= characterClass.Gold)
+                {
+                    ifGold = false;
+                }
+                else
+                {
+                    Dialogues.NoGold();
+                }
+            }
+            return gold;
         }
 
         private static void SlotMachine(IClass characterClass)
@@ -178,88 +184,59 @@ namespace GreatPyramidTreasureConsoleRPG
                 int choice = StandardFunctions.ToInt32(Console.ReadLine());
                 Console.Clear();
 
-                if (choice == 2)
-                {
-                    break;
-                }
+                if (choice == 2) break;
 
-                bool betPlaced = false;
+                int bet = GetBetAmount(characterClass);
+                if (bet == 0) break;
 
-                while (!betPlaced)
-                {
-                    Console.WriteLine("Ile chcesz postawić? / 0 - zrezygnuj.");
-
-                    try
-                    {
-                        int bet = int.Parse(Console.ReadLine());
-
-                        if (bet == 0)
-                        {
-                            break;
-                        }
-
-                        if (bet > characterClass.Gold)
-                        {
-                            Dialogues.NoGold();
-                        }
-                        else
-                        {
-                            int[] reels = { 1, 2, 3, 4, 5, 6, 7 };
-                            int firstReel = GetRandomReel(reels);
-                            int secondReel = GetRandomReel(reels);
-                            int thirdReel = GetRandomReel(reels);
-
-                            Console.WriteLine("+-------+");
-                            Console.WriteLine($"| {firstReel} |");
-                            Console.WriteLine("+-------+");
-                            Console.WriteLine($"| {secondReel} |");
-                            Console.WriteLine("+-------+");
-                            Console.WriteLine($"| {thirdReel} |");
-                            Console.WriteLine("+-------+");
-
-                            if (firstReel == 7 && secondReel == 7 && thirdReel == 7)
-                            {
-                                int jackpot = 777 * bet;
-                                Console.WriteLine($"JACKPOT!!! Wygrałeś {jackpot} złota!");
-                                characterClass.Gold += jackpot;
-                            }
-                            else if (firstReel == secondReel && secondReel == thirdReel)
-                            {
-                                int payout = GetPayout(firstReel) * bet;
-                                Console.WriteLine($"Wygrałeś linię! +{payout} złota");
-                                characterClass.Gold += payout;
-                            }
-                            else if (firstReel == secondReel || secondReel == thirdReel || firstReel == thirdReel)
-                            {
-                                int payout = GetPayout(firstReel) * bet / 2;
-                                Console.WriteLine($"Wygrałeś 2 z lini! +{payout} złota");
-                                characterClass.Gold += payout;
-                            }
-                            else
-                            {
-                                Console.WriteLine("Przegrałeś!");
-                            }
-
-                            Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
-                            betPlaced = true;
-                            characterClass.Gold -= bet;
-                        }
-                    }
-                    catch (FormatException)
-                    {
-                        Console.WriteLine("Niepoprawny format, wprowadź liczbę.");
-                    }
-                }
+                PlaySlotMachine(characterClass, bet);
             }
         }
 
+        private static void PlaySlotMachine(IClass characterClass, int bet)
+        {
+            int[] reels = { 1, 2, 3, 4, 5, 6, 7 };
+            int firstReel = GetRandomReel(reels);
+            int secondReel = GetRandomReel(reels);
+            int thirdReel = GetRandomReel(reels);
 
+            Console.WriteLine("+-------+");
+            Console.WriteLine($"| {firstReel} |");
+            Console.WriteLine("+-------+");
+            Console.WriteLine($"| {secondReel} |");
+            Console.WriteLine("+-------+");
+            Console.WriteLine($"| {thirdReel} |");
+            Console.WriteLine("+-------+");
+
+            if (firstReel == 7 && secondReel == 7 && thirdReel == 7)
+            {
+                int jackpot = 777 * bet;
+                Console.WriteLine($"JACKPOT!!! Wygrałeś {jackpot} złota!");
+                characterClass.Gold += jackpot;
+            }
+            else if (firstReel == secondReel && secondReel == thirdReel)
+            {
+                int payout = GetPayout(firstReel) * bet;
+                Console.WriteLine($"Wygrałeś linię! +{payout} złota");
+                characterClass.Gold += payout;
+            }
+            else if (firstReel == secondReel || secondReel == thirdReel || firstReel == thirdReel)
+            {
+                int payout = GetPayout(firstReel) * bet / 2;
+                Console.WriteLine($"Wygrałeś 2 z lini! +{payout} złota");
+                characterClass.Gold += payout;
+            }
+            else
+            {
+                Console.WriteLine("Przegrałeś!");
+            }
+
+            Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
+            characterClass.Gold -= bet;
+        }
 
         private static void Blackjack(IClass characterClass)
         {
-            const int maxScore = 21;
-            const int dealerMaxScore = 17;
-
             bool playAgain = true;
 
             while (playAgain)
@@ -270,29 +247,10 @@ namespace GreatPyramidTreasureConsoleRPG
                 int choice = StandardFunctions.ToInt32(Console.ReadLine());
                 Console.Clear();
 
-                if (choice == 2)
-                {
-                    break;
-                }
+                if (choice == 2) break;
 
-                int bet = 0;
+                int bet = GetValidBet(characterClass);
 
-                while (bet <= 0 || bet > characterClass.Gold)
-                {
-                    Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
-                    Console.WriteLine("Ile chcesz postawić?");
-                    bet = StandardFunctions.ToInt32(Console.ReadLine());
-                    if (bet <= 0)
-                    {
-                        Console.WriteLine("Nieprawidłowa wartość. Postaw co najmniej 1 złoto.");
-                    }
-                    else if (bet > characterClass.Gold)
-                    {
-                        Dialogues.NoGold();
-                    }
-                }
-
-                // rozdanie kart graczowi i krupierowi
                 List<int> playerCards = new List<int> { DrawCard(), DrawCard() };
                 List<int> dealerCards = new List<int> { DrawCard(), DrawCard() };
 
@@ -301,7 +259,6 @@ namespace GreatPyramidTreasureConsoleRPG
 
                 bool playerTurn = true;
 
-                // tur gracz
                 while (playerTurn)
                 {
                     Console.WriteLine("Co chcesz zrobić:");
@@ -313,7 +270,7 @@ namespace GreatPyramidTreasureConsoleRPG
                     {
                         playerCards.Add(DrawCard());
                         Console.WriteLine($"Twoje karty: {string.Join(", ", playerCards)}");
-                        if (CalculateScore(playerCards) > maxScore)
+                        if (CalculateScore(playerCards) > MaxScore)
                         {
                             Console.WriteLine("Przegrałeś!");
                             playerTurn = false;
@@ -325,8 +282,7 @@ namespace GreatPyramidTreasureConsoleRPG
                     }
                 }
 
-                // tur krupiera
-                while (CalculateScore(dealerCards) < dealerMaxScore)
+                while (CalculateScore(dealerCards) < DealerMaxScore)
                 {
                     dealerCards.Add(DrawCard());
                 }
@@ -337,7 +293,7 @@ namespace GreatPyramidTreasureConsoleRPG
                 int playerScore = CalculateScore(playerCards);
                 int dealerScore = CalculateScore(dealerCards);
 
-                if (playerScore > maxScore || (dealerScore <= maxScore && dealerScore > playerScore))
+                if (playerScore > MaxScore || (dealerScore <= MaxScore && dealerScore > playerScore))
                 {
                     Console.WriteLine("Przegrałeś!");
                     characterClass.Gold -= bet;
@@ -354,11 +310,28 @@ namespace GreatPyramidTreasureConsoleRPG
             }
         }
 
+        private static int GetValidBet(IClass characterClass)
+        {
+            int bet = 0;
+            while (bet <= 0 || bet > characterClass.Gold)
+            {
+                Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
+                Console.WriteLine("Ile chcesz postawić?");
+                bet = StandardFunctions.ToInt32(Console.ReadLine());
+                if (bet <= 0)
+                {
+                    Console.WriteLine("Nieprawidłowa wartość. Postaw co najmniej 1 złoto.");
+                }
+                else if (bet > characterClass.Gold)
+                {
+                    Dialogues.NoGold();
+                }
+            }
+            return bet;
+        }
+
         private static void Craps(IClass characterClass)
         {
-            const int minBet = 1;
-            const int maxBet = 100;
-
             bool playAgain = true;
 
             while (playAgain)
@@ -369,32 +342,9 @@ namespace GreatPyramidTreasureConsoleRPG
                 int choice = StandardFunctions.ToInt32(Console.ReadLine());
                 Console.Clear();
 
-                if (choice == 2)
-                {
-                    break;
-                }
+                if (choice == 2) break;
 
-                int bet = 0;
-
-                while (bet <= 0 || bet > characterClass.Gold || bet < minBet || bet > maxBet)
-                {
-                    Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
-                    Console.WriteLine($"Minimalna stawka to {minBet} a maksymalna to {maxBet} złota.");
-                    Console.WriteLine("Ile chcesz postawić?");
-                    bet = StandardFunctions.ToInt32(Console.ReadLine());
-                    if (bet <= 0)
-                    {
-                        Console.WriteLine("Nieprawidłowa wartość. Postaw co najmniej 1 złoto.");
-                    }
-                    else if (bet > characterClass.Gold)
-                    {
-                        Dialogues.NoGold();
-                    }
-                    else if (bet < minBet || bet > maxBet)
-                    {
-                        Console.WriteLine($"Nieprawidłowa wartość. Stawka musi być pomiędzy {minBet} a {maxBet} złota.");
-                    }
-                }
+                int bet = GetValidCrapsBet(characterClass);
 
                 int roll = RollDice();
                 Console.WriteLine($"Wyrzucono: {roll}");
@@ -440,6 +390,31 @@ namespace GreatPyramidTreasureConsoleRPG
             }
         }
 
+        private static int GetValidCrapsBet(IClass characterClass)
+        {
+            int bet = 0;
+            while (bet <= 0 || bet > characterClass.Gold || bet < MinBet || bet > MaxBet)
+            {
+                Console.WriteLine($"Aktualny stan konta: {characterClass.Gold}.");
+                Console.WriteLine($"Minimalna stawka to {MinBet} a maksymalna to {MaxBet} złota.");
+                Console.WriteLine("Ile chcesz postawić?");
+                bet = StandardFunctions.ToInt32(Console.ReadLine());
+                if (bet <= 0)
+                {
+                    Console.WriteLine("Nieprawidłowa wartość. Postaw co najmniej 1 złoto.");
+                }
+                else if (bet > characterClass.Gold)
+                {
+                    Dialogues.NoGold();
+                }
+                else if (bet < MinBet || bet > MaxBet)
+                {
+                    Console.WriteLine($"Nieprawidłowa wartość. Stawka musi być pomiędzy {MinBet} a {MaxBet} złota.");
+                }
+            }
+            return bet;
+        }
+
         private static int RollDice()
         {
             Random random = new Random();
@@ -448,18 +423,12 @@ namespace GreatPyramidTreasureConsoleRPG
             return die1 + die2;
         }
 
-
         private static int DrawCard()
         {
             Random random = new Random();
             int cardValue = random.Next(2, 12);
-            if (cardValue > 10)
-            {
-                cardValue = 10;
-            }
-            return cardValue;
+            return cardValue > 10 ? 10 : cardValue;
         }
-
 
         private static int CalculateScore(List<int> cards)
         {
@@ -483,7 +452,6 @@ namespace GreatPyramidTreasureConsoleRPG
                 }
             }
 
-            // Zmniejsz wartość asa z 11 na 1, jeśli gracz przekroczył limit punktów
             while (score > 21 && aceCount > 0)
             {
                 score -= 10;
@@ -495,11 +463,10 @@ namespace GreatPyramidTreasureConsoleRPG
 
         private static int GetRandomReel(int[] reels)
         {
-            System.Random random = new System.Random();
+            Random random = new Random();
             int index = random.Next(reels.Length);
             int reelValue = reels[index];
 
-            // Map reel values to symbols
             switch (reelValue)
             {
                 case 1:
@@ -534,28 +501,19 @@ namespace GreatPyramidTreasureConsoleRPG
             return reelValue;
         }
 
-
         private static int GetPayout(int reelValue)
         {
-            switch (reelValue)
+            return reelValue switch
             {
-                case 1:
-                    return 3;
-                case 2:
-                    return 4;
-                case 3:
-                    return 5;
-                case 4:
-                    return 6;
-                case 5:
-                    return 7;
-                case 6:
-                    return 8;
-                case 7:
-                    return 9;
-                default:
-                    throw new ArgumentException("Niepoprawna wartość bębna.");
-            }
+                1 => 3,
+                2 => 4,
+                3 => 5,
+                4 => 6,
+                5 => 7,
+                6 => 8,
+                7 => 9,
+                _ => throw new ArgumentException("Niepoprawna wartość bębna."),
+            };
         }
     }
 }

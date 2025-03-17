@@ -9,12 +9,7 @@ namespace GreatPyramidTreasureConsoleRPG
             var bar = new Bar();
             while (true)
             {
-                Console.WriteLine("Witaj w tawernie! Co chcesz zrobić?");
-                Console.WriteLine("1. Podejdź do baru i porozmawiaj z barmanem.");
-                Console.WriteLine("2. Podejdź do kasyna i spróbuj szczęścia w grach hazardowych.");
-                Console.WriteLine("3. Zapytaj się o pokój, żeby się przespać i zregenerować siły.");
-                Console.WriteLine("4. Wyjdź z tawerny.");
-
+                DisplayMenu();
                 var choice = StandardFunctions.ToInt32(Console.ReadLine());
                 Console.Clear();
 
@@ -41,6 +36,15 @@ namespace GreatPyramidTreasureConsoleRPG
                         break;
                 }
             }
+        }
+
+        private static void DisplayMenu()
+        {
+            Console.WriteLine("Witaj w tawernie! Co chcesz zrobić?");
+            Console.WriteLine("1. Podejdź do baru i porozmawiaj z barmanem.");
+            Console.WriteLine("2. Podejdź do kasyna i spróbuj szczęścia w grach hazardowych.");
+            Console.WriteLine("3. Zapytaj się o pokój, żeby się przespać i zregenerować siły.");
+            Console.WriteLine("4. Wyjdź z tawerny.");
         }
     }
 }

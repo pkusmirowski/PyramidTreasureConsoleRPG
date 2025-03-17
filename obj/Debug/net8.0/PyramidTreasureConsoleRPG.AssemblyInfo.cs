@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PyramidTreasureConsoleRPG")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fdf4e6d8d438865706905e7be8fc46aa7724f114")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+83579e86074a5adbb79a1afa17f1b09cec3e191b")]
 [assembly: System.Reflection.AssemblyProductAttribute("PyramidTreasureConsoleRPG")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PyramidTreasureConsoleRPG")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

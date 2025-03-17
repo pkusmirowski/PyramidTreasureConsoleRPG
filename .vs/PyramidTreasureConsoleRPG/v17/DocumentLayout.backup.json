@@ -1,0 +1,461 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\classes\\archer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:classes\\archer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\pyramidtreasureconsolerpg.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:pyramidtreasureconsolerpg.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\classes\\warrior.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:classes\\warrior.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\classes\\iclass.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:classes\\iclass.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\game\\classstate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:game\\classstate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\game\\datasave.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:game\\datasave.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\game\\dialogues.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:game\\dialogues.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\game\\gamestate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:game\\gamestate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\game\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:game\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\game\\gamestatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:game\\gamestatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\items\\iitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:items\\iitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\items\\shop.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:items\\shop.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\monsters\\enemies\\anubis.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:monsters\\enemies\\anubis.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\monsters\\generateenemies.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:monsters\\generateenemies.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\monsters\\ienemy.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:monsters\\ienemy.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\tavern\\tavern.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:tavern\\tavern.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\tavern\\tavernoptions\\casino.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:tavern\\tavernoptions\\casino.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\tavern\\tavernoptions\\rest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:tavern\\tavernoptions\\rest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\tavern\\tavernoptions\\bar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:tavern\\tavernoptions\\bar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\collectionextension.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:collectionextension.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\standardfunctions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:standardfunctions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\pyramidtreasureconsolerpg.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:pyramidtreasureconsolerpg.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\monsters\\enemies\\cryingmonk.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:monsters\\enemies\\cryingmonk.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\monsters\\enemies\\armoredthief.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:monsters\\enemies\\armoredthief.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|c:\\users\\pawel\\desktop\\githubprojects\\pyramidtreasureconsolerpg\\readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}",
+      "RelativeMoniker": "D:0:0:{0388482F-A23F-4C7A-9C27-6BD69A9456F1}|PyramidTreasureConsoleRPG.csproj|solutionrelative:readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PyramidTreasureConsoleRPG",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\PyramidTreasureConsoleRPG.csproj",
+              "RelativeDocumentMoniker": "PyramidTreasureConsoleRPG.csproj",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\PyramidTreasureConsoleRPG.csproj",
+              "RelativeToolTip": "PyramidTreasureConsoleRPG.csproj",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-03-17T21:23:40.446Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Warrior.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Classes\\Warrior.cs",
+              "RelativeDocumentMoniker": "Classes\\Warrior.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Classes\\Warrior.cs",
+              "RelativeToolTip": "Classes\\Warrior.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T21:23:36.959Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "IClass.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Classes\\IClass.cs",
+              "RelativeDocumentMoniker": "Classes\\IClass.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Classes\\IClass.cs",
+              "RelativeToolTip": "Classes\\IClass.cs",
+              "ViewState": "AgIAABoAAAAAAAAAAAA7wAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T21:23:34.574Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Archer.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Classes\\Archer.cs",
+              "RelativeDocumentMoniker": "Classes\\Archer.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Classes\\Archer.cs",
+              "RelativeToolTip": "Classes\\Archer.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T21:23:28.276Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Dialogues.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Game\\Dialogues.cs",
+              "RelativeDocumentMoniker": "Game\\Dialogues.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Game\\Dialogues.cs",
+              "RelativeToolTip": "Game\\Dialogues.cs",
+              "ViewState": "AgIAAOMAAAAAAAAAAAAuwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T14:54:28.269Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "IItem.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Items\\IItem.cs",
+              "RelativeDocumentMoniker": "Items\\IItem.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Items\\IItem.cs",
+              "RelativeToolTip": "Items\\IItem.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T12:25:52.762Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Shop.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Items\\Shop.cs",
+              "RelativeDocumentMoniker": "Items\\Shop.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Items\\Shop.cs",
+              "RelativeToolTip": "Items\\Shop.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T12:25:39.589Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "IEnemy.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Monsters\\IEnemy.cs",
+              "RelativeDocumentMoniker": "Monsters\\IEnemy.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Monsters\\IEnemy.cs",
+              "RelativeToolTip": "Monsters\\IEnemy.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T12:24:02.041Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Tavern.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Tavern\\Tavern.cs",
+              "RelativeDocumentMoniker": "Tavern\\Tavern.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Tavern\\Tavern.cs",
+              "RelativeToolTip": "Tavern\\Tavern.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T11:58:29.868Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "GenerateEnemies.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Monsters\\GenerateEnemies.cs",
+              "RelativeDocumentMoniker": "Monsters\\GenerateEnemies.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Monsters\\GenerateEnemies.cs",
+              "RelativeToolTip": "Monsters\\GenerateEnemies.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFIAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T11:58:12.75Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "GameStatus.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Game\\GameStatus.cs",
+              "RelativeDocumentMoniker": "Game\\GameStatus.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Game\\GameStatus.cs",
+              "RelativeToolTip": "Game\\GameStatus.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-03-21T19:07:24.839Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "GameState.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Game\\GameState.cs",
+              "RelativeDocumentMoniker": "Game\\GameState.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Game\\GameState.cs",
+              "RelativeToolTip": "Game\\GameState.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-03-21T19:03:13.691Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "DataSave.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Game\\DataSave.cs",
+              "RelativeDocumentMoniker": "Game\\DataSave.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Game\\DataSave.cs",
+              "RelativeToolTip": "Game\\DataSave.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAABOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-03-21T18:52:23.626Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ClassState.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Game\\ClassState.cs",
+              "RelativeDocumentMoniker": "Game\\ClassState.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Game\\ClassState.cs",
+              "RelativeToolTip": "Game\\ClassState.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T11:57:46.414Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "Casino.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Tavern\\TavernOptions\\Casino.cs",
+              "RelativeDocumentMoniker": "Tavern\\TavernOptions\\Casino.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Tavern\\TavernOptions\\Casino.cs",
+              "RelativeToolTip": "Tavern\\TavernOptions\\Casino.cs",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAAAJgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T12:10:27.53Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "Rest.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Tavern\\TavernOptions\\Rest.cs",
+              "RelativeDocumentMoniker": "Tavern\\TavernOptions\\Rest.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Tavern\\TavernOptions\\Rest.cs",
+              "RelativeToolTip": "Tavern\\TavernOptions\\Rest.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T12:16:37.176Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "Bar.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Tavern\\TavernOptions\\Bar.cs",
+              "RelativeDocumentMoniker": "Tavern\\TavernOptions\\Bar.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Tavern\\TavernOptions\\Bar.cs",
+              "RelativeToolTip": "Tavern\\TavernOptions\\Bar.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAPYAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T12:10:22.138Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Game.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Game\\Game.cs",
+              "RelativeDocumentMoniker": "Game\\Game.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Game\\Game.cs",
+              "RelativeToolTip": "Game\\Game.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-03-21T19:02:43.927Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "StandardFunctions.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\StandardFunctions.cs",
+              "RelativeDocumentMoniker": "StandardFunctions.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\StandardFunctions.cs",
+              "RelativeToolTip": "StandardFunctions.cs",
+              "ViewState": "AgIAADcAAAAAAAAAAAAcwFwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-03-21T19:07:22.143Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADUAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-03-21T18:37:30.882Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Anubis.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Monsters\\Enemies\\Anubis.cs",
+              "RelativeDocumentMoniker": "Monsters\\Enemies\\Anubis.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Monsters\\Enemies\\Anubis.cs",
+              "RelativeToolTip": "Monsters\\Enemies\\Anubis.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T11:58:18.244Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "CollectionExtension.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\CollectionExtension.cs",
+              "RelativeDocumentMoniker": "CollectionExtension.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\CollectionExtension.cs",
+              "RelativeToolTip": "CollectionExtension.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T12:04:03.983Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "ArmoredThief.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Monsters\\Enemies\\ArmoredThief.cs",
+              "RelativeDocumentMoniker": "Monsters\\Enemies\\ArmoredThief.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Monsters\\Enemies\\ArmoredThief.cs",
+              "RelativeToolTip": "Monsters\\Enemies\\ArmoredThief.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T11:58:19.622Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "PyramidTreasureConsoleRPG.csproj",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\PyramidTreasureConsoleRPG.csproj",
+              "RelativeDocumentMoniker": "PyramidTreasureConsoleRPG.csproj",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\PyramidTreasureConsoleRPG.csproj",
+              "RelativeToolTip": "PyramidTreasureConsoleRPG.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2024-03-21T18:51:35.342Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "CryingMonk.cs",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Monsters\\Enemies\\CryingMonk.cs",
+              "RelativeDocumentMoniker": "Monsters\\Enemies\\CryingMonk.cs",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\Monsters\\Enemies\\CryingMonk.cs",
+              "RelativeToolTip": "Monsters\\Enemies\\CryingMonk.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-17T11:58:21.528Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "README.md",
+              "DocumentMoniker": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\README.md",
+              "RelativeDocumentMoniker": "README.md",
+              "ToolTip": "C:\\Users\\pawel\\Desktop\\GithubProjects\\PyramidTreasureConsoleRPG\\README.md",
+              "RelativeToolTip": "README.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2024-03-21T19:06:57.883Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

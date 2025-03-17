@@ -7,11 +7,8 @@ namespace GreatPyramidTreasureConsoleRPG
     public class GameState
     {
         private readonly ClassState stateVariables = new();
-
-        private List<IEnemy> enemy = new();
-
+        private List<IEnemy> enemies = new();
         private IClass characterClass;
-
         private bool game = true;
 
         public GameState()
@@ -23,18 +20,11 @@ namespace GreatPyramidTreasureConsoleRPG
             switch (choice)
             {
                 case 1:
-                    Dialogues.Intro();
-                    Console.WriteLine("Podaj swoje imie: ");
-                    var name = Console.ReadLine();
-                    Console.Clear();
-                    this.Name = name;
-                    this.SelectClass();
+                    StartNewGame();
                     break;
-
                 case 2:
-                    DataSave.LoadGame(ref this.characterClass);
+                    LoadGame();
                     break;
-
                 default:
                     StandardFunctions.NoOption();
                     break;
@@ -45,158 +35,172 @@ namespace GreatPyramidTreasureConsoleRPG
 
         public void StartGame()
         {
-            this.game = true;
+            game = true;
 
-            while (this.game)
+            while (game)
             {
-                if (this.characterClass.Level < 20)
+                if (characterClass.Level < 20)
                 {
-                    Console.WriteLine("Co chcesz zrobić:");
-                    Console.WriteLine("1: Udaj się w drogę.");
-                    Console.WriteLine("2: Idź do tawerny.");
-                    Console.WriteLine("3: Idź do sklepu.");
-                    Console.WriteLine("4: Pokaż statystyki bohatera.");
-                    Console.WriteLine("5: Ekwipunek.");
-                    Console.WriteLine("6: Zapisz grę.");
-                    Console.WriteLine("7: Zakończ grę.");
-
-                    int choice = StandardFunctions.ToInt32(Console.ReadLine());
-                    Console.Clear();
-
-                    switch (choice)
-                    {
-                        case 1:
-                            if (GameStatus.CheckGameStatus(this.characterClass))
-                                this.FightOpponents();
-                            break;
-
-                        case 2:
-                            Tavern.TavernOptions(this.characterClass);
-                            break;
-
-                        case 3:
-                            Shop.PotionShop(this.characterClass);
-                            break;
-
-                        case 4:
-                            this.ShowStats();
-                            break;
-
-                        case 5:
-                            UsingPotions.PotionOptions(this.characterClass);
-                            break;
-
-                        case 6:
-                            DataSave.SaveGame(this.characterClass, this.stateVariables);
-                            break;
-
-                        case 7:
-                            this.game = false;
-                            break;
-
-                        default:
-                            StandardFunctions.NoOption();
-                            break;
-                    }
+                    DisplayOptions();
+                    HandleChoice(StandardFunctions.ToInt32(Console.ReadLine()));
                 }
-                else if (this.characterClass.Level == 20)
+                else if (characterClass.Level == 20)
                 {
-                    Console.WriteLine("Co chcesz zrobić:");
-                    Console.WriteLine("1: Wyrusz z karawaną do piramid.");
-                    Console.WriteLine("2: Idź do tawerny.");
-                    Console.WriteLine("3: Pokaż statystyki bohatera.");
-                    Console.WriteLine("4: Ekwipunek.");
-                    Console.WriteLine("5: Zapisz grę.");
-                    Console.WriteLine("6: Zakończ grę.");
-
-                    int choice = StandardFunctions.ToInt32(Console.ReadLine());
-                    Console.Clear();
-
-                    switch (choice)
-                    {
-                        case 1:
-                            this.FinalBoss();
-                            break;
-
-                        case 2:
-                            Tavern.TavernOptions(this.characterClass);
-                            break;
-
-                        case 3:
-                            this.ShowStats();
-                            break;
-
-                        case 4:
-                            UsingPotions.PotionOptions(this.characterClass);
-                            break;
-
-                        case 5:
-                            DataSave.SaveGame(this.characterClass, this.stateVariables);
-                            break;
-
-                        case 6:
-                            this.game = false;
-                            break;
-
-                        default:
-                            StandardFunctions.NoOption();
-                            break;
-                    }
+                    DisplayFinalOptions();
+                    HandleFinalChoice(StandardFunctions.ToInt32(Console.ReadLine()));
                 }
-                else if (this.characterClass.Level > 20)
+                else if (characterClass.Level > 20)
                 {
                     Console.WriteLine("Wygrałeś! Możesz wyłączyć grę.");
-                    this.game = false;
+                    game = false;
                 }
 
-                if (!this.characterClass.IsAlive())
+                if (!characterClass.IsAlive())
                 {
                     Console.WriteLine("Zostałeś pokonany.");
                     Console.WriteLine("Koniec gry.");
-                    this.game = false;
+                    game = false;
                 }
             }
         }
 
+        private void StartNewGame()
+        {
+            Dialogues.Intro();
+            Console.WriteLine("Podaj swoje imie: ");
+            Name = Console.ReadLine();
+            Console.Clear();
+            SelectClass();
+        }
+
+        private void LoadGame()
+        {
+            DataSave.LoadGame(ref characterClass);
+        }
+
+        private void DisplayOptions()
+        {
+            Console.WriteLine("Co chcesz zrobić:");
+            Console.WriteLine("1: Udaj się w drogę.");
+            Console.WriteLine("2: Idź do tawerny.");
+            Console.WriteLine("3: Idź do sklepu.");
+            Console.WriteLine("4: Pokaż statystyki bohatera.");
+            Console.WriteLine("5: Ekwipunek.");
+            Console.WriteLine("6: Zapisz grę.");
+            Console.WriteLine("7: Zakończ grę.");
+        }
+
+        private void DisplayFinalOptions()
+        {
+            Console.WriteLine("Co chcesz zrobić:");
+            Console.WriteLine("1: Wyrusz z karawaną do piramid.");
+            Console.WriteLine("2: Idź do tawerny.");
+            Console.WriteLine("3: Pokaż statystyki bohatera.");
+            Console.WriteLine("4: Ekwipunek.");
+            Console.WriteLine("5: Zapisz grę.");
+            Console.WriteLine("6: Zakończ grę.");
+        }
+
+        private void HandleChoice(int choice)
+        {
+            Console.Clear();
+            switch (choice)
+            {
+                case 1:
+                    if (GameStatus.CheckGameStatus(characterClass))
+                        FightOpponents();
+                    break;
+                case 2:
+                    Tavern.TavernOptions(characterClass);
+                    break;
+                case 3:
+                    Shop.PotionShop(characterClass);
+                    break;
+                case 4:
+                    ShowStats();
+                    break;
+                case 5:
+                    UsingPotions.PotionOptions(characterClass);
+                    break;
+                case 6:
+                    DataSave.SaveGame(characterClass, stateVariables);
+                    break;
+                case 7:
+                    game = false;
+                    break;
+                default:
+                    StandardFunctions.NoOption();
+                    break;
+            }
+        }
+
+        private void HandleFinalChoice(int choice)
+        {
+            Console.Clear();
+            switch (choice)
+            {
+                case 1:
+                    FinalBoss();
+                    break;
+                case 2:
+                    Tavern.TavernOptions(characterClass);
+                    break;
+                case 3:
+                    ShowStats();
+                    break;
+                case 4:
+                    UsingPotions.PotionOptions(characterClass);
+                    break;
+                case 5:
+                    DataSave.SaveGame(characterClass, stateVariables);
+                    break;
+                case 6:
+                    game = false;
+                    break;
+                default:
+                    StandardFunctions.NoOption();
+                    break;
+            }
+        }
 
         private void FightOpponents()
         {
-            GenerateEnemies.SelectOpponents(this.characterClass, this.enemy);
-            this.enemy = this.enemy.OrderBy(_ => Guid.NewGuid()).ToList();
-            this.Fight();
-            this.enemy.Clear();
+            GenerateEnemies.SelectOpponents(characterClass, enemies);
+            enemies = enemies.OrderBy(_ => Guid.NewGuid()).ToList();
+            Fight();
+            enemies.Clear();
         }
 
         private void FinalBoss()
         {
             Dialogues.PyramidHistory();
-            this.enemy.Add(new Anubis());
-            this.enemy.Add(new Anubis());
-            this.Fight();
-            this.enemy.Clear();
+            enemies.Add(new Anubis());
+            enemies.Add(new Anubis());
+            Fight();
+            enemies.Clear();
             Dialogues.AfterGuards();
-            this.characterClass.Hp = this.characterClass.MaxHP;
-            this.enemy.Add(new Ra());
-            this.Fight();
-            this.enemy.Clear();
-            this.characterClass.Level++;
+            characterClass.Hp = characterClass.MaxHP;
+            enemies.Add(new Ra());
+            Fight();
+            enemies.Clear();
+            characterClass.Level++;
             Dialogues.Ending();
-            this.game = false;
+            game = false;
         }
 
         private void Fight()
         {
-            foreach (var enemy in new List<IEnemy>(this.enemy))
+            foreach (var enemy in new List<IEnemy>(enemies))
             {
                 Console.WriteLine($"\nSpokałeś przeciwnika: {enemy.Name}. Przygotuj się do walki!!!");
                 StandardFunctions.Sleep();
                 while (enemy.IsAlive())
                 {
                     Console.WriteLine($"{enemy.Name} atakuje!");
-                    enemy.Attack(this.characterClass);
-                    this.characterClass.Attack(enemy);
+                    enemy.Attack(characterClass);
+                    characterClass.Attack(enemy);
 
-                    if (!this.characterClass.IsAlive())
+                    if (!characterClass.IsAlive())
                     {
                         Console.WriteLine("Zostałeś pokonany!");
                         Console.WriteLine("Koniec gry!");
@@ -206,18 +210,18 @@ namespace GreatPyramidTreasureConsoleRPG
                     {
                         Console.Clear();
                         Console.WriteLine("Pokonałeś przeciwnika!");
-                        this.characterClass.Gold += enemy.Gold;
-                        if (this.characterClass.Level < 20)
+                        characterClass.Gold += enemy.Gold;
+                        if (characterClass.Level < 20)
                         {
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
                             Console.WriteLine($"Zyskałeś {enemy.Exp} punktów doświadczenia!");
                             Console.WriteLine($"Zdobyłeś {enemy.Gold} sztuk złota!");
                             Console.ResetColor();
-                            this.characterClass.Exp += enemy.Exp;
-                            this.characterClass.AddLevel();
+                            characterClass.Exp += enemy.Exp;
+                            characterClass.AddLevel();
                         }
 
-                        this.enemy.Remove(enemy);
+                        enemies.Remove(enemy);
                     }
                 }
             }
@@ -225,7 +229,7 @@ namespace GreatPyramidTreasureConsoleRPG
 
         private void SelectClass()
         {
-            while (this.game)
+            while (game)
             {
                 Console.WriteLine("Wybierz klasę:");
                 Console.WriteLine("1: Wojownik.");
@@ -236,20 +240,17 @@ namespace GreatPyramidTreasureConsoleRPG
                 switch (choice)
                 {
                     case 1:
-                        this.characterClass = new Warrior(this.Name);
-                        this.game = false;
+                        characterClass = new Warrior(Name);
+                        game = false;
                         break;
-
                     case 2:
-                        this.characterClass = new Archer(this.Name);
-                        this.game = false;
+                        characterClass = new Archer(Name);
+                        game = false;
                         break;
-
                     case 3:
-                        this.characterClass = new Assassin(this.Name);
-                        this.game = false;
+                        characterClass = new Assassin(Name);
+                        game = false;
                         break;
-
                     default:
                         StandardFunctions.NoOption();
                         break;
@@ -260,24 +261,23 @@ namespace GreatPyramidTreasureConsoleRPG
         private void ShowStats()
         {
             Console.WriteLine("-------------------");
-            Console.WriteLine($"Imię: {this.characterClass.Name}");
-            Console.WriteLine($"Punkty zdrowia: {this.characterClass.Hp}/{this.characterClass.MaxHP}");
-            Console.WriteLine($"Poziom: {this.characterClass.Level}");
+            Console.WriteLine($"Imię: {characterClass.Name}");
+            Console.WriteLine($"Punkty zdrowia: {characterClass.Hp}/{characterClass.MaxHP}");
+            Console.WriteLine($"Poziom: {characterClass.Level}");
 
-            if (this.characterClass.Level < 20)
+            if (characterClass.Level < 20)
             {
-                Console.WriteLine($"Punkty doświadczenia: {this.characterClass.Exp}/{this.characterClass.MaxExp}");
+                Console.WriteLine($"Punkty doświadczenia: {characterClass.Exp}/{characterClass.MaxExp}");
             }
             else
             {
-                Console.WriteLine($"Masz maksymalny poziom: {this.characterClass.Level}");
+                Console.WriteLine($"Masz maksymalny poziom: {characterClass.Level}");
             }
 
-            Console.WriteLine($"Atak: {this.characterClass.MinDmg} - {this.characterClass.MaxDmg}");
-            Console.WriteLine($"Pancerz: {this.characterClass.Armor}");
-            Console.WriteLine($"Złoto: {this.characterClass.Gold}");
+            Console.WriteLine($"Atak: {characterClass.MinDmg} - {characterClass.MaxDmg}");
+            Console.WriteLine($"Pancerz: {characterClass.Armor}");
+            Console.WriteLine($"Złoto: {characterClass.Gold}");
             Console.WriteLine("-------------------");
         }
-
     }
 }
