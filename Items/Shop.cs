@@ -1,72 +1,45 @@
-﻿using System;
+namespace PyramidTreasureConsoleRPG;
 
-namespace GreatPyramidTreasureConsoleRPG
+public static class Shop
 {
-    public static class Shop
+    public static void Visit(Hero hero)
     {
-        public static void PotionShop(IClass characterClass)
+        ArgumentNullException.ThrowIfNull(hero);
+        while (true)
         {
-            if (characterClass == null)
+            GameIO.Header("Sklep alchemika");
+            GameIO.WriteLine($"Twoje złoto: {hero.Gold}", ConsoleColor.DarkYellow);
+            var offers = Potion.AllKinds.Select(Potion.Create).ToList();
+            var options = offers
+                .Select(p => $"{p.Name} – leczy {p.RestoreHp} HP – {p.Price} g (masz: {hero.CountPotions(p.Kind)})")
+                .Append("Wyjdź ze sklepu")
+                .ToArray();
+            GameIO.Menu("Co chcesz kupić?", options);
+            int choice = GameIO.ReadMenuChoice(options.Length);
+            GameIO.Clear();
+            if (choice == options.Length)
             {
+                GameIO.WriteLine("Wychodzisz ze sklepu...");
                 return;
             }
 
-            bool value = true;
-            while (value)
-            {
-                Console.WriteLine("Co chcesz zrobić:");
-                Console.WriteLine("1: Kup małą miksture leczniczą. 20g");
-                Console.WriteLine("2: Kup średnią miksturę leczniczą. 50g");
-                Console.WriteLine("3. Kup dużą miksturę leczniczą. 100g");
-                Console.WriteLine("4. Wyjdź z sklepu.");
-
-                if (!int.TryParse(Console.ReadLine(), out int choice))
-                {
-                    StandardFunctions.NoOption();
-                    continue;
-                }
-
-                Console.Clear();
-
-                switch (choice)
-                {
-                    case 1:
-                        BuyPotion(characterClass, new SmallPotion(), 20);
-                        break;
-
-                    case 2:
-                        BuyPotion(characterClass, new MediumPotion(), 50);
-                        break;
-
-                    case 3:
-                        BuyPotion(characterClass, new LargePotion(), 100);
-                        break;
-
-                    case 4:
-                        value = StandardFunctions.ExitRoom();
-                        break;
-
-                    default:
-                        StandardFunctions.NoOption();
-                        break;
-                }
-            }
+            Buy(hero, offers[choice - 1]);
         }
+    }
 
-        private static void BuyPotion(IClass characterClass, IItem potion, int price)
+    public static bool Buy(Hero hero, Potion potion)
+    {
+        ArgumentNullException.ThrowIfNull(hero);
+        ArgumentNullException.ThrowIfNull(potion);
+        if (hero.Gold < potion.Price)
         {
-            if (characterClass.Gold >= price)
-            {
-                characterClass.Inventory.Add(potion);
-                characterClass.Gold -= price;
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"Kupiłeś {potion.Name}!\n");
-                Console.ResetColor();
-            }
-            else
-            {
-                Dialogues.NoGold();
-            }
+            Dialogues.NoGold();
+            return false;
         }
+
+        hero.Gold -= potion.Price;
+        hero.Inventory.Add(potion);
+        GameIO.Success($"Kupiłeś: {potion.Name}. Zostało ci {hero.Gold} złota.");
+        return true;
     }
 }

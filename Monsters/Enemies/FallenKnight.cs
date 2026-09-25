@@ -1,27 +1,9 @@
-﻿namespace GreatPyramidTreasureConsoleRPG
+namespace PyramidTreasureConsoleRPG;
+
+public sealed class FallenKnight : Enemy
 {
-    public class FallenKnight : IEnemy
+    public FallenKnight()
+        : base("Upadły rycerz", EnemyKind.Undead, maxHp: 150, minDmg: 17, maxDmg: 27, armor: 20, agility: 8, exp: 1800, gold: 35)
     {
-        public FallenKnight()
-        {
-            this.Hp = 120;
-            this.MinDmg = 40;
-            this.MaxDmg = 57;
-            this.Exp = 3500;
-            this.Gold = 35;
-            this.Name = "Upadły Rycerz";
-        }
-
-        public int Hp { get; set; }
-
-        public int MinDmg { get; set; }
-
-        public int MaxDmg { get; set; }
-
-        public int Exp { get; set; }
-
-        public int Gold { get; set; }
-
-        public string Name { get; set; }
     }
 }

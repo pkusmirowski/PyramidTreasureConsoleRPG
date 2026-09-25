@@ -1,27 +1,9 @@
-﻿namespace GreatPyramidTreasureConsoleRPG
+namespace PyramidTreasureConsoleRPG;
+
+public sealed class CryingMonk : Enemy
 {
-    public class CryingMonk : IEnemy
+    public CryingMonk()
+        : base("Płaczący Mnich", EnemyKind.Undead, maxHp: 280, minDmg: 26, maxDmg: 40, armor: 15, agility: 14, exp: 3600, gold: 70)
     {
-        public CryingMonk()
-        {
-            this.Hp = 777;
-            this.MinDmg = 77;
-            this.MaxDmg = 99;
-            this.Exp = 10000;
-            this.Gold = 50;
-            this.Name = "Płaczący Mnich";
-        }
-
-        public int Hp { get; set; }
-
-        public int MinDmg { get; set; }
-
-        public int MaxDmg { get; set; }
-
-        public int Exp { get; set; }
-
-        public int Gold { get; set; }
-
-        public string Name { get; set; }
     }
 }

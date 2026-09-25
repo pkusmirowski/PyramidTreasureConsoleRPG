@@ -1,68 +1,31 @@
-﻿using NAudio.Wave;
-using System.IO;
-using System;
+namespace PyramidTreasureConsoleRPG;
 
-namespace GreatPyramidTreasureConsoleRPG
+public static class Program
 {
-    public static class Program
+    public static int Main()
     {
-        private static readonly string MusicPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Audio", "ancient_egypt.wav");
-        private static WaveOutEvent _outputDevice;
-        private static AudioFileReader _audioFile;
+        GameIO.Initialize();
+        string dataFolder = SaveSystem.SaveFolder;
+        GameSettings settings = GameSettings.Load(dataFolder);
+        GameIO.NarrationDelayMs = settings.NarrationDelayMs;
 
-        public static void Main()
+        string musicPath = Path.Combine(AppContext.BaseDirectory, "Audio", "ancient_egypt.wav");
+        using var music = new MusicPlayer(musicPath);
+        if (settings.MusicEnabled)
         {
-            // When the program exits, clean up audio
-            AppDomain.CurrentDomain.ProcessExit += OnProgramExit;
-
-            PlayMusicInBackground(MusicPath);
-
-            var game = new Game();
-            game.StartGame();
+            music.Play(settings.MusicVolume);
         }
 
-        private static void OnProgramExit(object sender, EventArgs e)
+        try
         {
-            DisposeAudio();
+            new Game(settings, music, dataFolder).Run();
+            GameIO.WriteLine("Do zobaczenia!");
+            return 0;
         }
-
-
-        private static void PlayMusicInBackground(string musicPath)
+        catch (EndOfStreamException)
         {
-            try
-            {
-                _audioFile = new AudioFileReader(musicPath);
-                _outputDevice = new WaveOutEvent();
-                _outputDevice.Init(_audioFile);
-                _outputDevice.Volume = 0.5f;
-                _outputDevice.Play();
-
-                _outputDevice.PlaybackStopped += (sender, e) =>
-                {
-                    _audioFile.Position = 0;
-                    _outputDevice.Play();
-                };
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error playing background music: {ex.Message}");
-            }
-        }
-
-        private static void DisposeAudio()
-        {
-            if (_outputDevice != null)
-            {
-                _outputDevice.Stop();
-                _outputDevice.Dispose();
-                _outputDevice = null;
-            }
-
-            if (_audioFile != null)
-            {
-                _audioFile.Dispose();
-                _audioFile = null;
-            }
+            // Zamknięte wejście (np. potok) – kończymy spokojnie.
+            return 0;
         }
     }
 }

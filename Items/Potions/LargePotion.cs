@@ -1,21 +1,9 @@
-﻿namespace GreatPyramidTreasureConsoleRPG
+namespace PyramidTreasureConsoleRPG;
+
+public sealed class LargePotion : Potion
 {
-    public class LargePotion : IItem
+    public LargePotion()
+        : base(PotionKind.Large, "Duża mikstura lecząca", price: 100, restoreHp: 350)
     {
-        public LargePotion()
-        {
-            this.Id = 3;
-            this.Name = "Duża mikstura lecząca";
-            this.Price = 100;
-            this.RestoreHP = 100;
-        }
-
-        public int Id { get; set; }
-
-        public string Name { get; set; }
-
-        public int Price { get; set; }
-
-        public int RestoreHP { get; set; }
     }
 }

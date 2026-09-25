@@ -1,27 +1,9 @@
-﻿namespace GreatPyramidTreasureConsoleRPG
+namespace PyramidTreasureConsoleRPG;
+
+public sealed class WildBoar : Enemy
 {
-    public class WildBoar : IEnemy
+    public WildBoar()
+        : base("Dzik", EnemyKind.Beast, maxHp: 70, minDmg: 9, maxDmg: 16, armor: 5, agility: 6, exp: 650, gold: 12)
     {
-        public WildBoar()
-        {
-            this.Hp = 60;
-            this.MinDmg = 11;
-            this.MaxDmg = 18;
-            this.Exp = 1300;
-            this.Gold = 15;
-            this.Name = "Dzik";
-        }
-
-        public int Hp { get; set; }
-
-        public int MinDmg { get; set; }
-
-        public int MaxDmg { get; set; }
-
-        public int Exp { get; set; }
-
-        public int Gold { get; set; }
-
-        public string Name { get; set; }
     }
 }

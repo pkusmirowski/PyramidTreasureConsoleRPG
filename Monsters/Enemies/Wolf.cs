@@ -1,27 +1,9 @@
-﻿namespace GreatPyramidTreasureConsoleRPG
+namespace PyramidTreasureConsoleRPG;
+
+public sealed class Wolf : Enemy
 {
-    public class Wolf : IEnemy
+    public Wolf()
+        : base("Wilk", EnemyKind.Beast, maxHp: 45, minDmg: 7, maxDmg: 13, armor: 0, agility: 12, exp: 500, gold: 9)
     {
-        public Wolf()
-        {
-            this.Hp = 40;
-            this.MinDmg = 9;
-            this.MaxDmg = 15;
-            this.Exp = 1000;
-            this.Gold = 10;
-            this.Name = "Wilk";
-        }
-
-        public int Hp { get; set; }
-
-        public int MinDmg { get; set; }
-
-        public int MaxDmg { get; set; }
-
-        public int Exp { get; set; }
-
-        public int Gold { get; set; }
-
-        public string Name { get; set; }
     }
 }

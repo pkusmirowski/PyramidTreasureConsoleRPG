@@ -1,27 +1,9 @@
-﻿namespace GreatPyramidTreasureConsoleRPG
+namespace PyramidTreasureConsoleRPG;
+
+public sealed class Templar : Enemy
 {
-    public class Templar : IEnemy
+    public Templar()
+        : base("Templariusz", EnemyKind.Human, maxHp: 180, minDmg: 20, maxDmg: 31, armor: 25, agility: 10, exp: 2300, gold: 45)
     {
-        public Templar()
-        {
-            this.Hp = 120;
-            this.MinDmg = 45;
-            this.MaxDmg = 57;
-            this.Exp = 3500;
-            this.Gold = 40;
-            this.Name = "Templariusz";
-        }
-
-        public int Hp { get; set; }
-
-        public int MinDmg { get; set; }
-
-        public int MaxDmg { get; set; }
-
-        public int Exp { get; set; }
-
-        public int Gold { get; set; }
-
-        public string Name { get; set; }
     }
 }

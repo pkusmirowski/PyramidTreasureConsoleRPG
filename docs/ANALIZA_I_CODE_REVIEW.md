@@ -4,6 +4,12 @@ Data analizy: 2026-09-25. Zakres: cały kod źródłowy w repozytorium (34 pliki
 
 Uwaga: w środowisku analizy nie było dostępu do .NET SDK (pobranie zablokowane przez politykę sieci), więc analiza jest statyczna. Wszystkie opisane błędy wynikają z lektury kodu i symulacji wzorów na statystyki (skrypt w Pythonie), nie z uruchomienia gry.
 
+> **Status (aktualizacja po wdrożeniu poprawek):** wszystkie punkty z sekcji 3 (błędy krytyczne), 4 (błędy logiczne
+> i balans), 5 (architektura), 6 (repozytorium) i 7 (UX) zostały wdrożone w tej samej gałęzi. Szczegóły w opisie
+> commita oraz w `docs/PLAN_ROZWOJU.md`, gdzie jest propozycja kolejnych etapów (sekcja 8 i 9 tego dokumentu
+> stanowiły ich punkt wyjścia). Poniższy tekst opisuje stan gałęzi `main` przed zmianami i pozostaje jako
+> dokumentacja problemów.
+
 ---
 
 ## 1. Podsumowanie (TL;DR)

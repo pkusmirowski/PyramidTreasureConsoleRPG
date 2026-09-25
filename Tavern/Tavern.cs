@@ -1,50 +1,36 @@
-﻿using System;
+namespace PyramidTreasureConsoleRPG;
 
-namespace GreatPyramidTreasureConsoleRPG
+public static class Tavern
 {
-    public static class Tavern
+    public static void Visit(Hero hero)
     {
-        public static void TavernOptions(IClass characterClass)
+        ArgumentNullException.ThrowIfNull(hero);
+        while (true)
         {
-            var bar = new Bar();
-            while (true)
+            GameIO.Header("Tawerna \"Pod Sokołem\"");
+            GameIO.Menu(
+                "Witaj w tawernie! Co chcesz zrobić?",
+                Story.BarmanHasNews(hero) ? "Podejdź do baru (barman ma wieści!)" : "Podejdź do baru",
+                "Podejdź do kasyna i spróbuj szczęścia",
+                "Zapytaj o pokój na górze",
+                "Wyjdź z tawerny");
+            int choice = GameIO.ReadMenuChoice(4);
+            GameIO.Clear();
+            switch (choice)
             {
-                DisplayMenu();
-                var choice = StandardFunctions.ToInt32(Console.ReadLine());
-                Console.Clear();
-
-                switch (choice)
-                {
-                    case 1:
-                        bar.BarOptions(characterClass);
-                        break;
-
-                    case 2:
-                        Casino.CasinoOptions(characterClass);
-                        break;
-
-                    case 3:
-                        Rest.RestOptions(characterClass);
-                        break;
-
-                    case 4:
-                        Console.WriteLine("Do zobaczenia!");
-                        return;
-
-                    default:
-                        StandardFunctions.NoOption();
-                        break;
-                }
+                case 1:
+                    Bar.Visit(hero);
+                    break;
+                case 2:
+                    Casino.Visit(hero);
+                    break;
+                case 3:
+                    Rest.Visit(hero);
+                    break;
+                case 4:
+                    GameIO.WriteLine("Do zobaczenia!");
+                    return;
             }
-        }
-
-        private static void DisplayMenu()
-        {
-            Console.WriteLine("Witaj w tawernie! Co chcesz zrobić?");
-            Console.WriteLine("1. Podejdź do baru i porozmawiaj z barmanem.");
-            Console.WriteLine("2. Podejdź do kasyna i spróbuj szczęścia w grach hazardowych.");
-            Console.WriteLine("3. Zapytaj się o pokój, żeby się przespać i zregenerować siły.");
-            Console.WriteLine("4. Wyjdź z tawerny.");
         }
     }
 }

@@ -1,27 +1,9 @@
-﻿namespace GreatPyramidTreasureConsoleRPG
+namespace PyramidTreasureConsoleRPG;
+
+public sealed class Thief : Enemy
 {
-    public class Thief : IEnemy
+    public Thief()
+        : base("Złodziej", EnemyKind.Human, maxHp: 22, minDmg: 3, maxDmg: 9, armor: 0, agility: 5, exp: 200, gold: 6)
     {
-        public Thief()
-        {
-            this.Hp = 20;
-            this.MinDmg = 2;
-            this.MaxDmg = 12;
-            this.Exp = 500;
-            this.Gold = 5;
-            this.Name = "Złodziej";
-        }
-
-        public int Hp { get; set; }
-
-        public int MinDmg { get; set; }
-
-        public int MaxDmg { get; set; }
-
-        public int Exp { get; set; }
-
-        public int Gold { get; set; }
-
-        public string Name { get; set; }
     }
 }

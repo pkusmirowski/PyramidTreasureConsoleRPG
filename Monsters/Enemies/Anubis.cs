@@ -1,27 +1,11 @@
-﻿namespace GreatPyramidTreasureConsoleRPG
+namespace PyramidTreasureConsoleRPG;
+
+public sealed class Anubis : Enemy
 {
-    public class Anubis : IEnemy
+    public Anubis()
+        : base("Anubis", EnemyKind.Divine, maxHp: 500, minDmg: 32, maxDmg: 50, armor: 30, agility: 16, exp: 0, gold: 2500)
     {
-        public Anubis()
-        {
-            this.Hp = 1000;
-            this.MinDmg = 70;
-            this.MaxDmg = 120;
-            this.Exp = 0;
-            this.Gold = 5000;
-            this.Name = "Anubis";
-        }
-
-        public int Hp { get; set; }
-
-        public int MinDmg { get; set; }
-
-        public int MaxDmg { get; set; }
-
-        public int Exp { get; set; }
-
-        public int Gold { get; set; }
-
-        public string Name { get; set; }
     }
+
+    public override bool IsBoss => true;
 }

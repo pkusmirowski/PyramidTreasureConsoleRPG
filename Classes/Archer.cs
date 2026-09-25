@@ -1,250 +1,60 @@
-﻿using System;
-using System.Collections.Generic;
+namespace PyramidTreasureConsoleRPG;
 
-namespace GreatPyramidTreasureConsoleRPG
+/// <summary>Obrażenia ze zręczności, najwyższe uniki, słabszy pancerz. Atak specjalny: podwójny strzał.</summary>
+public sealed class Archer : Hero
 {
-    public class Archer : IClass
+    public Archer(string name)
+        : base(name)
     {
-        private int nextLevel = 2;
+    }
 
-        public Archer(string name)
-        {
-            this.Vit = 8;
-            this.Hp = this.Vit * 12;
-            this.MaxHP = this.Vit * 12;
-            this.Str = 1;
-            this.Dex = 3;
-            this.Exp = 0;
-            this.MaxExp = 1000;
-            this.Level = 0;
-            this.Name = name;
-            this.Gold = 1;
-            this.MinDmg = 2;
-            this.MaxDmg = 4;
-            this.Armor = 0;
-            this.AttakChance = 50;
-            this.CriticalAttackChance = 20;
-            this.ClassType = 2;
-            this.GameStatus = 0;
-            this.Inventory = new List<IItem>();
-        }
+    public override HeroClass Class => HeroClass.Archer;
 
+    public override string ClassName => "Łucznik";
 
-        public int Hp { get; set; }
+    protected override int StartVit => 11;
 
-        public int MaxHP { get; set; }
+    protected override int StartStr => 1;
 
-        public int Vit { get; set; }
+    protected override int StartDex => 3;
 
-        public int Str { get; set; }
+    protected override int HpPerVit => 12;
 
-        public int Dex { get; set; }
+    protected override int BaseMinDmg => 2;
 
-        public double Exp { get; set; }
+    protected override int BaseMaxDmg => 5;
 
-        public double MaxExp { get; set; }
+    protected override int StrWeight => 0;
 
-        public int Level { get; set; }
+    protected override int DexWeight => 2;
 
-        public string Name { get; set; }
+    protected override double BaseHitChance => 55;
 
-        public int Gold { get; set; }
+    protected override double BaseCritChance => 25;
 
-        public int MinDmg { get; set; }
+    protected override int VitPerLevel => 2;
 
-        public int MaxDmg { get; set; }
+    protected override int StrPerLevel => 1;
 
-        public int Armor { get; set; }
+    protected override int DexPerLevel => 3;
 
-        public double AttakChance { get; set; }
+    public override string NormalAttackName => "Strzał z łuku";
 
-        public double CriticalAttackChance { get; set; }
+    public override string StrongAttackName => "Skupiony strzał";
 
-        public int ClassType { get; set; }
+    public override string SpecialAttackName => "Podwójny strzał";
 
-        public int GameStatus { get; set; }
+    protected override string SpecialAttackDescription => $"2 strzały po {MinDmg * 8 / 10}-{MaxDmg * 8 / 10} obrażeń, każdy z trafieniem {HitChance:0}%";
 
-        public List<IItem> Inventory { get; }
+    protected override int ArmorFormula() => Dex / 3;
 
-        public void Attack(IEnemy enemy)
-        {
-            Console.WriteLine("\nAtakuj:");
-            Console.WriteLine($"1. Strzał z łuku ({this.MinDmg} - {this.MaxDmg}dmg). Szansa na trafienie {this.AttakChance + 20}.");
-            Console.WriteLine($"2. Skupiony strzał z łuku. Szansa na trafienie {this.AttakChance}. Szansa na trafienie krytyczne {this.CriticalAttackChance}.");
-            Console.WriteLine($"3. Podwójny strzał ({this.MinDmg + this.Dex} - {this.MaxDmg + this.Dex}dmg). Szansa na trafienie {this.AttakChance}.");
-            int choice = StandardFunctions.ToInt32(Console.ReadLine());
-            Console.Clear();
-            switch (choice)
-            {
-                case 1:
-                    this.BowShot(enemy);
-                    break;
+    protected override int EvasionFormula() => Dex / 2;
 
-                case 2:
-                    this.FocusedBowShot(enemy);
-                    break;
-
-                case 3:
-                    this.DoubleShot(enemy);
-                    break;
-
-                default:
-                    this.BowShot(enemy);
-                    StandardFunctions.DefaultOption();
-                    break;
-            }
-        }
-
-        public void AddLevel()
-        {
-            if (this.Level != 20)
-            {
-                if (this.Exp >= this.MaxExp)
-                {
-                    this.LevelUP();
-                }
-            }
-            else
-            {
-                this.Exp = 0;
-            }
-        }
-
-        public void UpdateStats()
-        {
-            this.Hp = this.Vit * 12;
-            this.MaxHP = this.Vit * 12;
-            this.MinDmg += this.Dex / 3;
-            this.MaxDmg += this.Dex / 3;
-            this.Armor += this.Dex - 1;
-        }
-
-        private static void DealDmg(IEnemy enemy, int realDmg)
-        {
-            if (realDmg == 0)
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"\nNie trafiłeś!. Przeciwnikowi zostało: {enemy.Hp}");
-                Console.ResetColor();
-            }
-            else if (enemy != null)
-            {
-                enemy.Hp -= realDmg;
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"Zadałeś {realDmg}. Przeciwnikowi zostało: {enemy.Hp}");
-                Console.ResetColor();
-            }
-        }
-
-        private void DoubleShot(IEnemy enemy)
-        {
-            double chance = StandardFunctions.RandDmg(0, 100);
-            int realDmg;
-            if (chance < this.AttakChance)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("\nCelnie trafiłeś!");
-                Console.ResetColor();
-                realDmg = StandardFunctions.RandDmg(this.MinDmg + this.Dex, this.MaxDmg + this.Dex);
-                DealDmg(enemy, realDmg);
-
-                chance = StandardFunctions.RandDmg(0, 100);
-                if (chance < this.CriticalAttackChance)
-                {
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine("\nCelnie trafiłeś krytycznie!");
-                    Console.ResetColor();
-                    realDmg = StandardFunctions.RandDmg(this.MinDmg + this.Dex, this.MaxDmg + this.Dex) * 2;
-                    DealDmg(enemy, realDmg);
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("\nTrafiłeś, ale nie celnie!");
-                    Console.ResetColor();
-                    realDmg = StandardFunctions.RandDmg(this.MinDmg - this.Dex, this.MaxDmg - this.Dex);
-                    DealDmg(enemy, realDmg);
-                }
-            }
-            else
-            {
-                realDmg = 0;
-                DealDmg(enemy, realDmg);
-            }
-        }
-
-        private void FocusedBowShot(IEnemy enemy)
-        {
-            double chance = StandardFunctions.RandDmg(0, 100);
-            int realDmg;
-            if (chance < this.AttakChance)
-            {
-                chance = StandardFunctions.RandDmg(0, 100);
-                if (chance < this.CriticalAttackChance)
-                {
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine("\nZadałeś cios krytyczny!");
-                    Console.ResetColor();
-                    realDmg = StandardFunctions.RandDmg(this.MinDmg, this.MaxDmg) * 2;
-                    DealDmg(enemy, realDmg);
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("\nPrzeciwnik dostał!");
-                    Console.ResetColor();
-                    realDmg = StandardFunctions.RandDmg(this.MinDmg, this.MaxDmg);
-                    DealDmg(enemy, realDmg);
-                }
-            }
-            else
-            {
-                realDmg = 0;
-                DealDmg(enemy, realDmg);
-            }
-        }
-
-        private void BowShot(IEnemy enemy)
-        {
-            double chance = StandardFunctions.RandDmg(0, 100);
-            int realDmg;
-            if (chance < this.AttakChance + 20)
-            {
-                Console.WriteLine("\nPrzeciwnik dostał!");
-                realDmg = StandardFunctions.RandDmg(this.MinDmg, this.MaxDmg);
-                DealDmg(enemy, realDmg);
-            }
-            else
-            {
-                realDmg = 0;
-                DealDmg(enemy, realDmg);
-            }
-        }
-
-        private void LevelUP()
-        {
-            this.Vit++;
-            this.Str++;
-            this.Dex += 2;
-            this.Exp -= this.MaxExp;
-            this.Level++;
-            this.nextLevel++;
-            this.AttakChance += 1.5;
-            this.CriticalAttackChance += 1.5;
-            this.MaxExp = (250 * (this.nextLevel - 1) * this.nextLevel) - this.MaxExp;
-            this.UpdateStats();
-            if (this.Level != 20)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine($"Gratulacje zdobyłeś poziom {Level}");
-                Console.ResetColor();
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.WriteLine($"Gratulacje zdobyłeś maksymalny poziom {Level}");
-                Console.ResetColor();
-            }
-        }
+    protected override AttackResult PerformSpecialAttack(Enemy enemy)
+    {
+        var result = new AttackResult();
+        result.Strikes.Add(RollStrike(enemy, HitChance, 0.8, CritChance, "Pierwsza strzała"));
+        result.Strikes.Add(RollStrike(enemy, HitChance, 0.8, CritChance, "Druga strzała"));
+        return result;
     }
 }

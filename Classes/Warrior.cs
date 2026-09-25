@@ -1,245 +1,63 @@
-﻿using System;
-using System.Collections.Generic;
+namespace PyramidTreasureConsoleRPG;
 
-namespace GreatPyramidTreasureConsoleRPG
+/// <summary>Dużo HP, wysokie obrażenia z siły, pancerz rośnie z poziomem. Atak specjalny: trzy cięcia.</summary>
+public sealed class Warrior : Hero
 {
-    public class Warrior : IClass
+    public Warrior(string name)
+        : base(name)
     {
-        private int nextLevel = 2;
+    }
 
-        public Warrior(string name)
+    public override HeroClass Class => HeroClass.Warrior;
+
+    public override string ClassName => "Wojownik";
+
+    protected override int StartVit => 15;
+
+    protected override int StartStr => 4;
+
+    protected override int StartDex => 2;
+
+    protected override int HpPerVit => 14;
+
+    protected override int BaseMinDmg => 2;
+
+    protected override int BaseMaxDmg => 7;
+
+    protected override int StrWeight => 2;
+
+    protected override int DexWeight => 0;
+
+    protected override double BaseHitChance => 60;
+
+    protected override double BaseCritChance => 20;
+
+    protected override int VitPerLevel => 2;
+
+    protected override int StrPerLevel => 3;
+
+    protected override int DexPerLevel => 1;
+
+    public override string NormalAttackName => "Normalny atak";
+
+    public override string StrongAttackName => "Silny atak";
+
+    public override string SpecialAttackName => "Trzystronne cięcie";
+
+    protected override string SpecialAttackDescription => $"3 cięcia po {MinDmg * 6 / 10}-{MaxDmg * 6 / 10} obrażeń, każde z trafieniem {CombatMath.ClampChance(HitChance - 15):0}%";
+
+    protected override int ArmorFormula() => Dex + Level;
+
+    protected override int EvasionFormula() => Dex / 4;
+
+    protected override AttackResult PerformSpecialAttack(Enemy enemy)
+    {
+        var result = new AttackResult();
+        for (int i = 1; i <= 3; i++)
         {
-            this.Vit = 15;
-            this.Hp = this.Vit * 15;
-            this.MaxHP = this.Vit * 15;
-            this.Str = 4;
-            this.Dex = 2;
-            this.Exp = 0;
-            this.MaxExp = 1000;
-            this.Level = 0;
-            this.Name = name;
-            this.Gold = 1;
-            this.MinDmg = 2;
-            this.MaxDmg = 7;
-            this.Armor = 0;
-            this.AttakChance = 60;
-            this.CriticalAttackChance = 25;
-            this.ClassType = 1;
-            this.GameStatus = 0;
-            this.Inventory = new List<IItem>();
+            result.Strikes.Add(RollStrike(enemy, HitChance - 15, 0.6, CritChance, $"Cięcie {i}"));
         }
 
-
-        public int Hp { get; set; }
-
-        public int MaxHP { get; set; }
-
-        public int Vit { get; set; }
-
-        public int Str { get; set; }
-
-        public int Dex { get; set; }
-
-        public double Exp { get; set; }
-
-        public double MaxExp { get; set; }
-
-        public int Level { get; set; }
-
-        public string Name { get; set; }
-
-        public int Gold { get; set; }
-
-        public int MinDmg { get; set; }
-
-        public int MaxDmg { get; set; }
-
-        public int Armor { get; set; }
-
-        public double AttakChance { get; set; }
-
-        public double CriticalAttackChance { get; set; }
-
-        public int ClassType { get; set; }
-
-        public int GameStatus { get; set; }
-
-        public List<IItem> Inventory { get; }
-
-        public void Attack(IEnemy enemy)
-        {
-            Console.WriteLine("\nAtakuj:");
-            Console.WriteLine($"1. Normalny atak ({this.MinDmg} - {this.MaxDmg}dmg). Szansa na trafienie {this.AttakChance + 20}.");
-            Console.WriteLine($"2. Silny atak. Szansa na trafienie {this.AttakChance}. Szansa na trafienie krytyczne {this.CriticalAttackChance}.");
-            Console.WriteLine($"3. Trzystronne cięcie ({this.MinDmg + this.Dex} - {this.MaxDmg + this.Dex}dmg). Szansa na trafienie {this.AttakChance}.");
-            int choice = StandardFunctions.ToInt32(Console.ReadLine());
-            Console.Clear();
-            switch (choice)
-            {
-                case 1:
-                    this.NormalAttack(enemy);
-                    break;
-
-                case 2:
-                    this.StrongAttack(enemy);
-                    break;
-
-                case 3:
-                    this.ThreeWayCut(enemy);
-                    break;
-
-                default:
-                    this.NormalAttack(enemy);
-                    StandardFunctions.DefaultOption();
-                    break;
-            }
-        }
-
-        public void AddLevel()
-        {
-            if (this.Level != 20)
-            {
-                if (this.Exp >= this.MaxExp)
-                {
-                    this.LevelUP();
-                }
-            }
-            else
-            {
-                this.Exp = 0;
-            }
-        }
-
-        public void UpdateStats()
-        {
-            this.Hp = this.Vit * 15;
-            this.MaxHP = this.Vit * 15;
-            this.MinDmg += this.Str / 3;
-            this.MaxDmg += this.Str / 2;
-            this.Armor += this.Dex / 2;
-        }
-
-
-        private static void DealDmg(IEnemy enemy, int realDmg)
-        {
-            if (realDmg == 0)
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"\nNie trafiłeś!. Przeciwnikowi zostało: {enemy.Hp}");
-                Console.ResetColor();
-            }
-            else if (enemy != null)
-            {
-                enemy.Hp -= realDmg;
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"Zadałeś {realDmg}. Przeciwnikowi zostało: {enemy.Hp}");
-                Console.ResetColor();
-            }
-        }
-
-        private void ThreeWayCut(IEnemy enemy)
-        {
-            double chance = StandardFunctions.RandDmg(0, 100);
-            int realDmg;
-            if (chance < this.AttakChance)
-            {
-                chance = StandardFunctions.RandDmg(0, 100);
-                if (chance < this.AttakChance)
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("\nTrafiłeś trzystronnym cięciem!");
-                    Console.ResetColor();
-                    realDmg = StandardFunctions.RandDmg(this.MinDmg + this.Dex, this.MaxDmg + this.Dex);
-                    DealDmg(enemy, realDmg);
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("\nTrafiłeś 1 cięciem!");
-                    Console.ResetColor();
-                    realDmg = StandardFunctions.RandDmg(this.MinDmg - this.Dex - 1, this.MaxDmg - this.Dex - 1);
-                    DealDmg(enemy, realDmg);
-                }
-            }
-            else
-            {
-                realDmg = 0;
-                DealDmg(enemy, realDmg);
-            }
-        }
-
-        private void StrongAttack(IEnemy enemy)
-        {
-            double chance = StandardFunctions.RandDmg(0, 100);
-            int realDmg;
-            if (chance < this.AttakChance)
-            {
-                chance = StandardFunctions.RandDmg(0, 100);
-                if (chance < this.CriticalAttackChance)
-                {
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine("\nZadałeś cios krytyczny!");
-                    Console.ResetColor();
-                    realDmg = StandardFunctions.RandDmg(this.MinDmg, this.MaxDmg) * 2;
-                    DealDmg(enemy, realDmg);
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("\nPrzeciwnik dostał!");
-                    Console.ResetColor();
-                    realDmg = StandardFunctions.RandDmg(this.MinDmg, this.MaxDmg);
-                    DealDmg(enemy, realDmg);
-                }
-            }
-            else
-            {
-                realDmg = 0;
-                DealDmg(enemy, realDmg);
-            }
-        }
-
-        private void NormalAttack(IEnemy enemy)
-        {
-            double chance = StandardFunctions.RandDmg(0, 100);
-            int realDmg;
-            if (chance < this.AttakChance + 20)
-            {
-                Console.WriteLine("\nPrzeciwnik dostał!");
-                realDmg = StandardFunctions.RandDmg(this.MinDmg, this.MaxDmg);
-                DealDmg(enemy, realDmg);
-            }
-            else
-            {
-                realDmg = 0;
-                DealDmg(enemy, realDmg);
-            }
-        }
-
-        private void LevelUP()
-        {
-            this.Vit += 2;
-            this.Str += 3;
-            this.Dex++;
-            this.Exp -= this.MaxExp;
-            this.Level++;
-            this.nextLevel++;
-            this.AttakChance += 1.5;
-            this.CriticalAttackChance += 1.5;
-            this.MaxExp = (250 * (this.nextLevel - 1) * this.nextLevel) - this.MaxExp;
-            this.UpdateStats();
-            if (this.Level != 20)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine($"Gratulacje zdobyłeś poziom {Level}!!!");
-                Console.ResetColor();
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.WriteLine($"Gratulacje zdobyłeś maksymalny poziom {Level}");
-                Console.ResetColor();
-            }
-        }
+        return result;
     }
 }

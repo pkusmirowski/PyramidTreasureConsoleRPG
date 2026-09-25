@@ -1,66 +1,99 @@
-﻿using System;
+namespace PyramidTreasureConsoleRPG;
 
-namespace GreatPyramidTreasureConsoleRPG
+/// <summary>Pokoje na górze: nocleg, rozmowy, noc w towarzystwie (z konsekwencjami).</summary>
+public static class Rest
 {
-    public static class Rest
+    public const int RoomCost = 10;
+    public const int CompanyCost = 30;
+
+    public static void Visit(Hero hero)
     {
-        public static void RestOptions(IClass characterClass)
+        ArgumentNullException.ThrowIfNull(hero);
+        while (true)
         {
-            if (characterClass != null)
+            GameIO.WriteLine($"Zdrowie: {hero.Hp}/{hero.MaxHp}   Złoto: {hero.Gold}", ConsoleColor.DarkYellow);
+            GameIO.Menu(
+                "Na górze:",
+                $"Wynajmij pokój i prześpij się / {RoomCost} g (leczy do pełna)",
+                "Pogadaj z dziewczynami z tawerny",
+                $"Spędź noc w towarzystwie / {CompanyCost} g",
+                "Zejdź na dół");
+            int choice = GameIO.ReadMenuChoice(4);
+            GameIO.Clear();
+            switch (choice)
             {
-                bool value = true;
-                while (value)
-                {
-                    Console.WriteLine("Co chcesz zrobić:");
-                    Console.WriteLine("1: Wynamij pokój i odpręż się /10g Leczy cię do pełna.");
-                    Console.WriteLine("2: Pogadaj z pobliskimi dziewczynami.");
-                    Console.WriteLine("3. Wyjdź z pomieszczenia.");
-                    int choice = StandardFunctions.ToInt32(Console.ReadLine());
-                    Console.Clear();
-                    switch (choice)
-                    {
-                        case 1:
-                            Rest.RestCharacter(characterClass);
-                            break;
-
-                        case 2:
-                            Dialogues.TalkToTheGirls();
-                            break;
-
-                        case 3:
-                            value = StandardFunctions.ExitRoom();
-                            break;
-
-                        default:
-                            StandardFunctions.NoOption();
-                            break;
-                    }
-                }
+                case 1:
+                    RentRoom(hero);
+                    break;
+                case 2:
+                    Dialogues.TalkToTheGirls();
+                    break;
+                case 3:
+                    SpendNight(hero);
+                    break;
+                case 4:
+                    return;
             }
         }
+    }
 
-        private static void RestCharacter(IClass characterClass)
+    private static void RentRoom(Hero hero)
+    {
+        if (hero.Hp >= hero.MaxHp)
         {
-            if (characterClass.Hp == characterClass.MaxHP)
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"Nie potrzebujesz odpoczynku, masz maksymalną liczbę punktów zdrowia: {characterClass.Hp}");
-                Console.ResetColor();
-            }
-            else if (characterClass.Gold < 10)
-            {
-                Dialogues.NoGold();
-            }
-            else
-            {
-                characterClass.Gold -= 10;
-                characterClass.Hp = characterClass.MaxHP;
-                Console.WriteLine("Po długiej nocy czujesz się wypoczęty i pełen energii!");
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"Twoje punkty zdrowia zostały przywrócone do maksymalnej wartości: {characterClass.Hp}");
-                Console.WriteLine($"Zostało ci {characterClass.Gold} złota.");
-                Console.ResetColor();
-            }
+            GameIO.Info($"Nie potrzebujesz odpoczynku, masz pełne zdrowie: {hero.Hp}/{hero.MaxHp}.");
+            return;
+        }
+
+        if (hero.Gold < RoomCost)
+        {
+            Dialogues.NoGold();
+            return;
+        }
+
+        hero.Gold -= RoomCost;
+        hero.FullHeal();
+        GameIO.Success($"Po długiej nocy czujesz się wypoczęty i pełen energii! Masz {hero.Hp}/{hero.MaxHp} HP i {hero.Gold} złota.");
+    }
+
+    private static void SpendNight(Hero hero)
+    {
+        if (hero.Gold < CompanyCost)
+        {
+            Dialogues.NoGold();
+            return;
+        }
+
+        hero.Gold -= CompanyCost;
+        hero.FullHeal();
+        GameIO.Narrate(
+            ConsoleColor.Magenta,
+            "Dziewczyna o oczach koloru pustynnego nieba bierze cię za rękę i prowadzi po skrzypiących schodach.",
+            "Drzwi się zamykają. Lampa gaśnie. Reszta nocy należy tylko do was dwojga.");
+
+        int roll = Rng.Range(1, 100);
+        if (roll <= 40)
+        {
+            GameIO.Success($"Budzisz się rano wypoczęty, z uśmiechem i pełnym zdrowiem ({hero.Hp}/{hero.MaxHp} HP).");
+        }
+        else if (roll <= 70)
+        {
+            int exp = Math.Max(50, hero.ExpToNextLevel / 20);
+            int levels = hero.AddExp(exp);
+            GameIO.Success("Nad ranem opowiada ci, co słyszała od karawaniarzy o piramidzie. Uczysz się więcej niż z niejednej walki.");
+            GameIO.WriteLine($"Zyskałeś {exp} punktów doświadczenia" + (levels > 0 ? $" i awansowałeś na poziom {hero.Level}!" : "."), ConsoleColor.DarkCyan);
+        }
+        else if (roll <= 90)
+        {
+            int stolen = hero.Gold / 10;
+            hero.Gold -= stolen;
+            GameIO.Error($"Budzisz się sam. Sakwa jest lżejsza o {stolen} sztuk złota, a po dziewczynie ani śladu. Barman udaje, że nic nie widział.");
+        }
+        else
+        {
+            var potion = new MediumPotion();
+            hero.Inventory.Add(potion);
+            GameIO.Success($"Rano znajdujesz przy łóżku {potion.Name} i liścik: \"Wróć żywy.\"");
         }
     }
 }
