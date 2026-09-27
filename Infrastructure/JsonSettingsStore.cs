@@ -14,8 +14,6 @@ public sealed class JsonSettingsStore : ISettingsStore
 {
     public const string FileName = "settings.json";
 
-    private static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
-
     private readonly string folder;
 
     public JsonSettingsStore(string folder)
@@ -31,7 +29,7 @@ public sealed class JsonSettingsStore : ISettingsStore
         {
             if (File.Exists(FilePath))
             {
-                var loaded = JsonSerializer.Deserialize<GameSettings>(File.ReadAllText(FilePath));
+                var loaded = JsonSerializer.Deserialize(File.ReadAllText(FilePath), GameJsonContext.Default.GameSettings);
                 if (loaded is not null)
                 {
                     loaded.Normalize();
@@ -53,7 +51,7 @@ public sealed class JsonSettingsStore : ISettingsStore
         try
         {
             Directory.CreateDirectory(folder);
-            File.WriteAllText(FilePath, JsonSerializer.Serialize(settings, Options));
+            File.WriteAllText(FilePath, JsonSerializer.Serialize(settings, GameJsonContext.Default.GameSettings));
             return null;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

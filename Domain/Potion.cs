@@ -8,31 +8,23 @@ public enum PotionKind
 }
 
 /// <summary>Mikstura lecząca. Cena i moc są w jednym miejscu – menu sklepu czyta je stąd.</summary>
-public abstract class Potion
+public sealed record Potion(PotionKind Kind, string Name, int Price, int RestoreHp)
 {
-    protected Potion(PotionKind kind, string name, int price, int restoreHp)
-    {
-        Kind = kind;
-        Name = name;
-        Price = price;
-        RestoreHp = restoreHp;
-    }
+    public static Potion Small { get; } = new(PotionKind.Small, "Mała mikstura lecząca", Price: 20, RestoreHp: 50);
 
-    public PotionKind Kind { get; }
+    public static Potion Medium { get; } = new(PotionKind.Medium, "Średnia mikstura lecząca", Price: 50, RestoreHp: 150);
 
-    public string Name { get; }
+    public static Potion Large { get; } = new(PotionKind.Large, "Duża mikstura lecząca", Price: 100, RestoreHp: 350);
 
-    public int Price { get; }
+    public static IReadOnlyList<Potion> All { get; } = new[] { Small, Medium, Large };
 
-    public int RestoreHp { get; }
-
-    public static readonly IReadOnlyList<PotionKind> AllKinds = new[] { PotionKind.Small, PotionKind.Medium, PotionKind.Large };
+    public static IReadOnlyList<PotionKind> AllKinds { get; } = All.Select(p => p.Kind).ToList();
 
     public static Potion Create(PotionKind kind) => kind switch
     {
-        PotionKind.Small => new SmallPotion(),
-        PotionKind.Medium => new MediumPotion(),
-        PotionKind.Large => new LargePotion(),
+        PotionKind.Small => Small,
+        PotionKind.Medium => Medium,
+        PotionKind.Large => Large,
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 }

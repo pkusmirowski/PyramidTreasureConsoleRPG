@@ -80,7 +80,7 @@ public sealed class RestService
             return new NightResult(NightEvent.Robbed, stolen, 0, null);
         }
 
-        var potion = new MediumPotion();
+        Potion potion = Potion.Medium;
         hero.Inventory.Add(potion);
         return new NightResult(NightEvent.Gift, 0, 0, potion);
     }

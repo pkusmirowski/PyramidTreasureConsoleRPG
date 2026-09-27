@@ -26,7 +26,7 @@ public class CombatEngineTests
             Hero hero = MaxLevelHero(heroClass);
             for (int i = 0; i < 5; i++)
             {
-                hero.Inventory.Add(new LargePotion());
+                hero.Inventory.Add(Potion.Large);
             }
 
             var engine = new CombatEngine(hero, Encounters.FinalBoss(), new SeededRandomSource(seed));
@@ -60,10 +60,10 @@ public class CombatEngineTests
     public void Potion_HealsAndPassesTurnToEnemy()
     {
         Hero hero = Hero.Create(HeroClass.Warrior, "Test");
-        hero.Inventory.Add(new SmallPotion());
+        hero.Inventory.Add(Potion.Small);
         hero.TakeDamage(60);
         // heroFirst: 50 + Dex(2) - Agility(5) = 47 -> roll 10 < 47 => hero acts first
-        var engine = new CombatEngine(hero, new[] { new Thief() }, new ScriptedRandomSource(10, 0, 5));
+        var engine = new CombatEngine(hero, new[] { EnemyCatalog.Thief.Spawn() }, new ScriptedRandomSource(10, 0, 5));
         engine.Begin();
         Assert.True(engine.HeroActsFirst);
 
@@ -91,7 +91,7 @@ public class CombatEngineTests
         Hero hero = Hero.Create(HeroClass.Assassin, "Test");
         int gold = hero.Gold;
         // initiative roll 10 (hero first), flee roll 0 (< FleeChance)
-        var engine = new CombatEngine(hero, new[] { new Wolf(), new Wolf() }, new ScriptedRandomSource(10, 0));
+        var engine = new CombatEngine(hero, new[] { EnemyCatalog.Wolf.Spawn(), EnemyCatalog.Wolf.Spawn() }, new ScriptedRandomSource(10, 0));
         engine.Begin();
         IReadOnlyList<CombatEvent> events = engine.HeroFlee();
         Assert.Equal(CombatStatus.Fled, engine.Status);
@@ -104,7 +104,7 @@ public class CombatEngineTests
     {
         Hero hero = MaxLevelHero(HeroClass.Warrior);
         int gold = hero.Gold;
-        var engine = new CombatEngine(hero, new[] { new Thief(), new Thief() }, new SeededRandomSource(5));
+        var engine = new CombatEngine(hero, new[] { EnemyCatalog.Thief.Spawn(), EnemyCatalog.Thief.Spawn() }, new SeededRandomSource(5));
         engine.Begin();
         var all = new List<CombatEvent>();
         while (engine.Status == CombatStatus.InProgress)
@@ -115,7 +115,7 @@ public class CombatEngineTests
         Assert.Equal(CombatStatus.Victory, engine.Status);
         Assert.Equal(2, all.OfType<EnemyDefeatedEvent>().Count());
         Assert.Single(all.OfType<VictoryEvent>());
-        Assert.Equal(gold + (2 * new Thief().Gold), hero.Gold);
+        Assert.Equal(gold + (2 * EnemyCatalog.Thief.Spawn().Gold), hero.Gold);
         Assert.Throws<InvalidOperationException>(() => engine.HeroAttack(AttackKind.Normal));
     }
 
@@ -124,7 +124,7 @@ public class CombatEngineTests
     {
         Hero hero = Hero.Create(HeroClass.Warrior, "Test");
         // initiative roll 99 -> enemy first, enemy attack: evasion roll 99 (no dodge), damage roll
-        var engine = new CombatEngine(hero, new[] { new Thief() }, new ScriptedRandomSource(99, 99, 5));
+        var engine = new CombatEngine(hero, new[] { EnemyCatalog.Thief.Spawn() }, new ScriptedRandomSource(99, 99, 5));
         IReadOnlyList<CombatEvent> events = engine.Begin();
         Assert.False(engine.HeroActsFirst);
         Assert.IsType<FightStartedEvent>(events[0]);

@@ -23,8 +23,6 @@ public sealed class JsonFileSaveStore : ISaveStore
 {
     public const string FileName = "DataSave.json";
 
-    private static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
-
     private readonly string folder;
     private readonly TimeProvider clock;
 
@@ -45,7 +43,7 @@ public sealed class JsonFileSaveStore : ISaveStore
         {
             Directory.CreateDirectory(folder);
             data.SavedAt = clock.GetLocalNow().DateTime;
-            File.WriteAllText(FilePath, JsonSerializer.Serialize(data, Options));
+            File.WriteAllText(FilePath, JsonSerializer.Serialize(data, GameJsonContext.Default.SaveData));
             message = "Gra została zapisana!";
             return true;
         }
@@ -76,7 +74,7 @@ public sealed class JsonFileSaveStore : ISaveStore
 
         try
         {
-            SaveData? data = JsonSerializer.Deserialize<SaveData>(File.ReadAllText(FilePath));
+            SaveData? data = JsonSerializer.Deserialize(File.ReadAllText(FilePath), GameJsonContext.Default.SaveData);
             if (data is null)
             {
                 return new SaveLoadResult(null, "Plik zapisu jest pusty.");

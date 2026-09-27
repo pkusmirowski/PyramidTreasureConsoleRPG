@@ -8,45 +8,45 @@ public static class Encounters
         // poziom 1-3
         new List<Func<List<Enemy>>>
         {
-            () => new List<Enemy> { new Thief(), new Thief() },
-            () => new List<Enemy> { new Thief(), new Thief(), new Thief() },
+            () => new List<Enemy> { EnemyCatalog.Thief.Spawn(), EnemyCatalog.Thief.Spawn() },
+            () => new List<Enemy> { EnemyCatalog.Thief.Spawn(), EnemyCatalog.Thief.Spawn(), EnemyCatalog.Thief.Spawn() },
         },
         // poziom 4-6
         new List<Func<List<Enemy>>>
         {
-            () => new List<Enemy> { new Wolf(), new Wolf() },
-            () => new List<Enemy> { new Thief(), new Thief(), new Wolf() },
-            () => new List<Enemy> { new Wolf(), new WildBoar() },
+            () => new List<Enemy> { EnemyCatalog.Wolf.Spawn(), EnemyCatalog.Wolf.Spawn() },
+            () => new List<Enemy> { EnemyCatalog.Thief.Spawn(), EnemyCatalog.Thief.Spawn(), EnemyCatalog.Wolf.Spawn() },
+            () => new List<Enemy> { EnemyCatalog.Wolf.Spawn(), EnemyCatalog.WildBoar.Spawn() },
         },
         // poziom 7-9
         new List<Func<List<Enemy>>>
         {
-            () => new List<Enemy> { new Wolf(), new WildBoar(), new ArmoredThief() },
-            () => new List<Enemy> { new ArmoredThief(), new ArmoredThief() },
+            () => new List<Enemy> { EnemyCatalog.Wolf.Spawn(), EnemyCatalog.WildBoar.Spawn(), EnemyCatalog.ArmoredThief.Spawn() },
+            () => new List<Enemy> { EnemyCatalog.ArmoredThief.Spawn(), EnemyCatalog.ArmoredThief.Spawn() },
         },
         // poziom 10-12
         new List<Func<List<Enemy>>>
         {
-            () => new List<Enemy> { new WildBoar(), new FallenKnight(), new FallenKnight() },
-            () => new List<Enemy> { new ArmoredThief(), new ArmoredThief(), new FallenKnight() },
+            () => new List<Enemy> { EnemyCatalog.WildBoar.Spawn(), EnemyCatalog.FallenKnight.Spawn(), EnemyCatalog.FallenKnight.Spawn() },
+            () => new List<Enemy> { EnemyCatalog.ArmoredThief.Spawn(), EnemyCatalog.ArmoredThief.Spawn(), EnemyCatalog.FallenKnight.Spawn() },
         },
         // poziom 13-15
         new List<Func<List<Enemy>>>
         {
-            () => new List<Enemy> { new ArmoredThief(), new FallenKnight(), new Templar(), new Templar() },
-            () => new List<Enemy> { new FallenKnight(), new FallenKnight(), new Templar() },
+            () => new List<Enemy> { EnemyCatalog.ArmoredThief.Spawn(), EnemyCatalog.FallenKnight.Spawn(), EnemyCatalog.Templar.Spawn(), EnemyCatalog.Templar.Spawn() },
+            () => new List<Enemy> { EnemyCatalog.FallenKnight.Spawn(), EnemyCatalog.FallenKnight.Spawn(), EnemyCatalog.Templar.Spawn() },
         },
         // poziom 16-17
         new List<Func<List<Enemy>>>
         {
-            () => new List<Enemy> { new Templar(), new Templar(), new CryingMonk() },
-            () => new List<Enemy> { new FallenKnight(), new Templar(), new CryingMonk() },
+            () => new List<Enemy> { EnemyCatalog.Templar.Spawn(), EnemyCatalog.Templar.Spawn(), EnemyCatalog.CryingMonk.Spawn() },
+            () => new List<Enemy> { EnemyCatalog.FallenKnight.Spawn(), EnemyCatalog.Templar.Spawn(), EnemyCatalog.CryingMonk.Spawn() },
         },
         // poziom 18-20
         new List<Func<List<Enemy>>>
         {
-            () => new List<Enemy> { new Templar(), new CryingMonk(), new CryingMonk() },
-            () => new List<Enemy> { new Templar(), new Templar(), new Templar(), new CryingMonk() },
+            () => new List<Enemy> { EnemyCatalog.Templar.Spawn(), EnemyCatalog.CryingMonk.Spawn(), EnemyCatalog.CryingMonk.Spawn() },
+            () => new List<Enemy> { EnemyCatalog.Templar.Spawn(), EnemyCatalog.Templar.Spawn(), EnemyCatalog.Templar.Spawn(), EnemyCatalog.CryingMonk.Spawn() },
         },
     };
 
@@ -69,7 +69,7 @@ public static class Encounters
         return rng.Shuffle(rng.Pick(variants)());
     }
 
-    public static List<Enemy> PyramidGuards() => new() { new Anubis(), new Anubis() };
+    public static List<Enemy> PyramidGuards() => new() { EnemyCatalog.Anubis.Spawn(), EnemyCatalog.Anubis.Spawn() };
 
-    public static List<Enemy> FinalBoss() => new() { new Ra() };
+    public static List<Enemy> FinalBoss() => new() { EnemyCatalog.Ra.Spawn() };
 }

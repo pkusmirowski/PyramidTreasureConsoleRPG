@@ -81,13 +81,9 @@ public sealed class MainMenuScreen
         io.WriteLine();
         string name = io.ReadText("Podaj swoje imię: ");
         io.Clear();
-        int choice = io.Menu(
-            "Wybierz klasę:",
-            "Wojownik – dużo zdrowia, ciężkie ciosy, pancerz rośnie z poziomem. Specjalność: trzystronne cięcie.",
-            "Łucznik – obrażenia ze zręczności, najlepsze uniki, słabszy pancerz. Specjalność: podwójny strzał.",
-            "Asasyn – najcelniejszy, najczęstsze krytyki. Specjalność: zatrute ostrze.");
+        int choice = io.Menu("Wybierz klasę:", HeroClasses.All.Select(c => $"{c.Name} – {c.Description}").ToArray());
         io.Clear();
-        Hero hero = Hero.Create((HeroClass)choice, name);
+        Hero hero = Hero.Create(HeroClasses.All[choice - 1].Kind, name);
         io.ShowSuccess($"{hero.Name}, {hero.ClassName}, rusza na wyprawę po Graala. Zacznij od rozmowy z barmanem w tawernie.");
         return hero;
     }

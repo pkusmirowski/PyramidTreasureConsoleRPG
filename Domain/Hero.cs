@@ -1,17 +1,17 @@
 namespace PyramidTreasureConsoleRPG.Domain;
 
-public enum HeroClass
-{
-    Warrior = 1,
-    Archer = 2,
-    Assassin = 3,
-}
-
 public enum AttackKind
 {
     Normal = 1,
     Strong = 2,
     Special = 3,
+}
+
+public enum StatKind
+{
+    Strength = 1,
+    Dexterity = 2,
+    Vitality = 3,
 }
 
 /// <summary>Opis jednego wariantu ataku pokazywany w menu walki.</summary>
@@ -58,75 +58,30 @@ public static class CombatMath
 }
 
 /// <summary>
-/// Wspólna klasa bohatera. Klasy postaci (Wojownik, Łucznik, Asasyn) różnią się tylko
-/// wartościami startowymi, przyrostami, wzorami na pancerz/uniki i atakiem specjalnym.
-/// Wszystkie statystyki pochodne są liczone z Vit/Str/Dex, więc nie da się ich "napompować"
-/// przez wielokrotne wywołania (dawny exploit z wodą w barze).
+/// Bohater. Klasa postaci to dane (<see cref="HeroClassDefinition"/>), a wszystkie statystyki
+/// pochodne są liczone z Vit/Str/Dex, więc nie da się ich "napompować" wielokrotnymi wywołaniami.
 /// </summary>
-public abstract class Hero
+public sealed class Hero
 {
     private int hp;
 
-    protected Hero(string name)
+    private Hero(HeroClassDefinition definition, string name)
     {
+        Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Name = name;
         Level = 1;
-        Vit = StartVit;
-        Str = StartStr;
-        Dex = StartDex;
+        Vit = definition.StartVit;
+        Str = definition.StartStr;
+        Dex = definition.StartDex;
         Gold = 15;
         hp = MaxHp;
     }
 
-    // --- definicja klasy (nadpisywana w podklasach) ---
+    public HeroClassDefinition Definition { get; }
 
-    public abstract HeroClass HeroClass { get; }
+    public HeroClass HeroClass => Definition.Kind;
 
-    public abstract string ClassName { get; }
-
-    protected abstract int StartVit { get; }
-
-    protected abstract int StartStr { get; }
-
-    protected abstract int StartDex { get; }
-
-    protected abstract int HpPerVit { get; }
-
-    protected abstract int BaseMinDmg { get; }
-
-    protected abstract int BaseMaxDmg { get; }
-
-    /// <summary>Waga siły we wzorze na obrażenia.</summary>
-    protected abstract int StrWeight { get; }
-
-    /// <summary>Waga zręczności we wzorze na obrażenia.</summary>
-    protected abstract int DexWeight { get; }
-
-    protected abstract double BaseHitChance { get; }
-
-    protected abstract double BaseCritChance { get; }
-
-    protected abstract int VitPerLevel { get; }
-
-    protected abstract int StrPerLevel { get; }
-
-    protected abstract int DexPerLevel { get; }
-
-    public abstract string NormalAttackName { get; }
-
-    public abstract string StrongAttackName { get; }
-
-    public abstract string SpecialAttackName { get; }
-
-    protected abstract string SpecialAttackDescription { get; }
-
-    protected abstract int ArmorFormula();
-
-    protected abstract int EvasionFormula();
-
-    protected abstract AttackResult PerformSpecialAttack(Enemy enemy, IRandomSource rng);
-
-    // --- stan ---
+    public string ClassName => Definition.Name;
 
     public string Name { get; set; }
 
@@ -158,22 +113,22 @@ public abstract class Hero
 
     // --- statystyki pochodne ---
 
-    public int MaxHp => Vit * HpPerVit;
+    public int MaxHp => Vit * Definition.HpPerVit;
 
-    private int Power => Str * StrWeight + Dex * DexWeight;
+    private int Power => (Str * Definition.StrWeight) + (Dex * Definition.DexWeight);
 
-    public int MinDmg => BaseMinDmg + Power / 4;
+    public int MinDmg => Definition.BaseMinDmg + (Power / 4);
 
-    public int MaxDmg => BaseMaxDmg + Power / 2;
+    public int MaxDmg => Definition.BaseMaxDmg + (Power / 2);
 
-    public double HitChance => CombatMath.ClampChance(BaseHitChance + (Level * 1.5) + ExtraHitChance());
+    public double HitChance => CombatMath.ClampChance(Definition.BaseHitChance + (Level * 1.5) + ExtraHitChance);
 
-    public double CritChance => Math.Clamp(BaseCritChance + Level, 0, 75);
+    public double CritChance => Math.Clamp(Definition.BaseCritChance + Level, 0, 75);
 
-    public int Armor => ArmorFormula();
+    public int Armor => (Dex / Definition.ArmorDexDivisor) + (Definition.ArmorAddsLevel ? Level : 0);
 
     /// <summary>Szansa (w %) na uniknięcie ataku wroga.</summary>
-    public int Evasion => Math.Clamp(EvasionFormula(), 0, 40);
+    public int Evasion => Math.Clamp(Dex / Definition.EvasionDexDivisor, 0, 40);
 
     /// <summary>Szansa (w %) na ucieczkę z walki.</summary>
     public int FleeChance => Math.Clamp(35 + Dex, 20, 80);
@@ -184,27 +139,34 @@ public abstract class Hero
 
     public bool IsAlive => Hp > 0;
 
-    protected virtual double ExtraHitChance() => 0;
+    private double ExtraHitChance => Definition.HitChanceDexDivisor == 0 ? 0 : Dex / (double)Definition.HitChanceDexDivisor;
 
     // --- akcje ---
 
     public IReadOnlyList<AttackOption> GetAttackOptions() => new[]
     {
-        new AttackOption(AttackKind.Normal, NormalAttackName, $"{MinDmg}-{MaxDmg} obrażeń, trafienie {HitChance + 20:0}%, krytyk {CritChance:0}%"),
-        new AttackOption(AttackKind.Strong, StrongAttackName, $"{MinDmg * 3 / 2}-{MaxDmg * 3 / 2} obrażeń, trafienie {HitChance:0}%, krytyk {Math.Min(75, CritChance * 2):0}%"),
-        new AttackOption(AttackKind.Special, SpecialAttackName, SpecialAttackDescription),
+        new AttackOption(AttackKind.Normal, Definition.NormalAttackName, $"{MinDmg}-{MaxDmg} obrażeń, trafienie {HitChance + 20:0}%, krytyk {CritChance:0}%"),
+        new AttackOption(AttackKind.Strong, Definition.StrongAttackName, $"{MinDmg * 3 / 2}-{MaxDmg * 3 / 2} obrażeń, trafienie {HitChance:0}%, krytyk {Math.Min(75, CritChance * 2):0}%"),
+        new AttackOption(AttackKind.Special, Definition.SpecialAttackName, SpecialAttackDescription()),
     };
 
     public AttackResult Attack(AttackKind kind, Enemy enemy, IRandomSource rng)
     {
         ArgumentNullException.ThrowIfNull(enemy);
         ArgumentNullException.ThrowIfNull(rng);
-        AttackResult result = kind switch
+        var result = new AttackResult();
+        switch (kind)
         {
-            AttackKind.Strong => SingleStrike(enemy, HitChance, 1.5, Math.Min(75, CritChance * 2), StrongAttackName, rng),
-            AttackKind.Special => PerformSpecialAttack(enemy, rng),
-            _ => SingleStrike(enemy, HitChance + 20, 1.0, CritChance, NormalAttackName, rng),
-        };
+            case AttackKind.Strong:
+                result.Strikes.Add(RollStrike(enemy, HitChance, 1.5, Math.Min(75, CritChance * 2), Definition.StrongAttackName, rng));
+                break;
+            case AttackKind.Special:
+                AddSpecialStrikes(result, enemy, rng);
+                break;
+            default:
+                result.Strikes.Add(RollStrike(enemy, HitChance + 20, 1.0, CritChance, Definition.NormalAttackName, rng));
+                break;
+        }
 
         foreach (Strike strike in result.Strikes)
         {
@@ -214,18 +176,37 @@ public abstract class Hero
         return result;
     }
 
-    /// <summary>Jedno uderzenie: rzut na trafienie, rzut na krytyk, obrażenia po pancerzu wroga.</summary>
-    protected AttackResult SingleStrike(Enemy enemy, double hitChance, double multiplier, double critChance, string label, IRandomSource rng)
+    private string SpecialAttackDescription() => Definition.SpecialAttack switch
     {
-        var result = new AttackResult();
-        result.Strikes.Add(RollStrike(enemy, hitChance, multiplier, critChance, label, rng));
-        return result;
+        SpecialAttackKind.TripleCut => $"3 cięcia po {MinDmg * 6 / 10}-{MaxDmg * 6 / 10} obrażeń, każde z trafieniem {CombatMath.ClampChance(HitChance - 15):0}%",
+        SpecialAttackKind.DoubleShot => $"2 strzały po {MinDmg * 8 / 10}-{MaxDmg * 8 / 10} obrażeń, każdy z trafieniem {HitChance:0}%",
+        _ => $"{MinDmg * 12 / 10}-{MaxDmg * 12 / 10} obrażeń, trafienie {CombatMath.ClampChance(HitChance - 10):0}%, krytyk {Math.Min(75, CritChance * 3):0}%",
+    };
+
+    private void AddSpecialStrikes(AttackResult result, Enemy enemy, IRandomSource rng)
+    {
+        switch (Definition.SpecialAttack)
+        {
+            case SpecialAttackKind.TripleCut:
+                for (int i = 1; i <= 3; i++)
+                {
+                    result.Strikes.Add(RollStrike(enemy, HitChance - 15, 0.6, CritChance, $"Cięcie {i}", rng));
+                }
+
+                break;
+            case SpecialAttackKind.DoubleShot:
+                result.Strikes.Add(RollStrike(enemy, HitChance, 0.8, CritChance, "Pierwsza strzała", rng));
+                result.Strikes.Add(RollStrike(enemy, HitChance, 0.8, CritChance, "Druga strzała", rng));
+                break;
+            default:
+                result.Strikes.Add(RollStrike(enemy, HitChance - 10, 1.2, Math.Min(75, CritChance * 3), Definition.SpecialAttackName, rng));
+                break;
+        }
     }
 
-    protected Strike RollStrike(Enemy enemy, double hitChance, double multiplier, double critChance, string label, IRandomSource rng)
+    /// <summary>Jedno uderzenie: rzut na trafienie, rzut na krytyk, obrażenia po pancerzu wroga.</summary>
+    private Strike RollStrike(Enemy enemy, double hitChance, double multiplier, double critChance, string label, IRandomSource rng)
     {
-        ArgumentNullException.ThrowIfNull(enemy);
-        ArgumentNullException.ThrowIfNull(rng);
         if (!rng.Chance(CombatMath.ClampChance(hitChance)))
         {
             return new Strike(false, false, 0, label);
@@ -276,11 +257,11 @@ public abstract class Hero
     {
         int oldMax = MaxHp;
         Level++;
-        Vit += VitPerLevel;
-        Str += StrPerLevel;
-        Dex += DexPerLevel;
+        Vit += Definition.VitPerLevel;
+        Str += Definition.StrPerLevel;
+        Dex += Definition.DexPerLevel;
 
-        // Awans leczy o przyrost maksymalnego HP, nie do pełna (pełne leczenie robiło z awansu darmowy nocleg).
+        // Awans leczy o przyrost maksymalnego HP, nie do pełna.
         Hp += MaxHp - oldMax;
     }
 
@@ -340,18 +321,12 @@ public abstract class Hero
         Potions = Inventory.Select(p => (int)p.Kind).ToList(),
     };
 
-    public static Hero Create(HeroClass heroClass, string name) => heroClass switch
-    {
-        HeroClass.Warrior => new Warrior(name),
-        HeroClass.Archer => new Archer(name),
-        HeroClass.Assassin => new Assassin(name),
-        _ => throw new ArgumentOutOfRangeException(nameof(heroClass)),
-    };
+    public static Hero Create(HeroClass heroClass, string name) => new(HeroClasses.Get(heroClass), name);
 
     public static Hero FromSaveData(SaveData data)
     {
         ArgumentNullException.ThrowIfNull(data);
-        if (!Enum.IsDefined(typeof(HeroClass), data.Class))
+        if (!Enum.IsDefined((HeroClass)data.Class))
         {
             throw new InvalidDataException($"Nieznana klasa postaci: {data.Class}.");
         }
@@ -363,13 +338,13 @@ public abstract class Hero
         hero.Dex = Math.Max(0, data.Dex);
         hero.Exp = hero.IsMaxLevel ? 0 : Math.Clamp(data.Exp, 0, hero.ExpToNextLevel - 1);
         hero.Gold = Math.Max(0, data.Gold);
-        hero.Stage = Enum.IsDefined(typeof(StoryStage), data.Stage) ? (StoryStage)data.Stage : StoryStage.Start;
+        hero.Stage = Enum.IsDefined((StoryStage)data.Stage) ? (StoryStage)data.Stage : StoryStage.Start;
         hero.SpecialDrinkUsed = data.SpecialDrinkUsed;
         hero.Completed = data.Completed;
         hero.Hp = data.Hp <= 0 ? hero.MaxHp : data.Hp;
-        foreach (int kind in data.Potions ?? new List<int>())
+        foreach (int kind in data.Potions)
         {
-            if (Enum.IsDefined(typeof(PotionKind), kind))
+            if (Enum.IsDefined((PotionKind)kind))
             {
                 hero.Inventory.Add(Potion.Create((PotionKind)kind));
             }
@@ -377,11 +352,4 @@ public abstract class Hero
 
         return hero;
     }
-}
-
-public enum StatKind
-{
-    Strength = 1,
-    Dexterity = 2,
-    Vitality = 3,
 }

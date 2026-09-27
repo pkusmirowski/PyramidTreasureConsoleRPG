@@ -50,7 +50,7 @@ public class HeroTests
     {
         Hero hero = Hero.Create(heroClass, "Test");
         hero.AddExp(1_000_000);
-        var ra = new Ra();
+        var ra = EnemyCatalog.Ra.Spawn();
         int minimumHit = CombatMath.ReduceByArmor(ra.MinDmg, hero.Armor);
         Assert.True(minimumHit >= 10, $"{heroClass} na 20. poziomie dostaje od Ra tylko {minimumHit} obrażeń – pancerz {hero.Armor} jest za wysoki.");
         Assert.True(hero.Evasion <= 40);
@@ -72,7 +72,7 @@ public class HeroTests
     public void DrinkPotion_HealsAndRemovesPotion_ButNotAboveMax()
     {
         Hero hero = Hero.Create(HeroClass.Warrior, "Test");
-        hero.Inventory.Add(new SmallPotion());
+        hero.Inventory.Add(Potion.Small);
         hero.TakeDamage(20);
         int? healed = hero.DrinkPotion(PotionKind.Small);
         Assert.Equal(20, healed);
@@ -88,7 +88,7 @@ public class HeroTests
         Hero hero = Hero.Create(HeroClass.Archer, "Test");
         for (int i = 0; i < 500; i++)
         {
-            var enemy = new Thief();
+            var enemy = EnemyCatalog.Thief.Spawn();
             int before = enemy.Hp;
             AttackResult result = hero.Attack((AttackKind)(1 + (i % 3)), enemy, rng);
             Assert.True(enemy.Hp <= before);
