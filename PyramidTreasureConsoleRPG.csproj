@@ -17,6 +17,7 @@
   <ItemGroup>
     <PackageReference Include="NAudio" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Spectre.Console" />
   </ItemGroup>
 
 </Project>

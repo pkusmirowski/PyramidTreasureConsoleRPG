@@ -6,8 +6,17 @@ using PyramidTreasureConsoleRPG.Ui;
 string dataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GreatPyramidTreasureRPG_DataSave");
 string musicPath = Path.Combine(AppContext.BaseDirectory, "Audio", "ancient_egypt.wav");
 
+bool plainConsole = args.Any(a => string.Equals(a, "--plain", StringComparison.OrdinalIgnoreCase));
+
 var services = new ServiceCollection();
-services.AddSingleton<IGameIO, ConsoleGameIO>();
+if (plainConsole)
+{
+    services.AddSingleton<IGameIO, ConsoleGameIO>();
+}
+else
+{
+    services.AddSingleton<IGameIO, SpectreGameIO>();
+}
 services.AddSingleton<IRandomSource, SystemRandomSource>();
 services.AddSingleton<ISaveStore>(new JsonFileSaveStore(dataFolder));
 services.AddSingleton<ISettingsStore>(new JsonSettingsStore(dataFolder));
