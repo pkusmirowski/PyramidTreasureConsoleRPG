@@ -6,7 +6,8 @@ using PyramidTreasureConsoleRPG.Ui;
 string dataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GreatPyramidTreasureRPG_DataSave");
 string musicPath = Path.Combine(AppContext.BaseDirectory, "Audio", "ancient_egypt.wav");
 
-bool plainConsole = args.Any(a => string.Equals(a, "--plain", StringComparison.OrdinalIgnoreCase));
+// Spectre.Console potrzebuje prawdziwego terminala; w potoku (bot, CI) lub na życzenie (--plain) używamy gołej konsoli.
+bool plainConsole = args.Any(a => string.Equals(a, "--plain", StringComparison.OrdinalIgnoreCase)) || !SpectreGameIO.IsSupported;
 
 var services = new ServiceCollection();
 if (plainConsole)

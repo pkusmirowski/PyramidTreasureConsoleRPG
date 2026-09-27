@@ -3,29 +3,23 @@ using Spectre.Console;
 namespace PyramidTreasureConsoleRPG.Ui;
 
 /// <summary>
-/// IGameIO na Spectre.Console: menu strzałkami, tabele, paski HP. Gdy wejście lub wyjście jest
-/// przekierowane (bot, CI, potok), przełącza się na ponumerowane menu czytane z ReadLine,
-/// żeby zachować dokładnie ten sam protokół tekstowy co ConsoleGameIO.
+/// IGameIO na Spectre.Console: menu strzałkami, tabele, paski HP. Wymaga prawdziwego terminala;
+/// przy przekierowanym wejściu lub wyjściu (bot, CI, potok) Program wybiera ConsoleGameIO,
+/// bo AnsiConsole nie pisze do potoku.
 /// </summary>
 public sealed class SpectreGameIO : IGameIO
 {
-    private readonly bool interactive;
-
     public SpectreGameIO()
     {
         ConsolePrompts.EnsureUtf8();
-        interactive = ConsolePrompts.IsInteractive && AnsiConsole.Profile.Capabilities.Interactive;
     }
+
+    /// <summary>Czy ta implementacja może działać w bieżącym terminalu.</summary>
+    public static bool IsSupported => ConsolePrompts.IsInteractive && AnsiConsole.Profile.Capabilities.Interactive;
 
     public int NarrationDelayMs { get; set; } = 1500;
 
-    public void Clear()
-    {
-        if (interactive)
-        {
-            AnsiConsole.Clear();
-        }
-    }
+    public void Clear() => AnsiConsole.Clear();
 
     public void WriteLine(string text = "") => AnsiConsole.WriteLine(text);
 
@@ -46,18 +40,6 @@ public sealed class SpectreGameIO : IGameIO
     public int Menu(string title, params string[] options)
     {
         ArgumentNullException.ThrowIfNull(options);
-        if (!interactive)
-        {
-            AnsiConsole.WriteLine();
-            AnsiConsole.WriteLine(title);
-            for (int i = 0; i < options.Length; i++)
-            {
-                AnsiConsole.WriteLine($"{i + 1}. {options[i]}");
-            }
-
-            return ReadNumber("Wybór: ", 1, options.Length);
-        }
-
         var prompt = new SelectionPrompt<int>()
             .Title($"[aqua]{Markup.Escape(title)}[/]")
             .PageSize(12)
@@ -70,20 +52,6 @@ public sealed class SpectreGameIO : IGameIO
 
     public int ReadNumber(string prompt, int min, int max)
     {
-        if (!interactive)
-        {
-            while (true)
-            {
-                int? value = ConsolePrompts.TryReadNumber(prompt, min, max);
-                if (value.HasValue)
-                {
-                    return value.Value;
-                }
-
-                ShowError($"Nieprawidłowy wybór. Podaj liczbę od {min} do {max}.");
-            }
-        }
-
         var textPrompt = new TextPrompt<int>(Markup.Escape(prompt.TrimEnd()))
             .PromptStyle("yellow")
             .ValidationErrorMessage($"[red]Podaj liczbę od {min} do {max}.[/]")
@@ -93,11 +61,6 @@ public sealed class SpectreGameIO : IGameIO
 
     public string ReadText(string prompt, int maxLength = 20)
     {
-        if (!interactive)
-        {
-            return ConsolePrompts.ReadText(prompt, maxLength, ShowError);
-        }
-
         var textPrompt = new TextPrompt<string>(Markup.Escape(prompt.TrimEnd()))
             .PromptStyle("yellow")
             .ValidationErrorMessage("[red]Wpisz przynajmniej jeden znak.[/]")
@@ -124,11 +87,6 @@ public sealed class SpectreGameIO : IGameIO
 
     public void PressAnyKey(string text = "Naciśnij dowolny klawisz, aby kontynuować...")
     {
-        if (!interactive)
-        {
-            return;
-        }
-
         AnsiConsole.MarkupLine($"[grey]{Markup.Escape(text)}[/]");
         ConsolePrompts.WaitForAnyKey();
     }
@@ -138,12 +96,6 @@ public sealed class SpectreGameIO : IGameIO
         ArgumentNullException.ThrowIfNull(hero);
         ArgumentNullException.ThrowIfNull(enemy);
         AnsiConsole.WriteLine();
-        if (!interactive)
-        {
-            AnsiConsole.WriteLine($"{hero.Name}: {hero.Hp}/{hero.MaxHp} HP   vs   {enemy.Name}: {enemy.Hp}/{enemy.MaxHp} HP");
-            return;
-        }
-
         var table = new Table().Border(TableBorder.Rounded).HideHeaders().AddColumn(string.Empty).AddColumn(string.Empty).AddColumn(string.Empty);
         table.AddRow($"[green]{Markup.Escape(hero.Name)}[/]", HpBar(hero.Hp, hero.MaxHp, "green"), $"[green]{hero.Hp}/{hero.MaxHp} HP[/]");
         table.AddRow($"[red]{Markup.Escape(enemy.Name)}[/]", HpBar(enemy.Hp, enemy.MaxHp, "red"), $"[red]{enemy.Hp}/{enemy.MaxHp} HP[/]");
