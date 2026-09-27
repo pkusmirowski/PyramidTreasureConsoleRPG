@@ -80,7 +80,7 @@ public abstract class Hero
 
     // --- definicja klasy (nadpisywana w podklasach) ---
 
-    public abstract HeroClass Class { get; }
+    public abstract HeroClass HeroClass { get; }
 
     public abstract string ClassName { get; }
 
@@ -323,7 +323,7 @@ public abstract class Hero
     {
         Version = SaveData.CurrentVersion,
         Name = Name,
-        Class = (int)Class,
+        Class = (int)HeroClass,
         Level = Level,
         Exp = Exp,
         Vit = Vit,

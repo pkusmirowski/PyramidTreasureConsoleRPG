@@ -8,7 +8,7 @@ public sealed class Warrior : Hero
     {
     }
 
-    public override HeroClass Class => HeroClass.Warrior;
+    public override HeroClass HeroClass => HeroClass.Warrior;
 
     public override string ClassName => "Wojownik";
 

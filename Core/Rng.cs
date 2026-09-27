@@ -4,12 +4,12 @@ namespace PyramidTreasureConsoleRPG;
 public interface IRandomSource
 {
     /// <summary>Liczba z zakresu [minInclusive, maxExclusive).</summary>
-    int Next(int minInclusive, int maxExclusive);
+    int NextInt(int minInclusive, int maxExclusive);
 }
 
 public sealed class SystemRandomSource : IRandomSource
 {
-    public int Next(int minInclusive, int maxExclusive) => Random.Shared.Next(minInclusive, maxExclusive);
+    public int NextInt(int minInclusive, int maxExclusive) => Random.Shared.Next(minInclusive, maxExclusive);
 }
 
 /// <summary>Deterministyczne źródło do testów.</summary>
@@ -17,7 +17,7 @@ public sealed class SeededRandomSource(int seed) : IRandomSource
 {
     private readonly Random random = new(seed);
 
-    public int Next(int minInclusive, int maxExclusive) => random.Next(minInclusive, maxExclusive);
+    public int NextInt(int minInclusive, int maxExclusive) => random.Next(minInclusive, maxExclusive);
 }
 
 /// <summary>Jedno wspólne źródło losowości dla całej gry (dawniej były cztery różne).</summary>
@@ -33,7 +33,7 @@ public static class Rng
             (min, max) = (max, min);
         }
 
-        return Source.Next(min, max + 1);
+        return Source.NextInt(min, max + 1);
     }
 
     /// <summary>Zwraca true z prawdopodobieństwem percent (0–100).</summary>
@@ -49,7 +49,7 @@ public static class Rng
             return true;
         }
 
-        return Source.Next(0, 100) < percent;
+        return Source.NextInt(0, 100) < percent;
     }
 
     public static T Pick<T>(IReadOnlyList<T> items)
@@ -59,7 +59,7 @@ public static class Rng
             throw new ArgumentException("Kolekcja nie może być pusta.", nameof(items));
         }
 
-        return items[Source.Next(0, items.Count)];
+        return items[Source.NextInt(0, items.Count)];
     }
 
     /// <summary>Losowa kolejność (Fisher–Yates).</summary>
@@ -68,7 +68,7 @@ public static class Rng
         var list = items.ToList();
         for (int i = list.Count - 1; i > 0; i--)
         {
-            int j = Source.Next(0, i + 1);
+            int j = Source.NextInt(0, i + 1);
             (list[i], list[j]) = (list[j], list[i]);
         }
 

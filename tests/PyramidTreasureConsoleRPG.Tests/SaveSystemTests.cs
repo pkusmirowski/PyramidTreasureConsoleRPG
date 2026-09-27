@@ -57,7 +57,7 @@ public sealed class SaveSystemTests : IDisposable
         Assert.True(loaded.SpecialDrinkUsed);
         Assert.Equal(1, loaded.CountPotions(PotionKind.Small));
         Assert.Equal(1, loaded.CountPotions(PotionKind.Large));
-        Assert.Equal(HeroClass.Assassin, loaded.Class);
+        Assert.Equal(HeroClass.Assassin, loaded.HeroClass);
     }
 
     [Fact]

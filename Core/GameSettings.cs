@@ -8,6 +8,8 @@ public sealed class GameSettings
 {
     public const string FileName = "settings.json";
 
+    private static readonly JsonSerializerOptions WriteOptions = new() { WriteIndented = true };
+
     public bool MusicEnabled { get; set; } = true;
 
     /// <summary>Głośność 0–100.</summary>
@@ -64,7 +66,7 @@ public sealed class GameSettings
         try
         {
             Directory.CreateDirectory(folder);
-            File.WriteAllText(Path.Combine(folder, FileName), JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true }));
+            File.WriteAllText(Path.Combine(folder, FileName), JsonSerializer.Serialize(this, WriteOptions));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
