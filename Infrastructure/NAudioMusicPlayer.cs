@@ -6,17 +6,12 @@ namespace PyramidTreasureConsoleRPG.Infrastructure;
 /// Muzyka w tle (NAudio, zapętlona). Działa tylko na Windows; na innych systemach
 /// cicho się wyłącza zamiast psuć grę.
 /// </summary>
-public sealed class NAudioMusicPlayer : IMusicPlayer, IDisposable
+public sealed class NAudioMusicPlayer(string path) : IMusicPlayer, IDisposable
 {
-    private readonly string path;
+    private readonly string path = path;
     private WaveOutEvent? output;
     private AudioFileReader? reader;
     private bool disposing;
-
-    public NAudioMusicPlayer(string path)
-    {
-        this.path = path;
-    }
 
     public bool IsPlaying => output is not null && output.PlaybackState == PlaybackState.Playing;
 

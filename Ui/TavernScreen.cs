@@ -1,19 +1,11 @@
 namespace PyramidTreasureConsoleRPG.Ui;
 
-public sealed class TavernScreen
+public sealed class TavernScreen(IGameIO io, BarScreen bar, CasinoScreen casino, RestScreen rest)
 {
-    private readonly IGameIO io;
-    private readonly BarScreen bar;
-    private readonly CasinoScreen casino;
-    private readonly RestScreen rest;
-
-    public TavernScreen(IGameIO io, BarScreen bar, CasinoScreen casino, RestScreen rest)
-    {
-        this.io = io ?? throw new ArgumentNullException(nameof(io));
-        this.bar = bar ?? throw new ArgumentNullException(nameof(bar));
-        this.casino = casino ?? throw new ArgumentNullException(nameof(casino));
-        this.rest = rest ?? throw new ArgumentNullException(nameof(rest));
-    }
+    private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
+    private readonly BarScreen bar = bar ?? throw new ArgumentNullException(nameof(bar));
+    private readonly CasinoScreen casino = casino ?? throw new ArgumentNullException(nameof(casino));
+    private readonly RestScreen rest = rest ?? throw new ArgumentNullException(nameof(rest));
 
     public void Run(Hero hero)
     {

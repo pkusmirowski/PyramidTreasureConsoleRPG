@@ -40,7 +40,7 @@ public static class CasinoEngine
     public const int BlackjackTarget = 21;
     public const int DealerStandsOn = 17;
 
-    private static readonly int[] BlackNumbers = { 2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35 };
+    private static readonly int[] BlackNumbers = [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35];
 
     public static RouletteColor ColorOf(int number)
     {
@@ -98,7 +98,7 @@ public static class CasinoEngine
     public static SlotResult SpinSlots(int bet, IRandomSource rng)
     {
         ArgumentNullException.ThrowIfNull(rng);
-        int[] reels = { rng.Range(1, 7), rng.Range(1, 7), rng.Range(1, 7) };
+        int[] reels = [rng.Range(1, 7), rng.Range(1, 7), rng.Range(1, 7)];
         int payout = SlotPayout(reels[0], reels[1], reels[2], bet);
         bool jackpot = reels[0] == 7 && reels[1] == 7 && reels[2] == 7;
         return new SlotResult(reels, payout, jackpot);
@@ -107,7 +107,7 @@ public static class CasinoEngine
     public static CrapsResult PlayCraps(int bet, IRandomSource rng)
     {
         ArgumentNullException.ThrowIfNull(rng);
-        var rolls = new List<int>();
+        List<int> rolls = [];
         int roll = RollDice(rng);
         rolls.Add(roll);
         if (roll is 7 or 11)

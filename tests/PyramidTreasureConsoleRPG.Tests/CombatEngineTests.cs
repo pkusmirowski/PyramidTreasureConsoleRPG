@@ -5,8 +5,8 @@ public class CombatEngineTests
     public static IEnumerable<object[]> Classes => new[]
     {
         new object[] { HeroClass.Warrior },
-        new object[] { HeroClass.Archer },
-        new object[] { HeroClass.Assassin },
+        [HeroClass.Archer],
+        [HeroClass.Assassin],
     };
 
     private static Hero MaxLevelHero(HeroClass heroClass)
@@ -26,7 +26,7 @@ public class CombatEngineTests
             Hero hero = MaxLevelHero(heroClass);
             for (int i = 0; i < 5; i++)
             {
-                hero.Inventory.Add(Potion.Large);
+                hero.AddPotion(Potion.Large);
             }
 
             var engine = new CombatEngine(hero, Encounters.FinalBoss(), new SeededRandomSource(seed));
@@ -60,7 +60,7 @@ public class CombatEngineTests
     public void Potion_HealsAndPassesTurnToEnemy()
     {
         Hero hero = Hero.Create(HeroClass.Warrior, "Test");
-        hero.Inventory.Add(Potion.Small);
+        hero.AddPotion(Potion.Small);
         hero.TakeDamage(60);
         // heroFirst: 50 + Dex(2) - Agility(5) = 47 -> roll 10 < 47 => hero acts first
         var engine = new CombatEngine(hero, new[] { EnemyCatalog.Thief.Spawn() }, new ScriptedRandomSource(10, 0, 5));

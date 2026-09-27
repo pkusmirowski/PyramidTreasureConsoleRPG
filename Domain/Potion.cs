@@ -16,7 +16,7 @@ public sealed record Potion(PotionKind Kind, string Name, int Price, int Restore
 
     public static Potion Large { get; } = new(PotionKind.Large, "Duża mikstura lecząca", Price: 100, RestoreHp: 350);
 
-    public static IReadOnlyList<Potion> All { get; } = new[] { Small, Medium, Large };
+    public static IReadOnlyList<Potion> All { get; } = [Small, Medium, Large];
 
     public static IReadOnlyList<PotionKind> AllKinds { get; } = All.Select(p => p.Kind).ToList();
 

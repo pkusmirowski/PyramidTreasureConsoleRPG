@@ -1,15 +1,9 @@
 namespace PyramidTreasureConsoleRPG.Ui;
 
-public sealed class BarScreen
+public sealed class BarScreen(IGameIO io, IRandomSource rng)
 {
-    private readonly IGameIO io;
-    private readonly IRandomSource rng;
-
-    public BarScreen(IGameIO io, IRandomSource rng)
-    {
-        this.io = io ?? throw new ArgumentNullException(nameof(io));
-        this.rng = rng ?? throw new ArgumentNullException(nameof(rng));
-    }
+    private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
+    private readonly IRandomSource rng = rng ?? throw new ArgumentNullException(nameof(rng));
 
     public void Run(Hero hero)
     {

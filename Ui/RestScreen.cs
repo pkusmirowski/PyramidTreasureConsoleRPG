@@ -1,17 +1,10 @@
 namespace PyramidTreasureConsoleRPG.Ui;
 
-public sealed class RestScreen
+public sealed class RestScreen(IGameIO io, IRandomSource rng, RestService rest)
 {
-    private readonly IGameIO io;
-    private readonly IRandomSource rng;
-    private readonly RestService rest;
-
-    public RestScreen(IGameIO io, IRandomSource rng, RestService rest)
-    {
-        this.io = io ?? throw new ArgumentNullException(nameof(io));
-        this.rng = rng ?? throw new ArgumentNullException(nameof(rng));
-        this.rest = rest ?? throw new ArgumentNullException(nameof(rest));
-    }
+    private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
+    private readonly IRandomSource rng = rng ?? throw new ArgumentNullException(nameof(rng));
+    private readonly RestService rest = rest ?? throw new ArgumentNullException(nameof(rest));
 
     public void Run(Hero hero)
     {

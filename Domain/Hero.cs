@@ -103,7 +103,9 @@ public sealed class Hero
 
     public bool Completed { get; set; }
 
-    public List<Potion> Inventory { get; } = new();
+    private readonly List<Potion> inventory = new();
+
+    public IReadOnlyList<Potion> Inventory => inventory;
 
     public int Hp
     {
@@ -284,18 +286,24 @@ public sealed class Hero
         }
     }
 
-    public int CountPotions(PotionKind kind) => Inventory.Count(p => p.Kind == kind);
+    public void AddPotion(Potion potion)
+    {
+        ArgumentNullException.ThrowIfNull(potion);
+        inventory.Add(potion);
+    }
+
+    public int CountPotions(PotionKind kind) => inventory.Count(p => p.Kind == kind);
 
     /// <summary>Wypija miksturę danego rodzaju. Zwraca ilość faktycznie uleczonych HP lub null, gdy brak mikstury.</summary>
     public int? DrinkPotion(PotionKind kind)
     {
-        Potion? potion = Inventory.Find(p => p.Kind == kind);
+        Potion? potion = inventory.Find(p => p.Kind == kind);
         if (potion is null)
         {
             return null;
         }
 
-        Inventory.Remove(potion);
+        inventory.Remove(potion);
         int before = Hp;
         Heal(potion.RestoreHp);
         return Hp - before;
@@ -346,7 +354,7 @@ public sealed class Hero
         {
             if (Enum.IsDefined((PotionKind)kind))
             {
-                hero.Inventory.Add(Potion.Create((PotionKind)kind));
+                hero.AddPotion(Potion.Create((PotionKind)kind));
             }
         }
 

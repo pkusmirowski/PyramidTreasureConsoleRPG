@@ -18,17 +18,12 @@ public enum NightEvent
 public sealed record NightResult(NightEvent Event, int Amount, int LevelsGained, Potion? Gift);
 
 /// <summary>Pokoje na górze: nocleg i noc w towarzystwie z losowymi konsekwencjami.</summary>
-public sealed class RestService
+public sealed class RestService(IRandomSource rng)
 {
     public const int RoomCost = 10;
     public const int CompanyCost = 30;
 
-    private readonly IRandomSource rng;
-
-    public RestService(IRandomSource rng)
-    {
-        this.rng = rng ?? throw new ArgumentNullException(nameof(rng));
-    }
+    private readonly IRandomSource rng = rng ?? throw new ArgumentNullException(nameof(rng));
 
     public static RestOutcome RentRoom(Hero hero)
     {
@@ -81,7 +76,7 @@ public sealed class RestService
         }
 
         Potion potion = Potion.Medium;
-        hero.Inventory.Add(potion);
+        hero.AddPotion(potion);
         return new NightResult(NightEvent.Gift, 0, 0, potion);
     }
 }

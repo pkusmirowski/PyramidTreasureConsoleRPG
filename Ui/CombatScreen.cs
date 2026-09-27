@@ -1,16 +1,10 @@
 namespace PyramidTreasureConsoleRPG.Ui;
 
 /// <summary>Ekran walki: czyta decyzje gracza, renderuje zdarzenia z silnika.</summary>
-public sealed class CombatScreen
+public sealed class CombatScreen(IGameIO io, IRandomSource rng)
 {
-    private readonly IGameIO io;
-    private readonly IRandomSource rng;
-
-    public CombatScreen(IGameIO io, IRandomSource rng)
-    {
-        this.io = io ?? throw new ArgumentNullException(nameof(io));
-        this.rng = rng ?? throw new ArgumentNullException(nameof(rng));
-    }
+    private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
+    private readonly IRandomSource rng = rng ?? throw new ArgumentNullException(nameof(rng));
 
     public CombatStatus Run(Hero hero, IEnumerable<Enemy> enemies)
     {
@@ -38,7 +32,7 @@ public sealed class CombatScreen
             var options = attacks.Select(a => $"{a.Name} ({a.Description})").ToList();
             options.Add($"Wypij miksturę (masz: {hero.Inventory.Count})");
             options.Add(engine.CanFlee ? $"Uciekaj (szansa {hero.FleeChance}%)" : "Ucieczka niemożliwa – to boss");
-            int choice = io.Menu("Twoja tura:", options.ToArray());
+            int choice = io.Menu("Twoja tura:", [.. options]);
 
             if (choice <= attacks.Count)
             {

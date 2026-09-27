@@ -3,52 +3,45 @@ namespace PyramidTreasureConsoleRPG.Engine;
 /// <summary>Dobór grup przeciwników do poziomu bohatera. Każdy przedział ma kilka wariantów.</summary>
 public static class Encounters
 {
-    private static readonly IReadOnlyList<IReadOnlyList<Func<List<Enemy>>>> Tables = new List<IReadOnlyList<Func<List<Enemy>>>>
-    {
+    private static readonly EnemyDefinition[][][] Tables =
+    [
         // poziom 1-3
-        new List<Func<List<Enemy>>>
-        {
-            () => new List<Enemy> { EnemyCatalog.Thief.Spawn(), EnemyCatalog.Thief.Spawn() },
-            () => new List<Enemy> { EnemyCatalog.Thief.Spawn(), EnemyCatalog.Thief.Spawn(), EnemyCatalog.Thief.Spawn() },
-        },
+        [
+            [EnemyCatalog.Thief, EnemyCatalog.Thief],
+            [EnemyCatalog.Thief, EnemyCatalog.Thief, EnemyCatalog.Thief],
+        ],
         // poziom 4-6
-        new List<Func<List<Enemy>>>
-        {
-            () => new List<Enemy> { EnemyCatalog.Wolf.Spawn(), EnemyCatalog.Wolf.Spawn() },
-            () => new List<Enemy> { EnemyCatalog.Thief.Spawn(), EnemyCatalog.Thief.Spawn(), EnemyCatalog.Wolf.Spawn() },
-            () => new List<Enemy> { EnemyCatalog.Wolf.Spawn(), EnemyCatalog.WildBoar.Spawn() },
-        },
+        [
+            [EnemyCatalog.Wolf, EnemyCatalog.Wolf],
+            [EnemyCatalog.Thief, EnemyCatalog.Thief, EnemyCatalog.Wolf],
+            [EnemyCatalog.Wolf, EnemyCatalog.WildBoar],
+        ],
         // poziom 7-9
-        new List<Func<List<Enemy>>>
-        {
-            () => new List<Enemy> { EnemyCatalog.Wolf.Spawn(), EnemyCatalog.WildBoar.Spawn(), EnemyCatalog.ArmoredThief.Spawn() },
-            () => new List<Enemy> { EnemyCatalog.ArmoredThief.Spawn(), EnemyCatalog.ArmoredThief.Spawn() },
-        },
+        [
+            [EnemyCatalog.Wolf, EnemyCatalog.WildBoar, EnemyCatalog.ArmoredThief],
+            [EnemyCatalog.ArmoredThief, EnemyCatalog.ArmoredThief],
+        ],
         // poziom 10-12
-        new List<Func<List<Enemy>>>
-        {
-            () => new List<Enemy> { EnemyCatalog.WildBoar.Spawn(), EnemyCatalog.FallenKnight.Spawn(), EnemyCatalog.FallenKnight.Spawn() },
-            () => new List<Enemy> { EnemyCatalog.ArmoredThief.Spawn(), EnemyCatalog.ArmoredThief.Spawn(), EnemyCatalog.FallenKnight.Spawn() },
-        },
+        [
+            [EnemyCatalog.WildBoar, EnemyCatalog.FallenKnight, EnemyCatalog.FallenKnight],
+            [EnemyCatalog.ArmoredThief, EnemyCatalog.ArmoredThief, EnemyCatalog.FallenKnight],
+        ],
         // poziom 13-15
-        new List<Func<List<Enemy>>>
-        {
-            () => new List<Enemy> { EnemyCatalog.ArmoredThief.Spawn(), EnemyCatalog.FallenKnight.Spawn(), EnemyCatalog.Templar.Spawn(), EnemyCatalog.Templar.Spawn() },
-            () => new List<Enemy> { EnemyCatalog.FallenKnight.Spawn(), EnemyCatalog.FallenKnight.Spawn(), EnemyCatalog.Templar.Spawn() },
-        },
+        [
+            [EnemyCatalog.ArmoredThief, EnemyCatalog.FallenKnight, EnemyCatalog.Templar, EnemyCatalog.Templar],
+            [EnemyCatalog.FallenKnight, EnemyCatalog.FallenKnight, EnemyCatalog.Templar],
+        ],
         // poziom 16-17
-        new List<Func<List<Enemy>>>
-        {
-            () => new List<Enemy> { EnemyCatalog.Templar.Spawn(), EnemyCatalog.Templar.Spawn(), EnemyCatalog.CryingMonk.Spawn() },
-            () => new List<Enemy> { EnemyCatalog.FallenKnight.Spawn(), EnemyCatalog.Templar.Spawn(), EnemyCatalog.CryingMonk.Spawn() },
-        },
+        [
+            [EnemyCatalog.Templar, EnemyCatalog.Templar, EnemyCatalog.CryingMonk],
+            [EnemyCatalog.FallenKnight, EnemyCatalog.Templar, EnemyCatalog.CryingMonk],
+        ],
         // poziom 18-20
-        new List<Func<List<Enemy>>>
-        {
-            () => new List<Enemy> { EnemyCatalog.Templar.Spawn(), EnemyCatalog.CryingMonk.Spawn(), EnemyCatalog.CryingMonk.Spawn() },
-            () => new List<Enemy> { EnemyCatalog.Templar.Spawn(), EnemyCatalog.Templar.Spawn(), EnemyCatalog.Templar.Spawn(), EnemyCatalog.CryingMonk.Spawn() },
-        },
-    };
+        [
+            [EnemyCatalog.Templar, EnemyCatalog.CryingMonk, EnemyCatalog.CryingMonk],
+            [EnemyCatalog.Templar, EnemyCatalog.Templar, EnemyCatalog.Templar, EnemyCatalog.CryingMonk],
+        ],
+    ];
 
     public static int BracketFor(int level) => level switch
     {
@@ -65,11 +58,11 @@ public static class Encounters
     public static List<Enemy> ForLevel(int level, IRandomSource rng)
     {
         ArgumentNullException.ThrowIfNull(rng);
-        var variants = Tables[BracketFor(level)];
-        return rng.Shuffle(rng.Pick(variants)());
+        EnemyDefinition[] group = rng.Pick(Tables[BracketFor(level)]);
+        return rng.Shuffle(group.Select(d => d.Spawn()));
     }
 
-    public static List<Enemy> PyramidGuards() => new() { EnemyCatalog.Anubis.Spawn(), EnemyCatalog.Anubis.Spawn() };
+    public static List<Enemy> PyramidGuards() => [EnemyCatalog.Anubis.Spawn(), EnemyCatalog.Anubis.Spawn()];
 
-    public static List<Enemy> FinalBoss() => new() { EnemyCatalog.Ra.Spawn() };
+    public static List<Enemy> FinalBoss() => [EnemyCatalog.Ra.Spawn()];
 }

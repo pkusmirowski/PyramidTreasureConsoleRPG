@@ -22,7 +22,7 @@ public static class ShopService
         }
 
         hero.Gold -= potion.Price;
-        hero.Inventory.Add(potion);
+        hero.AddPotion(potion);
         return new PurchaseResult(PurchaseOutcome.Bought, potion);
     }
 }

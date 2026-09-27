@@ -64,7 +64,7 @@ public sealed class CombatEngine
     /// <summary>Rozpoczyna walkę z pierwszym wrogiem. Jeśli wróg jest szybszy, od razu atakuje.</summary>
     public IReadOnlyList<CombatEvent> Begin()
     {
-        var events = new List<CombatEvent>();
+        List<CombatEvent> events = [];
         StartEncounter(events);
         return events;
     }
@@ -72,7 +72,7 @@ public sealed class CombatEngine
     public IReadOnlyList<CombatEvent> HeroAttack(AttackKind kind)
     {
         EnsureInProgress();
-        var events = new List<CombatEvent>();
+        List<CombatEvent> events = [];
         AttackResult result = Hero.Attack(kind, CurrentEnemy, rng);
         foreach (Strike strike in result.Strikes)
         {
@@ -93,7 +93,7 @@ public sealed class CombatEngine
             throw new InvalidOperationException("Bohater nie ma takiej mikstury.");
         }
 
-        var events = new List<CombatEvent> { new PotionDrunkEvent(kind, healed.Value) };
+        List<CombatEvent> events = [new PotionDrunkEvent(kind, healed.Value)];
         FinishHeroTurn(events);
         return events;
     }
@@ -106,7 +106,7 @@ public sealed class CombatEngine
             throw new InvalidOperationException("Od bossa nie można uciec.");
         }
 
-        var events = new List<CombatEvent>();
+        List<CombatEvent> events = [];
         bool success = rng.Chance(Hero.FleeChance);
         events.Add(new FleeAttemptEvent(CurrentEnemy, success));
         if (success)

@@ -31,7 +31,7 @@ public sealed class SaveData
 
     public bool Completed { get; init; }
 
-    public IReadOnlyList<int> Potions { get; init; } = Array.Empty<int>();
+    public IReadOnlyList<int> Potions { get; init; } = [];
 
     /// <summary>Ustawiane przez magazyn zapisu w chwili zapisu.</summary>
     public DateTime SavedAt { get; set; }

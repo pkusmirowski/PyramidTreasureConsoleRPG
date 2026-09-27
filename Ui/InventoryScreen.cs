@@ -1,14 +1,9 @@
 namespace PyramidTreasureConsoleRPG.Ui;
 
 /// <summary>Sakwa poza walką. Wybór mikstury jest wspólny z ekranem walki.</summary>
-public sealed class InventoryScreen
+public sealed class InventoryScreen(IGameIO io)
 {
-    private readonly IGameIO io;
-
-    public InventoryScreen(IGameIO io)
-    {
-        this.io = io ?? throw new ArgumentNullException(nameof(io));
-    }
+    private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
 
     public void Run(Hero hero)
     {

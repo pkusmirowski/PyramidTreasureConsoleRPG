@@ -60,16 +60,20 @@ Dziś jest bramka wiekowa, brutalne opisy zgonów i krytyków, noc w towarzystwi
    nazwę pliku jako parametr).
 4. **Nowa gra+**: start z 5. poziomem, wrogowie +30 % statystyk, nowy przedmiot.
 
-## Rzeczy techniczne, które warto zrobić po drodze
+## Rzeczy techniczne – stan po modernizacji
+
+Zrobione: wstrzykiwanie zależności i `IGameIO`, silnik walki i kasyna oddzielony od konsoli (zdarzenia),
+Spectre.Console z trybem `--plain`, definicje klas i wrogów jako dane, JSON przez generator źródeł, analizatory,
+`dotnet format` i bot grający w CI, konstruktory główne i wyrażenia kolekcji (C# 12).
+
+Do zrobienia przy okazji:
 
 - Wynieść teksty do plików zasobów (`.resx` lub `texts.pl.json`) – wtedy wersja angielska to tylko tłumaczenie.
-- Zastąpić statyczne `GameIO` interfejsem `IGameIO` przekazywanym do `Combat`, `Tavern`, `Shop`. Pozwoli to
-  testować pełne scenariusze (walka od początku do końca) bez konsoli, tak jak dziś robi to zewnętrzny bot.
-- Dodać `dotnet format --verify-no-changes` do CI.
-- Rozważyć bibliotekę `Spectre.Console` (tabele, paski HP, kolorowe menu) – działa na każdym systemie i nie wymaga
-  zmiany architektury, bo cały dostęp do konsoli jest w `GameIO`.
+  `Dialogues` już tylko zwraca tekst, więc to czysta przeprowadzka stringów.
+- `params ReadOnlySpan<string>` w `IGameIO.Menu` (C# 13) – pominięte, bo lokalna weryfikacja szła na SDK 8.
 - Muzyka poza Windows: NAudio nie ma backendu dla Linux/macOS; alternatywą jest `LibVLCSharp` lub wywołanie
   systemowego odtwarzacza. Na razie gra po prostu wyłącza muzykę.
+- Regiony i zdarzenia z Etapu 1 najprościej dodać jako kolejne katalogi danych obok `EnemyCatalog`.
 
 ## Spójna rama świata (propozycja narracyjna)
 

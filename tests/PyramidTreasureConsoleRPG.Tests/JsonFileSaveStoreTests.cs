@@ -37,8 +37,8 @@ public sealed class JsonFileSaveStoreTests : IDisposable
         hero.Gold = 321;
         hero.Stage = StoryStage.CaravanAnnounced;
         hero.SpecialDrinkUsed = true;
-        hero.Inventory.Add(Potion.Small);
-        hero.Inventory.Add(Potion.Large);
+        hero.AddPotion(Potion.Small);
+        hero.AddPotion(Potion.Large);
 
         Assert.True(store.Save(hero.ToSaveData(), out _));
         SaveLoadResult result = store.Load();

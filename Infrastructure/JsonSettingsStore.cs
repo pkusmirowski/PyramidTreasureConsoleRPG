@@ -10,16 +10,11 @@ public interface ISettingsStore
     string? Save(GameSettings settings);
 }
 
-public sealed class JsonSettingsStore : ISettingsStore
+public sealed class JsonSettingsStore(string folder) : ISettingsStore
 {
     public const string FileName = "settings.json";
 
-    private readonly string folder;
-
-    public JsonSettingsStore(string folder)
-    {
-        this.folder = folder ?? throw new ArgumentNullException(nameof(folder));
-    }
+    private readonly string folder = folder ?? throw new ArgumentNullException(nameof(folder));
 
     public string FilePath => Path.Combine(folder, FileName);
 

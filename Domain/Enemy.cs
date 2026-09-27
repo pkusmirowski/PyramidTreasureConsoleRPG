@@ -47,7 +47,7 @@ public static class EnemyCatalog
 
     public static EnemyDefinition Ra { get; } = new("Bóg Ra", EnemyKind.Divine, MaxHp: 1000, MinDmg: 38, MaxDmg: 60, Armor: 30, Agility: 12, Exp: 0, Gold: 20000, IsBoss: true);
 
-    public static IReadOnlyList<EnemyDefinition> All { get; } = new[] { Thief, Wolf, WildBoar, ArmoredThief, FallenKnight, Templar, CryingMonk, Anubis, Ra };
+    public static IReadOnlyList<EnemyDefinition> All { get; } = [Thief, Wolf, WildBoar, ArmoredThief, FallenKnight, Templar, CryingMonk, Anubis, Ra];
 }
 
 /// <summary>Żywy przeciwnik w walce: definicja plus aktualne HP.</summary>

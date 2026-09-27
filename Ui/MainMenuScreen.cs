@@ -1,24 +1,14 @@
 namespace PyramidTreasureConsoleRPG.Ui;
 
 /// <summary>Menu główne: bramka wiekowa, nowa gra, wczytanie, ustawienia.</summary>
-public sealed class MainMenuScreen
+public sealed class MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore settingsStore, GameSettings settings, IMusicPlayer music, TownScreen town)
 {
-    private readonly IGameIO io;
-    private readonly ISaveStore saves;
-    private readonly ISettingsStore settingsStore;
-    private readonly GameSettings settings;
-    private readonly IMusicPlayer music;
-    private readonly TownScreen town;
-
-    public MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore settingsStore, GameSettings settings, IMusicPlayer music, TownScreen town)
-    {
-        this.io = io ?? throw new ArgumentNullException(nameof(io));
-        this.saves = saves ?? throw new ArgumentNullException(nameof(saves));
-        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
-        this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        this.music = music ?? throw new ArgumentNullException(nameof(music));
-        this.town = town ?? throw new ArgumentNullException(nameof(town));
-    }
+    private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
+    private readonly ISaveStore saves = saves ?? throw new ArgumentNullException(nameof(saves));
+    private readonly ISettingsStore settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
+    private readonly GameSettings settings = settings ?? throw new ArgumentNullException(nameof(settings));
+    private readonly IMusicPlayer music = music ?? throw new ArgumentNullException(nameof(music));
+    private readonly TownScreen town = town ?? throw new ArgumentNullException(nameof(town));
 
     public void Run()
     {

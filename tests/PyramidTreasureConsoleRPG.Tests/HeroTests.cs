@@ -5,8 +5,8 @@ public class HeroTests
     public static IEnumerable<object[]> Classes => new[]
     {
         new object[] { HeroClass.Warrior },
-        new object[] { HeroClass.Archer },
-        new object[] { HeroClass.Assassin },
+        [HeroClass.Archer],
+        [HeroClass.Assassin],
     };
 
     [Theory]
@@ -72,7 +72,7 @@ public class HeroTests
     public void DrinkPotion_HealsAndRemovesPotion_ButNotAboveMax()
     {
         Hero hero = Hero.Create(HeroClass.Warrior, "Test");
-        hero.Inventory.Add(Potion.Small);
+        hero.AddPotion(Potion.Small);
         hero.TakeDamage(20);
         int? healed = hero.DrinkPotion(PotionKind.Small);
         Assert.Equal(20, healed);

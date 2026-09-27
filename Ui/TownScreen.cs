@@ -8,26 +8,15 @@ public enum SessionEnd
 }
 
 /// <summary>Pętla miasta: podróż, tawerna, sklep, statystyki, sakwa, zapis.</summary>
-public sealed class TownScreen
+public sealed class TownScreen(IGameIO io, IRandomSource rng, ISaveStore saves, CombatScreen combat, TavernScreen tavern, ShopScreen shop, InventoryScreen inventory)
 {
-    private readonly IGameIO io;
-    private readonly IRandomSource rng;
-    private readonly ISaveStore saves;
-    private readonly CombatScreen combat;
-    private readonly TavernScreen tavern;
-    private readonly ShopScreen shop;
-    private readonly InventoryScreen inventory;
-
-    public TownScreen(IGameIO io, IRandomSource rng, ISaveStore saves, CombatScreen combat, TavernScreen tavern, ShopScreen shop, InventoryScreen inventory)
-    {
-        this.io = io ?? throw new ArgumentNullException(nameof(io));
-        this.rng = rng ?? throw new ArgumentNullException(nameof(rng));
-        this.saves = saves ?? throw new ArgumentNullException(nameof(saves));
-        this.combat = combat ?? throw new ArgumentNullException(nameof(combat));
-        this.tavern = tavern ?? throw new ArgumentNullException(nameof(tavern));
-        this.shop = shop ?? throw new ArgumentNullException(nameof(shop));
-        this.inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
-    }
+    private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
+    private readonly IRandomSource rng = rng ?? throw new ArgumentNullException(nameof(rng));
+    private readonly ISaveStore saves = saves ?? throw new ArgumentNullException(nameof(saves));
+    private readonly CombatScreen combat = combat ?? throw new ArgumentNullException(nameof(combat));
+    private readonly TavernScreen tavern = tavern ?? throw new ArgumentNullException(nameof(tavern));
+    private readonly ShopScreen shop = shop ?? throw new ArgumentNullException(nameof(shop));
+    private readonly InventoryScreen inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
 
     public SessionEnd Run(Hero hero)
     {

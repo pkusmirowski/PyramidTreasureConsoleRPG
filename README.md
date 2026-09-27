@@ -11,6 +11,13 @@ Wymagany jest [.NET SDK 9](https://dotnet.microsoft.com/download).
 dotnet run --project PyramidTreasureConsoleRPG.csproj
 ```
 
+Interfejs używa biblioteki Spectre.Console (menu strzałkami, paski HP, tabele). Jeśli terminal ma z tym problem,
+uruchom grę z przełącznikiem `--plain`, który przełącza na zwykłe, ponumerowane menu:
+
+```bash
+dotnet run --project PyramidTreasureConsoleRPG.csproj -- --plain
+```
+
 Muzyka w tle (NAudio) działa tylko na Windows. Na Linux i macOS gra uruchamia się bez muzyki.
 
 Zapis gry i ustawienia trafiają do katalogu `GreatPyramidTreasureRPG_DataSave` w folderze danych aplikacji
@@ -29,10 +36,10 @@ Zapis gry i ustawienia trafiają do katalogu `GreatPyramidTreasureRPG_DataSave` 
 
 | Katalog | Zawartość |
 |---|---|
-| `Domain/` | Modele i czyste reguły: `Hero` i klasy postaci, `Enemy` i wrogowie, mikstury, fabuła (`Story`), teksty (`Dialogues`), losowość (`IRandomSource`) |
+| `Domain/` | Modele i czyste reguły: `Hero` z definicjami klas (`HeroClasses`), `Enemy` z katalogiem wrogów (`EnemyCatalog`), mikstury, fabuła (`Story`), teksty (`Dialogues`), losowość (`IRandomSource`) |
 | `Engine/` | Logika bez UI: `CombatEngine` (walka jako zdarzenia), `CasinoEngine`, serwisy baru, sklepu i noclegu, tabele spotkań |
-| `Ui/` | Ekrany konsolowe rozmawiające tylko z `IGameIO`: menu główne, miasto, walka, tawerna, kasyno, sklep, sakwa |
-| `Infrastructure/` | Zapis gry i ustawień (JSON), odtwarzacz muzyki (NAudio) |
+| `Ui/` | Ekrany konsolowe rozmawiające tylko z `IGameIO`; dwie implementacje: `SpectreGameIO` (domyślna) i `ConsoleGameIO` (`--plain`) |
+| `Infrastructure/` | Zapis gry i ustawień (JSON z generatorem źródeł), odtwarzacz muzyki (NAudio) |
 | `Program.cs` | Rejestracja zależności (Microsoft.Extensions.DependencyInjection) i start gry |
 | `tests/` | Testy xUnit: wzory walki, awanse, silnik walki i kasyna, zapis/odczyt, ekrany z dublerem konsoli, reguły architektury |
 | `tools/` | `playbot.py` – bot grający przez potok od startu do napisu końcowego (smoke test w CI) |

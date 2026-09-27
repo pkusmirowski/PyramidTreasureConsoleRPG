@@ -84,7 +84,7 @@ public static class HeroClasses
         ArmorDexDivisor: 2, ArmorAddsLevel: false, EvasionDexDivisor: 3, HitChanceDexDivisor: 4,
         "Atak sztyletem", "Atak z ukrycia", "Zatrute ostrze", SpecialAttackKind.PoisonedBlade);
 
-    public static IReadOnlyList<HeroClassDefinition> All { get; } = new[] { Warrior, Archer, Assassin };
+    public static IReadOnlyList<HeroClassDefinition> All { get; } = [Warrior, Archer, Assassin];
 
     public static HeroClassDefinition Get(HeroClass kind) => kind switch
     {
