@@ -29,13 +29,13 @@ Zapis gry i ustawienia trafiają do katalogu `GreatPyramidTreasureRPG_DataSave` 
 
 | Katalog | Zawartość |
 |---|---|
-| `Core/` | Obsługa konsoli (`GameIO`), losowość (`Rng`), ustawienia, odtwarzacz muzyki |
-| `Classes/` | `Hero` (wspólna logika, statystyki pochodne, awanse) i trzy klasy postaci |
-| `Monsters/` | `Enemy`, definicje przeciwników, tabele spotkań (`Encounters`) |
-| `Items/` | Mikstury, sklep, sakwa |
-| `Tavern/` | Tawerna, bar, kasyno, nocleg |
-| `Game/` | Menu główne, sesja miasta, walka, fabuła, dialogi, zapis gry |
-| `tests/` | Testy xUnit (wzory walki, awanse, zapis/odczyt, kasyno, fabuła) |
+| `Domain/` | Modele i czyste reguły: `Hero` i klasy postaci, `Enemy` i wrogowie, mikstury, fabuła (`Story`), teksty (`Dialogues`), losowość (`IRandomSource`) |
+| `Engine/` | Logika bez UI: `CombatEngine` (walka jako zdarzenia), `CasinoEngine`, serwisy baru, sklepu i noclegu, tabele spotkań |
+| `Ui/` | Ekrany konsolowe rozmawiające tylko z `IGameIO`: menu główne, miasto, walka, tawerna, kasyno, sklep, sakwa |
+| `Infrastructure/` | Zapis gry i ustawień (JSON), odtwarzacz muzyki (NAudio) |
+| `Program.cs` | Rejestracja zależności (Microsoft.Extensions.DependencyInjection) i start gry |
+| `tests/` | Testy xUnit: wzory walki, awanse, silnik walki i kasyna, zapis/odczyt, ekrany z dublerem konsoli, reguły architektury |
+| `tools/` | `playbot.py` – bot grający przez potok od startu do napisu końcowego (smoke test w CI) |
 | `docs/` | Analiza i code review, plan rozwoju |
 
 ## Testy
@@ -44,7 +44,14 @@ Zapis gry i ustawienia trafiają do katalogu `GreatPyramidTreasureRPG_DataSave` 
 dotnet test PyramidTreasureConsoleRPG.sln
 ```
 
-CI (GitHub Actions) buduje projekt z ostrzeżeniami jako błędami i uruchamia testy przy każdym pushu.
+Bot grający całą grę (wymaga Pythona 3):
+
+```bash
+dotnet build -c Release
+python3 tools/playbot.py bin/Release/net9.0/PyramidTreasureConsoleRPG.dll 1
+```
+
+CI (GitHub Actions) sprawdza formatowanie, buduje projekt z ostrzeżeniami jako błędami, uruchamia testy i przechodzi grę botem.
 
 ## Licencja
 

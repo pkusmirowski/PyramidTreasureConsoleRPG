@@ -1,32 +1,51 @@
 using System.Text.Json;
 
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Infrastructure;
 
-public sealed record SaveInfo(string Name, HeroClass Class, int Level, DateTime SavedAt);
+public sealed record SaveInfo(string Name, HeroClass HeroClass, int Level, DateTime SavedAt);
 
-/// <summary>Zapis i odczyt gry. Folder da się podmienić (testy).</summary>
-public static class SaveSystem
+public sealed record SaveLoadResult(SaveData? Data, string Message);
+
+/// <summary>Magazyn zapisu gry. Zwraca surowe dane; bohatera odtwarza Hero.FromSaveData.</summary>
+public interface ISaveStore
 {
-    public const string FolderName = "GreatPyramidTreasureRPG_DataSave";
+    bool Exists();
+
+    SaveInfo? Peek();
+
+    SaveLoadResult Load();
+
+    /// <summary>Zwraca true przy powodzeniu; komunikat opisuje wynik (np. błąd dysku).</summary>
+    bool Save(SaveData data, out string message);
+}
+
+public sealed class JsonFileSaveStore : ISaveStore
+{
     public const string FileName = "DataSave.json";
 
     private static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
 
-    public static string SaveFolder { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), FolderName);
+    private readonly string folder;
+    private readonly TimeProvider clock;
 
-    public static string SaveFilePath => Path.Combine(SaveFolder, FileName);
-
-    public static bool SaveExists() => File.Exists(SaveFilePath);
-
-    public static bool Save(Hero hero, out string message)
+    public JsonFileSaveStore(string folder, TimeProvider? clock = null)
     {
-        ArgumentNullException.ThrowIfNull(hero);
+        this.folder = folder ?? throw new ArgumentNullException(nameof(folder));
+        this.clock = clock ?? TimeProvider.System;
+    }
+
+    public string FilePath => Path.Combine(folder, FileName);
+
+    public bool Exists() => File.Exists(FilePath);
+
+    public bool Save(SaveData data, out string message)
+    {
+        ArgumentNullException.ThrowIfNull(data);
         try
         {
-            Directory.CreateDirectory(SaveFolder);
-            SaveData data = hero.ToSaveData();
-            data.SavedAt = DateTime.Now;
-            File.WriteAllText(SaveFilePath, JsonSerializer.Serialize(data, Options));
+            Directory.CreateDirectory(folder);
+            data.SavedAt = clock.GetLocalNow().DateTime;
+            File.WriteAllText(FilePath, JsonSerializer.Serialize(data, Options));
             message = "Gra została zapisana!";
             return true;
         }
@@ -37,32 +56,10 @@ public static class SaveSystem
         }
     }
 
-    public static Hero? Load(out string message)
+    public SaveInfo? Peek()
     {
-        SaveData? data = ReadData(out message);
-        if (data is null)
-        {
-            return null;
-        }
-
-        try
-        {
-            Hero hero = Hero.FromSaveData(data);
-            message = $"Wczytano: {hero.Name}, {hero.ClassName}, poziom {hero.Level}.";
-            return hero;
-        }
-        catch (InvalidDataException ex)
-        {
-            message = $"Plik zapisu jest uszkodzony: {ex.Message}";
-            return null;
-        }
-    }
-
-    /// <summary>Krótki opis zapisu do menu głównego (bez tworzenia bohatera).</summary>
-    public static SaveInfo? Peek()
-    {
-        SaveData? data = ReadData(out _);
-        if (data is null || !Enum.IsDefined(typeof(HeroClass), data.Class))
+        SaveData? data = Load().Data;
+        if (data is null || !Enum.IsDefined((HeroClass)data.Class))
         {
             return null;
         }
@@ -70,36 +67,31 @@ public static class SaveSystem
         return new SaveInfo(data.Name, (HeroClass)data.Class, data.Level, data.SavedAt);
     }
 
-    private static SaveData? ReadData(out string message)
+    public SaveLoadResult Load()
     {
-        if (!SaveExists())
+        if (!Exists())
         {
-            message = "Brak zapisanej gry.";
-            return null;
+            return new SaveLoadResult(null, "Brak zapisanej gry.");
         }
 
         try
         {
-            SaveData? data = JsonSerializer.Deserialize<SaveData>(File.ReadAllText(SaveFilePath));
+            SaveData? data = JsonSerializer.Deserialize<SaveData>(File.ReadAllText(FilePath));
             if (data is null)
             {
-                message = "Plik zapisu jest pusty.";
-                return null;
+                return new SaveLoadResult(null, "Plik zapisu jest pusty.");
             }
 
             if (data.Version != SaveData.CurrentVersion)
             {
-                message = $"Plik zapisu pochodzi z innej wersji gry (wersja {data.Version}, wymagana {SaveData.CurrentVersion}). Zacznij nową grę.";
-                return null;
+                return new SaveLoadResult(null, $"Plik zapisu pochodzi z innej wersji gry (wersja {data.Version}, wymagana {SaveData.CurrentVersion}). Zacznij nową grę.");
             }
 
-            message = string.Empty;
-            return data;
+            return new SaveLoadResult(data, string.Empty);
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
-            message = $"Nie udało się odczytać zapisu: {ex.Message}";
-            return null;
+            return new SaveLoadResult(null, $"Nie udało się odczytać zapisu: {ex.Message}");
         }
     }
 }

@@ -1,4 +1,4 @@
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Domain;
 
 public enum HeroClass
 {
@@ -124,7 +124,7 @@ public abstract class Hero
 
     protected abstract int EvasionFormula();
 
-    protected abstract AttackResult PerformSpecialAttack(Enemy enemy);
+    protected abstract AttackResult PerformSpecialAttack(Enemy enemy, IRandomSource rng);
 
     // --- stan ---
 
@@ -188,21 +188,22 @@ public abstract class Hero
 
     // --- akcje ---
 
-    public IReadOnlyList<AttackOption> AttackOptions => new[]
+    public IReadOnlyList<AttackOption> GetAttackOptions() => new[]
     {
         new AttackOption(AttackKind.Normal, NormalAttackName, $"{MinDmg}-{MaxDmg} obrażeń, trafienie {HitChance + 20:0}%, krytyk {CritChance:0}%"),
         new AttackOption(AttackKind.Strong, StrongAttackName, $"{MinDmg * 3 / 2}-{MaxDmg * 3 / 2} obrażeń, trafienie {HitChance:0}%, krytyk {Math.Min(75, CritChance * 2):0}%"),
         new AttackOption(AttackKind.Special, SpecialAttackName, SpecialAttackDescription),
     };
 
-    public AttackResult Attack(AttackKind kind, Enemy enemy)
+    public AttackResult Attack(AttackKind kind, Enemy enemy, IRandomSource rng)
     {
         ArgumentNullException.ThrowIfNull(enemy);
+        ArgumentNullException.ThrowIfNull(rng);
         AttackResult result = kind switch
         {
-            AttackKind.Strong => SingleStrike(enemy, HitChance, 1.5, Math.Min(75, CritChance * 2), StrongAttackName),
-            AttackKind.Special => PerformSpecialAttack(enemy),
-            _ => SingleStrike(enemy, HitChance + 20, 1.0, CritChance, NormalAttackName),
+            AttackKind.Strong => SingleStrike(enemy, HitChance, 1.5, Math.Min(75, CritChance * 2), StrongAttackName, rng),
+            AttackKind.Special => PerformSpecialAttack(enemy, rng),
+            _ => SingleStrike(enemy, HitChance + 20, 1.0, CritChance, NormalAttackName, rng),
         };
 
         foreach (Strike strike in result.Strikes)
@@ -214,22 +215,24 @@ public abstract class Hero
     }
 
     /// <summary>Jedno uderzenie: rzut na trafienie, rzut na krytyk, obrażenia po pancerzu wroga.</summary>
-    protected AttackResult SingleStrike(Enemy enemy, double hitChance, double multiplier, double critChance, string label)
+    protected AttackResult SingleStrike(Enemy enemy, double hitChance, double multiplier, double critChance, string label, IRandomSource rng)
     {
         var result = new AttackResult();
-        result.Strikes.Add(RollStrike(enemy, hitChance, multiplier, critChance, label));
+        result.Strikes.Add(RollStrike(enemy, hitChance, multiplier, critChance, label, rng));
         return result;
     }
 
-    protected Strike RollStrike(Enemy enemy, double hitChance, double multiplier, double critChance, string label)
+    protected Strike RollStrike(Enemy enemy, double hitChance, double multiplier, double critChance, string label, IRandomSource rng)
     {
-        if (!Rng.Chance(CombatMath.ClampChance(hitChance)))
+        ArgumentNullException.ThrowIfNull(enemy);
+        ArgumentNullException.ThrowIfNull(rng);
+        if (!rng.Chance(CombatMath.ClampChance(hitChance)))
         {
             return new Strike(false, false, 0, label);
         }
 
-        int raw = (int)Math.Round(Rng.Range(MinDmg, MaxDmg) * multiplier);
-        bool critical = Rng.Chance(critChance);
+        int raw = (int)Math.Round(rng.Range(MinDmg, MaxDmg) * multiplier);
+        bool critical = rng.Chance(critChance);
         if (critical)
         {
             raw *= 2;

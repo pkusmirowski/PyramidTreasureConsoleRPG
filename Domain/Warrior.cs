@@ -1,4 +1,4 @@
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Domain;
 
 /// <summary>Dużo HP, wysokie obrażenia z siły, pancerz rośnie z poziomem. Atak specjalny: trzy cięcia.</summary>
 public sealed class Warrior : Hero
@@ -50,12 +50,12 @@ public sealed class Warrior : Hero
 
     protected override int EvasionFormula() => Dex / 4;
 
-    protected override AttackResult PerformSpecialAttack(Enemy enemy)
+    protected override AttackResult PerformSpecialAttack(Enemy enemy, IRandomSource rng)
     {
         var result = new AttackResult();
         for (int i = 1; i <= 3; i++)
         {
-            result.Strikes.Add(RollStrike(enemy, HitChance - 15, 0.6, CritChance, $"Cięcie {i}"));
+            result.Strikes.Add(RollStrike(enemy, HitChance - 15, 0.6, CritChance, $"Cięcie {i}", rng));
         }
 
         return result;

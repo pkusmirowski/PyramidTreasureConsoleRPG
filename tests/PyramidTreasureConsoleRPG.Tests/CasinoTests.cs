@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace PyramidTreasureConsoleRPG.Tests;
 
 public class CasinoTests
@@ -7,9 +5,9 @@ public class CasinoTests
     [Fact]
     public void ColorOf_ZeroIsGreen_And18BlackAnd18Red()
     {
-        Assert.Equal(RouletteColor.Green, Casino.ColorOf(0));
-        int black = Enumerable.Range(1, 36).Count(n => Casino.ColorOf(n) == RouletteColor.Black);
-        int red = Enumerable.Range(1, 36).Count(n => Casino.ColorOf(n) == RouletteColor.Red);
+        Assert.Equal(RouletteColor.Green, CasinoEngine.ColorOf(0));
+        int black = Enumerable.Range(1, 36).Count(n => CasinoEngine.ColorOf(n) == RouletteColor.Black);
+        int red = Enumerable.Range(1, 36).Count(n => CasinoEngine.ColorOf(n) == RouletteColor.Red);
         Assert.Equal(18, black);
         Assert.Equal(18, red);
     }
@@ -22,7 +20,7 @@ public class CasinoTests
     [InlineData(1, 2, 3, 10, 0)]
     public void SlotPayout_MatchesTable(int a, int b, int c, int bet, int expected)
     {
-        Assert.Equal(expected, Casino.SlotPayout(a, b, c, bet));
+        Assert.Equal(expected, CasinoEngine.SlotPayout(a, b, c, bet));
     }
 
     [Fact]
@@ -36,7 +34,7 @@ public class CasinoTests
             {
                 for (int c = 1; c <= 7; c++)
                 {
-                    totalPayout += Casino.SlotPayout(a, b, c, 100);
+                    totalPayout += CasinoEngine.SlotPayout(a, b, c, 100);
                     spins++;
                 }
             }
@@ -53,6 +51,6 @@ public class CasinoTests
     [InlineData(new[] { 11, 12, 13 }, 30)]
     public void BlackjackScore_HandlesAcesAndFaces(int[] cards, int expected)
     {
-        Assert.Equal(expected, Casino.BlackjackScore(cards));
+        Assert.Equal(expected, CasinoEngine.BlackjackScore(cards));
     }
 }

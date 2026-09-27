@@ -26,3 +26,6 @@ coverage*.json
 # OS files
 .DS_Store
 Thumbs.db
+
+# Play-through bot working folder
+tools/.playbot-home/

@@ -1,31 +1,49 @@
-namespace PyramidTreasureConsoleRPG;
+using Microsoft.Extensions.DependencyInjection;
+using PyramidTreasureConsoleRPG.Domain;
+using PyramidTreasureConsoleRPG.Infrastructure;
+using PyramidTreasureConsoleRPG.Ui;
 
-public static class Program
+string dataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GreatPyramidTreasureRPG_DataSave");
+string musicPath = Path.Combine(AppContext.BaseDirectory, "Audio", "ancient_egypt.wav");
+
+var services = new ServiceCollection();
+services.AddSingleton<IGameIO, ConsoleGameIO>();
+services.AddSingleton<IRandomSource, SystemRandomSource>();
+services.AddSingleton<ISaveStore>(new JsonFileSaveStore(dataFolder));
+services.AddSingleton<ISettingsStore>(new JsonSettingsStore(dataFolder));
+services.AddSingleton(sp => sp.GetRequiredService<ISettingsStore>().Load());
+services.AddSingleton<IMusicPlayer>(_ => OperatingSystem.IsWindows() ? new NAudioMusicPlayer(musicPath) : (IMusicPlayer)new NullMusicPlayer());
+services.AddSingleton<PyramidTreasureConsoleRPG.Engine.RestService>();
+services.AddSingleton<CombatScreen>();
+services.AddSingleton<InventoryScreen>();
+services.AddSingleton<ShopScreen>();
+services.AddSingleton<BarScreen>();
+services.AddSingleton<CasinoScreen>();
+services.AddSingleton<RestScreen>();
+services.AddSingleton<TavernScreen>();
+services.AddSingleton<TownScreen>();
+services.AddSingleton<MainMenuScreen>();
+
+using ServiceProvider provider = services.BuildServiceProvider();
+
+GameSettings settings = provider.GetRequiredService<GameSettings>();
+IGameIO io = provider.GetRequiredService<IGameIO>();
+io.NarrationDelayMs = settings.NarrationDelayMs;
+
+IMusicPlayer music = provider.GetRequiredService<IMusicPlayer>();
+if (settings.MusicEnabled)
 {
-    public static int Main()
-    {
-        GameIO.Initialize();
-        string dataFolder = SaveSystem.SaveFolder;
-        GameSettings settings = GameSettings.Load(dataFolder);
-        GameIO.NarrationDelayMs = settings.NarrationDelayMs;
+    music.Play(settings.MusicVolume);
+}
 
-        string musicPath = Path.Combine(AppContext.BaseDirectory, "Audio", "ancient_egypt.wav");
-        using var music = new MusicPlayer(musicPath);
-        if (settings.MusicEnabled)
-        {
-            music.Play(settings.MusicVolume);
-        }
-
-        try
-        {
-            new Game(settings, music, dataFolder).Run();
-            GameIO.WriteLine("Do zobaczenia!");
-            return 0;
-        }
-        catch (EndOfStreamException)
-        {
-            // Zamknięte wejście (np. potok) – kończymy spokojnie.
-            return 0;
-        }
-    }
+try
+{
+    provider.GetRequiredService<MainMenuScreen>().Run();
+    io.WriteLine("Do zobaczenia!");
+    return 0;
+}
+catch (EndOfStreamException)
+{
+    // Zamknięte wejście (np. potok) – kończymy spokojnie.
+    return 0;
 }

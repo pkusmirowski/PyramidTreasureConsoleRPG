@@ -1,34 +1,26 @@
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Ui;
 
-public enum RouletteColor
+/// <summary>Ekran kasyna. Stawka jest pobierana z góry, wypłata dopisywana po grze.</summary>
+public sealed class CasinoScreen
 {
-    Green,
-    Black,
-    Red,
-}
+    private readonly IGameIO io;
+    private readonly IRandomSource rng;
 
-/// <summary>
-/// Kasyno. Każda gra pobiera stawkę Z GÓRY i wypłaca wygraną – dzięki temu nie da się
-/// wygrać bez ryzyka ani postawić ujemnej kwoty. Czyste funkcje wypłat są publiczne dla testów.
-/// </summary>
-public static class Casino
-{
-    public const int MaxBet = 500;
-    public const int BlackjackTarget = 21;
-    public const int DealerStandsOn = 17;
+    public CasinoScreen(IGameIO io, IRandomSource rng)
+    {
+        this.io = io ?? throw new ArgumentNullException(nameof(io));
+        this.rng = rng ?? throw new ArgumentNullException(nameof(rng));
+    }
 
-    private static readonly int[] BlackNumbers = { 2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35 };
-
-    public static void Visit(Hero hero)
+    public void Run(Hero hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
         while (true)
         {
-            GameIO.Header("Kasyno");
-            GameIO.WriteLine($"Twoje złoto: {hero.Gold}   (maksymalna stawka: {MaxBet})", ConsoleColor.DarkYellow);
-            GameIO.Menu("W co grasz?", "Ruletka", "Jednoręki bandyta", "Blackjack", "Kości", "Wyjdź z kasyna");
-            int choice = GameIO.ReadMenuChoice(5);
-            GameIO.Clear();
+            io.Header("Kasyno");
+            io.WriteLine($"Twoje złoto: {hero.Gold}   (maksymalna stawka: {CasinoEngine.MaxBet})", ConsoleColor.DarkYellow);
+            int choice = io.Menu("W co grasz?", "Ruletka", "Jednoręki bandyta", "Blackjack", "Kości", "Wyjdź z kasyna");
+            io.Clear();
             switch (choice)
             {
                 case 1:
@@ -43,115 +35,49 @@ public static class Casino
                 case 4:
                     PlayLoop(hero, Craps);
                     break;
-                case 5:
-                    GameIO.WriteLine("Wychodzisz z kasyna...");
+                default:
+                    io.WriteLine("Wychodzisz z kasyna...");
                     return;
             }
         }
     }
 
-    // ---------- czyste reguły (testowalne) ----------
-
-    public static RouletteColor ColorOf(int number)
+    /// <summary>Czyta stawkę 1..min(MaxBet, złoto). 0 = rezygnacja.</summary>
+    private int ReadBet(Hero hero)
     {
-        if (number == 0)
-        {
-            return RouletteColor.Green;
-        }
-
-        return BlackNumbers.Contains(number) ? RouletteColor.Black : RouletteColor.Red;
-    }
-
-    /// <summary>Wypłata (łącznie ze zwrotem stawki) za bęben automatu. 0 = przegrana.</summary>
-    public static int SlotPayout(int first, int second, int third, int bet)
-    {
-        if (first == 7 && second == 7 && third == 7)
-        {
-            return bet * 50;
-        }
-
-        if (first == second && second == third)
-        {
-            return bet * 10;
-        }
-
-        if (first == second || second == third || first == third)
-        {
-            return bet * 3 / 2;
-        }
-
-        return 0;
-    }
-
-    /// <summary>Wartość ręki w blackjacku. Karty 1–13 (1 = as, 11–13 = figury).</summary>
-    public static int BlackjackScore(IEnumerable<int> cards)
-    {
-        int score = 0;
-        int aces = 0;
-        foreach (int card in cards)
-        {
-            if (card == 1)
-            {
-                aces++;
-                score += 11;
-            }
-            else
-            {
-                score += Math.Min(card, 10);
-            }
-        }
-
-        while (score > BlackjackTarget && aces > 0)
-        {
-            score -= 10;
-            aces--;
-        }
-
-        return score;
-    }
-
-    public static string CardName(int card) => card switch
-    {
-        1 => "A",
-        11 => "J",
-        12 => "Q",
-        13 => "K",
-        _ => card.ToString(),
-    };
-
-    // ---------- wspólna obsługa stawek ----------
-
-    /// <summary>Czyta stawkę 1..min(MaxBet, złoto). 0 = rezygnacja. Ujemne i za duże kwoty są odrzucane.</summary>
-    public static int ReadBet(Hero hero)
-    {
-        int max = Math.Min(MaxBet, hero.Gold);
+        int max = Math.Min(CasinoEngine.MaxBet, hero.Gold);
         if (max < 1)
         {
-            GameIO.Error("Nie masz złota. Krupier pokazuje ci drzwi.");
+            io.ShowError("Nie masz złota. Krupier pokazuje ci drzwi.");
             return 0;
         }
 
-        GameIO.WriteLine($"Masz {hero.Gold} złota. Stawka od 1 do {max}, 0 = rezygnacja.", ConsoleColor.DarkYellow);
-        return GameIO.ReadChoice(0, max, "Ile stawiasz? ");
+        io.WriteLine($"Masz {hero.Gold} złota. Stawka od 1 do {max}, 0 = rezygnacja.", ConsoleColor.DarkYellow);
+        return io.ReadNumber("Ile stawiasz? ", 0, max);
     }
 
-    private static void PlayLoop(Hero hero, Action<Hero, int> game)
+    private void PlayLoop(Hero hero, Func<Hero, int, int> game)
     {
         while (true)
         {
             int bet = ReadBet(hero);
             if (bet == 0)
             {
-                GameIO.Clear();
+                io.Clear();
                 return;
             }
 
             hero.Gold -= bet;
-            game(hero, bet);
-            GameIO.WriteLine($"Aktualny stan konta: {hero.Gold} złota.", ConsoleColor.DarkYellow);
-            GameIO.Menu("Grasz dalej?", "Tak", "Nie");
-            bool again = GameIO.ReadMenuChoice(2) == 1;
-            GameIO.Clear();
+            int payout = game(hero, bet);
+            if (payout > 0)
+            {
+                hero.Gold += payout;
+                io.ShowSuccess($"Wygrałeś {payout} złota!");
+            }
+
+            io.WriteLine($"Aktualny stan konta: {hero.Gold} złota.", ConsoleColor.DarkYellow);
+            bool again = io.Menu("Grasz dalej?", "Tak", "Nie") == 1;
+            io.Clear();
             if (!again)
             {
                 return;
@@ -159,69 +85,37 @@ public static class Casino
         }
     }
 
-    private static void Win(Hero hero, int payout)
+    private int Roulette(Hero hero, int bet)
     {
-        hero.Gold += payout;
-        GameIO.Success($"Wygrałeś {payout} złota!");
+        int choice = io.Menu("Na co stawiasz?", "Czarne (x2)", "Czerwone (x2)", "Konkretny numer 0-36 (x36)");
+        var betType = (RouletteBet)choice;
+        int number = betType == RouletteBet.Number ? io.ReadNumber("Numer (0-36): ", 0, 36) : -1;
+        RouletteResult result = CasinoEngine.PlayRoulette(bet, betType, number, rng);
+        io.WriteLine($"Kulka zatrzymuje się na: {result.WinningNumber} ({CasinoEngine.ColorName(result.Color)}).", ConsoleColor.Cyan);
+        if (!result.Won)
+        {
+            io.ShowError("Niestety, przegrałeś.");
+        }
+
+        return result.Payout;
     }
 
-    // ---------- gry ----------
-
-    private static void Roulette(Hero hero, int bet)
+    private int SlotMachine(Hero hero, int bet)
     {
-        GameIO.Menu("Na co stawiasz?", "Czarne (x2)", "Czerwone (x2)", "Konkretny numer 0-36 (x36)");
-        int choice = GameIO.ReadMenuChoice(3);
-        int number = choice == 3 ? GameIO.ReadChoice(0, 36, "Numer (0-36): ") : -1;
-        int winning = Rng.Range(0, 36);
-        RouletteColor color = ColorOf(winning);
-        GameIO.WriteLine($"Kulka zatrzymuje się na: {winning} ({ColorName(color)}).", ConsoleColor.Cyan);
-
-        bool won = choice switch
+        SlotResult result = CasinoEngine.SpinSlots(bet, rng);
+        io.WriteLine("+-----+-----+-----+");
+        io.WriteLine($"|  {ReelSymbol(result.Reels[0])}  |  {ReelSymbol(result.Reels[1])}  |  {ReelSymbol(result.Reels[2])}  |");
+        io.WriteLine("+-----+-----+-----+");
+        if (result.Jackpot)
         {
-            1 => color == RouletteColor.Black,
-            2 => color == RouletteColor.Red,
-            _ => winning == number,
-        };
-        if (won)
-        {
-            Win(hero, choice == 3 ? bet * 36 : bet * 2);
+            io.WriteLine("JACKPOT!!!", ConsoleColor.Magenta);
         }
-        else
+        else if (result.Payout == 0)
         {
-            GameIO.Error("Niestety, przegrałeś.");
+            io.ShowError("Nic z tego. Automat połyka twoje złoto.");
         }
-    }
 
-    private static string ColorName(RouletteColor color) => color switch
-    {
-        RouletteColor.Black => "czarne",
-        RouletteColor.Red => "czerwone",
-        _ => "zielone",
-    };
-
-    private static void SlotMachine(Hero hero, int bet)
-    {
-        int first = Rng.Range(1, 7);
-        int second = Rng.Range(1, 7);
-        int third = Rng.Range(1, 7);
-        GameIO.WriteLine("+-----+-----+-----+");
-        GameIO.WriteLine($"|  {ReelSymbol(first)}  |  {ReelSymbol(second)}  |  {ReelSymbol(third)}  |");
-        GameIO.WriteLine("+-----+-----+-----+");
-
-        int payout = SlotPayout(first, second, third, bet);
-        if (payout == 0)
-        {
-            GameIO.Error("Nic z tego. Automat połyka twoje złoto.");
-        }
-        else
-        {
-            if (first == 7 && second == 7 && third == 7)
-            {
-                GameIO.WriteLine("JACKPOT!!!", ConsoleColor.Magenta);
-            }
-
-            Win(hero, payout);
-        }
+        return result.Payout;
     }
 
     private static string ReelSymbol(int value) => value switch
@@ -235,109 +129,70 @@ public static class Casino
         _ => "7",
     };
 
-    private static void Blackjack(Hero hero, int bet)
+    private int Blackjack(Hero hero, int bet)
     {
-        var player = new List<int> { DrawCard(), DrawCard() };
-        var dealer = new List<int> { DrawCard(), DrawCard() };
-        GameIO.WriteLine($"Twoje karty: {Hand(player)} = {BlackjackScore(player)}");
-        GameIO.WriteLine($"Karta krupiera: {CardName(dealer[0])}");
+        var game = new BlackjackGame(bet, rng);
+        io.WriteLine($"Twoje karty: {Hand(game.PlayerCards)} = {game.PlayerScore}");
+        io.WriteLine($"Karta krupiera: {CasinoEngine.CardName(game.DealerCards[0])}");
 
-        if (BlackjackScore(player) == BlackjackTarget)
+        while (!game.IsFinished)
         {
-            if (BlackjackScore(dealer) == BlackjackTarget)
+            if (io.Menu("Co robisz?", "Dobierz kartę", "Pasuj") == 1)
             {
-                GameIO.WriteLine($"Karty krupiera: {Hand(dealer)} = 21. Remis – stawka wraca.");
-                hero.Gold += bet;
+                game.Hit();
+                io.WriteLine($"Twoje karty: {Hand(game.PlayerCards)} = {game.PlayerScore}");
             }
             else
             {
-                GameIO.WriteLine("BLACKJACK!", ConsoleColor.Magenta);
-                Win(hero, bet * 5 / 2);
+                game.Stand();
             }
-
-            return;
         }
 
-        while (true)
+        switch (game.Outcome)
         {
-            GameIO.Menu("Co robisz?", "Dobierz kartę", "Pasuj");
-            if (GameIO.ReadMenuChoice(2) == 2)
-            {
+            case BlackjackOutcome.PlayerBlackjack:
+                io.WriteLine("BLACKJACK!", ConsoleColor.Magenta);
                 break;
-            }
-
-            player.Add(DrawCard());
-            GameIO.WriteLine($"Twoje karty: {Hand(player)} = {BlackjackScore(player)}");
-            if (BlackjackScore(player) > BlackjackTarget)
-            {
-                GameIO.Error("Przebiłeś! Przegrywasz.");
-                return;
-            }
+            case BlackjackOutcome.PlayerBust:
+                io.ShowError("Przebiłeś! Przegrywasz.");
+                break;
+            case BlackjackOutcome.Push:
+                io.WriteLine($"Karty krupiera: {Hand(game.DealerCards)} = {game.DealerScore}");
+                io.ShowInfo("Remis – stawka wraca.");
+                break;
+            case BlackjackOutcome.DealerWins:
+                io.WriteLine($"Karty krupiera: {Hand(game.DealerCards)} = {game.DealerScore}");
+                io.ShowError("Krupier wygrywa.");
+                break;
+            default:
+                io.WriteLine($"Karty krupiera: {Hand(game.DealerCards)} = {game.DealerScore}");
+                break;
         }
 
-        while (BlackjackScore(dealer) < DealerStandsOn)
-        {
-            dealer.Add(DrawCard());
-        }
-
-        int playerScore = BlackjackScore(player);
-        int dealerScore = BlackjackScore(dealer);
-        GameIO.WriteLine($"Karty krupiera: {Hand(dealer)} = {dealerScore}");
-        if (dealerScore > BlackjackTarget || playerScore > dealerScore)
-        {
-            Win(hero, bet * 2);
-        }
-        else if (playerScore == dealerScore)
-        {
-            GameIO.Info("Remis – stawka wraca.");
-            hero.Gold += bet;
-        }
-        else
-        {
-            GameIO.Error("Krupier wygrywa.");
-        }
+        return game.Payout;
     }
 
-    private static string Hand(List<int> cards) => string.Join(", ", cards.Select(CardName));
+    private static string Hand(IReadOnlyList<int> cards) => string.Join(", ", cards.Select(CasinoEngine.CardName));
 
-    private static int DrawCard() => Rng.Range(1, 13);
-
-    private static void Craps(Hero hero, int bet)
+    private int Craps(Hero hero, int bet)
     {
-        int roll = RollDice();
-        GameIO.WriteLine($"Wyrzucono: {roll}");
-        if (roll is 7 or 11)
+        CrapsResult result = CasinoEngine.PlayCraps(bet, rng);
+        io.WriteLine($"Wyrzucono: {result.Rolls[0]}");
+        if (result.Point.HasValue)
         {
-            Win(hero, bet * 2);
-            return;
-        }
-
-        if (roll is 2 or 3 or 12)
-        {
-            GameIO.Error("Przegrałeś!");
-            return;
-        }
-
-        int point = roll;
-        GameIO.Info($"Twoim punktem jest {point}. Rzucasz, aż wypadnie {point} (wygrana) albo 7 (przegrana).");
-        while (true)
-        {
-            GameIO.Pause(500);
-            int next = RollDice();
-            GameIO.WriteLine($"Wyrzucono: {next}");
-            if (next == point)
+            io.ShowInfo($"Twoim punktem jest {result.Point}. Rzucasz, aż wypadnie {result.Point} (wygrana) albo 7 (przegrana).");
+            foreach (int roll in result.Rolls.Skip(1))
             {
-                Win(hero, bet * 2);
-                return;
-            }
-
-            if (next == 7)
-            {
-                GameIO.Error("Siódemka. Przegrałeś!");
-                return;
+                io.Pause(400);
+                io.WriteLine($"Wyrzucono: {roll}");
             }
         }
+
+        if (!result.Won)
+        {
+            io.ShowError(result.Point.HasValue ? "Siódemka. Przegrałeś!" : "Przegrałeś!");
+        }
+
+        return result.Payout;
     }
-
-    private static int RollDice() => Rng.Range(1, 6) + Rng.Range(1, 6);
 }

@@ -1,186 +1,181 @@
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Engine;
 
-public enum CombatOutcome
+public enum CombatStatus
 {
+    InProgress,
     Victory,
     Defeat,
     Fled,
 }
 
-/// <summary>Pętla walki: inicjatywa, tury, mikstury, ucieczka, nagrody.</summary>
-public static class Combat
+/// <summary>Zdarzenia walki. Silnik je produkuje, ekran je wyświetla.</summary>
+public abstract record CombatEvent;
+
+public sealed record FightStartedEvent(Enemy Enemy, bool HeroActsFirst) : CombatEvent;
+
+public sealed record StrikeEvent(Enemy Enemy, Strike Strike) : CombatEvent;
+
+public sealed record EnemyAttackEvent(Enemy Enemy, EnemyAttackResult Result) : CombatEvent;
+
+public sealed record PotionDrunkEvent(PotionKind Kind, int Healed) : CombatEvent;
+
+public sealed record FleeAttemptEvent(Enemy Enemy, bool Success) : CombatEvent;
+
+public sealed record EnemyDefeatedEvent(Enemy Enemy, int Gold, int Exp, int LevelsGained, int NewLevel) : CombatEvent;
+
+public sealed record HeroDefeatedEvent(Enemy Enemy) : CombatEvent;
+
+public sealed record VictoryEvent : CombatEvent;
+
+/// <summary>
+/// Stan i reguły jednej walki (bohater kontra kolejka wrogów). Nie zna konsoli: każda akcja
+/// bohatera zwraca listę zdarzeń do wyświetlenia. Kolejność tur wynika z inicjatywy ustalanej
+/// osobno dla każdego wroga.
+/// </summary>
+public sealed class CombatEngine
 {
-    public static CombatOutcome Run(Hero hero, List<Enemy> enemies)
+    private readonly Queue<Enemy> pending;
+    private readonly IRandomSource rng;
+
+    public CombatEngine(Hero hero, IEnumerable<Enemy> enemies, IRandomSource rng)
     {
-        ArgumentNullException.ThrowIfNull(hero);
+        Hero = hero ?? throw new ArgumentNullException(nameof(hero));
         ArgumentNullException.ThrowIfNull(enemies);
-
-        foreach (Enemy enemy in enemies)
+        this.rng = rng ?? throw new ArgumentNullException(nameof(rng));
+        pending = new Queue<Enemy>(enemies);
+        if (pending.Count == 0)
         {
-            GameIO.Clear();
-            GameIO.WriteLine($"Spotkałeś przeciwnika: {enemy.Name} ({enemy.Hp} HP, {enemy.MinDmg}-{enemy.MaxDmg} obrażeń). Przygotuj się do walki!", ConsoleColor.Magenta);
-            bool heroFirst = Rng.Chance(Math.Clamp(50 + hero.Dex - enemy.Agility, 20, 80));
-            GameIO.WriteLine(heroFirst ? "Jesteś szybszy – atakujesz pierwszy." : $"{enemy.Name} jest szybszy i atakuje pierwszy!", ConsoleColor.DarkGray);
-            GameIO.Pause(1200);
-
-            while (enemy.IsAlive && hero.IsAlive)
-            {
-                if (heroFirst)
-                {
-                    if (HeroTurn(hero, enemy) == TurnResult.Fled)
-                    {
-                        return CombatOutcome.Fled;
-                    }
-
-                    if (enemy.IsAlive)
-                    {
-                        EnemyTurn(hero, enemy);
-                    }
-                }
-                else
-                {
-                    EnemyTurn(hero, enemy);
-                    if (hero.IsAlive && HeroTurn(hero, enemy) == TurnResult.Fled)
-                    {
-                        return CombatOutcome.Fled;
-                    }
-                }
-            }
-
-            if (!hero.IsAlive)
-            {
-                return CombatOutcome.Defeat;
-            }
-
-            Reward(hero, enemy);
+            throw new ArgumentException("Walka wymaga przynajmniej jednego wroga.", nameof(enemies));
         }
 
-        return CombatOutcome.Victory;
+        CurrentEnemy = pending.Dequeue();
     }
 
-    private enum TurnResult
+    public Hero Hero { get; }
+
+    public Enemy CurrentEnemy { get; private set; }
+
+    public CombatStatus Status { get; private set; } = CombatStatus.InProgress;
+
+    public bool HeroActsFirst { get; private set; }
+
+    public bool CanFlee => !CurrentEnemy.IsBoss;
+
+    /// <summary>Rozpoczyna walkę z pierwszym wrogiem. Jeśli wróg jest szybszy, od razu atakuje.</summary>
+    public IReadOnlyList<CombatEvent> Begin()
     {
-        Continue,
-        Fled,
+        var events = new List<CombatEvent>();
+        StartEncounter(events);
+        return events;
     }
 
-    private static void ShowStatus(Hero hero, Enemy enemy)
+    public IReadOnlyList<CombatEvent> HeroAttack(AttackKind kind)
     {
-        GameIO.WriteLine();
-        GameIO.Write($"{hero.Name}: {hero.Hp}/{hero.MaxHp} HP", ConsoleColor.Green);
-        GameIO.Write("   vs   ", ConsoleColor.DarkGray);
-        GameIO.WriteLine($"{enemy.Name}: {enemy.Hp}/{enemy.MaxHp} HP", ConsoleColor.Red);
-    }
-
-    private static TurnResult HeroTurn(Hero hero, Enemy enemy)
-    {
-        while (true)
-        {
-            ShowStatus(hero, enemy);
-            var attacks = hero.AttackOptions;
-            var options = attacks.Select(a => $"{a.Name} ({a.Description})").ToList();
-            options.Add($"Wypij miksturę (masz: {hero.Inventory.Count})");
-            options.Add(enemy.IsBoss ? "Ucieczka niemożliwa – to boss" : $"Uciekaj (szansa {hero.FleeChance}%)");
-            GameIO.Menu("Twoja tura:", options.ToArray());
-            int choice = GameIO.ReadMenuChoice(options.Count);
-            GameIO.Clear();
-
-            if (choice <= attacks.Count)
-            {
-                AttackResult result = hero.Attack(attacks[choice - 1].Kind, enemy);
-                Report(result, enemy);
-                return TurnResult.Continue;
-            }
-
-            if (choice == attacks.Count + 1)
-            {
-                if (Inventory.DrinkMenu(hero))
-                {
-                    return TurnResult.Continue;
-                }
-
-                continue;
-            }
-
-            if (enemy.IsBoss)
-            {
-                GameIO.Error("Nie ma dokąd uciekać. Musisz walczyć.");
-                continue;
-            }
-
-            if (Rng.Chance(hero.FleeChance))
-            {
-                GameIO.Info("Udało ci się uciec! Wracasz do miasta bez łupów.");
-                return TurnResult.Fled;
-            }
-
-            GameIO.Error($"{enemy.Name} odcina ci drogę ucieczki! Tracisz turę.");
-            return TurnResult.Continue;
-        }
-    }
-
-    private static void Report(AttackResult result, Enemy enemy)
-    {
+        EnsureInProgress();
+        var events = new List<CombatEvent>();
+        AttackResult result = Hero.Attack(kind, CurrentEnemy, rng);
         foreach (Strike strike in result.Strikes)
         {
-            if (!strike.Hit)
-            {
-                GameIO.Info($"{strike.Label}: pudło!");
-                continue;
-            }
-
-            if (strike.Critical)
-            {
-                GameIO.WriteLine($"{strike.Label}: {Dialogues.CritDescription()} ({strike.Damage} obrażeń)", ConsoleColor.Blue);
-            }
-            else
-            {
-                GameIO.Success($"{strike.Label}: trafienie za {strike.Damage} obrażeń.");
-            }
+            events.Add(new StrikeEvent(CurrentEnemy, strike));
         }
 
-        if (result.AnyHit)
+        FinishHeroTurn(events);
+        return events;
+    }
+
+    /// <summary>Wypicie mikstury zużywa turę. Wywołujący sprawdza wcześniej, że bohater ją ma.</summary>
+    public IReadOnlyList<CombatEvent> HeroDrinkPotion(PotionKind kind)
+    {
+        EnsureInProgress();
+        int? healed = Hero.DrinkPotion(kind);
+        if (healed is null)
         {
-            GameIO.WriteLine(enemy.IsAlive ? $"Przeciwnikowi zostało {enemy.Hp} HP." : Dialogues.KillDescription(enemy), enemy.IsAlive ? ConsoleColor.Gray : ConsoleColor.DarkRed);
+            throw new InvalidOperationException("Bohater nie ma takiej mikstury.");
+        }
+
+        var events = new List<CombatEvent> { new PotionDrunkEvent(kind, healed.Value) };
+        FinishHeroTurn(events);
+        return events;
+    }
+
+    public IReadOnlyList<CombatEvent> HeroFlee()
+    {
+        EnsureInProgress();
+        if (!CanFlee)
+        {
+            throw new InvalidOperationException("Od bossa nie można uciec.");
+        }
+
+        var events = new List<CombatEvent>();
+        bool success = rng.Chance(Hero.FleeChance);
+        events.Add(new FleeAttemptEvent(CurrentEnemy, success));
+        if (success)
+        {
+            Status = CombatStatus.Fled;
+            return events;
+        }
+
+        FinishHeroTurn(events);
+        return events;
+    }
+
+    private void EnsureInProgress()
+    {
+        if (Status != CombatStatus.InProgress)
+        {
+            throw new InvalidOperationException("Walka jest już zakończona.");
         }
     }
 
-    private static void EnemyTurn(Hero hero, Enemy enemy)
+    private void StartEncounter(List<CombatEvent> events)
     {
-        EnemyAttackResult result = enemy.Attack(hero);
-        if (!result.Hit)
+        HeroActsFirst = rng.Chance(Math.Clamp(50 + Hero.Dex - CurrentEnemy.Agility, 20, 80));
+        events.Add(new FightStartedEvent(CurrentEnemy, HeroActsFirst));
+        if (!HeroActsFirst)
         {
-            GameIO.Info($"{enemy.Name} atakuje – unikasz ciosu!");
+            EnemyTurn(events);
         }
-        else
-        {
-            GameIO.Error($"{enemy.Name} atakuje! Otrzymujesz {result.Damage} obrażeń. Masz {hero.Hp}/{hero.MaxHp} HP.");
-        }
-
-        GameIO.Pause(600);
     }
 
-    private static void Reward(Hero hero, Enemy enemy)
+    /// <summary>Po akcji bohatera: nagroda za pokonanego wroga albo kontratak.</summary>
+    private void FinishHeroTurn(List<CombatEvent> events)
     {
-        GameIO.Success($"Pokonałeś: {enemy.Name}!");
-        hero.Gold += enemy.Gold;
-        GameIO.WriteLine($"Zdobyłeś {enemy.Gold} sztuk złota (masz {hero.Gold}).", ConsoleColor.DarkYellow);
-
-        if (enemy.Exp > 0 && !hero.IsMaxLevel)
+        if (!CurrentEnemy.IsAlive)
         {
-            int before = hero.Level;
-            int gained = hero.AddExp(enemy.Exp);
-            GameIO.WriteLine($"Zyskałeś {enemy.Exp} punktów doświadczenia ({hero.Exp}/{hero.ExpToNextLevel}).", ConsoleColor.DarkCyan);
-            for (int i = 1; i <= gained; i++)
-            {
-                int newLevel = before + i;
-                GameIO.WriteLine(newLevel >= CombatMath.MaxLevel
-                    ? $"Gratulacje! Zdobyłeś maksymalny poziom {newLevel}. Pogadaj z barmanem o karawanie."
-                    : $"Gratulacje! Zdobyłeś poziom {newLevel}!", ConsoleColor.DarkYellow);
-            }
+            Reward(events);
+            return;
         }
 
-        GameIO.PressAnyKey();
-        GameIO.Clear();
+        EnemyTurn(events);
+    }
+
+    private void EnemyTurn(List<CombatEvent> events)
+    {
+        EnemyAttackResult result = CurrentEnemy.Attack(Hero, rng);
+        events.Add(new EnemyAttackEvent(CurrentEnemy, result));
+        if (!Hero.IsAlive)
+        {
+            Status = CombatStatus.Defeat;
+            events.Add(new HeroDefeatedEvent(CurrentEnemy));
+        }
+    }
+
+    private void Reward(List<CombatEvent> events)
+    {
+        Enemy enemy = CurrentEnemy;
+        Hero.Gold += enemy.Gold;
+        int before = Hero.Level;
+        int gained = enemy.Exp > 0 ? Hero.AddExp(enemy.Exp) : 0;
+        events.Add(new EnemyDefeatedEvent(enemy, enemy.Gold, enemy.Exp, gained, before + gained));
+
+        if (pending.Count == 0)
+        {
+            Status = CombatStatus.Victory;
+            events.Add(new VictoryEvent());
+            return;
+        }
+
+        CurrentEnemy = pending.Dequeue();
+        StartEncounter(events);
     }
 }

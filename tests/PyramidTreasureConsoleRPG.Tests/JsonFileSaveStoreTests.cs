@@ -1,14 +1,13 @@
-using Xunit;
-
 namespace PyramidTreasureConsoleRPG.Tests;
 
-public sealed class SaveSystemTests : IDisposable
+public sealed class JsonFileSaveStoreTests : IDisposable
 {
     private readonly string folder = Path.Combine(Path.GetTempPath(), "PyramidTests_" + Guid.NewGuid().ToString("N"));
+    private readonly JsonFileSaveStore store;
 
-    public SaveSystemTests()
+    public JsonFileSaveStoreTests()
     {
-        SaveSystem.SaveFolder = folder;
+        store = new JsonFileSaveStore(folder);
     }
 
     public void Dispose()
@@ -22,10 +21,11 @@ public sealed class SaveSystemTests : IDisposable
     [Fact]
     public void Load_WithoutSaveFile_ReturnsNullWithMessage()
     {
-        Assert.False(SaveSystem.SaveExists());
-        Hero? hero = SaveSystem.Load(out string message);
-        Assert.Null(hero);
-        Assert.Contains("Brak", message);
+        Assert.False(store.Exists());
+        SaveLoadResult result = store.Load();
+        Assert.Null(result.Data);
+        Assert.Contains("Brak", result.Message, StringComparison.Ordinal);
+        Assert.Null(store.Peek());
     }
 
     [Fact]
@@ -40,11 +40,11 @@ public sealed class SaveSystemTests : IDisposable
         hero.Inventory.Add(new SmallPotion());
         hero.Inventory.Add(new LargePotion());
 
-        Assert.True(SaveSystem.Save(hero, out _));
-        Hero? loaded = SaveSystem.Load(out string message);
+        Assert.True(store.Save(hero.ToSaveData(), out _));
+        SaveLoadResult result = store.Load();
+        Assert.NotNull(result.Data);
+        Hero loaded = Hero.FromSaveData(result.Data);
 
-        Assert.NotNull(loaded);
-        Assert.Contains("Zoja", message);
         Assert.Equal(hero.Level, loaded.Level);
         Assert.Equal(hero.Exp, loaded.Exp);
         Assert.Equal(hero.ExpToNextLevel, loaded.ExpToNextLevel);
@@ -58,34 +58,40 @@ public sealed class SaveSystemTests : IDisposable
         Assert.Equal(1, loaded.CountPotions(PotionKind.Small));
         Assert.Equal(1, loaded.CountPotions(PotionKind.Large));
         Assert.Equal(HeroClass.Assassin, loaded.HeroClass);
+
+        SaveInfo? info = store.Peek();
+        Assert.NotNull(info);
+        Assert.Equal("Zoja", info.Name);
     }
 
     [Fact]
     public void Load_CorruptedJson_ReturnsNullInsteadOfThrowing()
     {
         Directory.CreateDirectory(folder);
-        File.WriteAllText(SaveSystem.SaveFilePath, "{ to nie jest json");
-        Hero? hero = SaveSystem.Load(out string message);
-        Assert.Null(hero);
-        Assert.False(string.IsNullOrEmpty(message));
+        File.WriteAllText(store.FilePath, "{ to nie jest json");
+        SaveLoadResult result = store.Load();
+        Assert.Null(result.Data);
+        Assert.False(string.IsNullOrEmpty(result.Message));
     }
 
     [Fact]
-    public void Load_UnknownClass_ReturnsNull()
+    public void Load_UnknownClass_IsRejectedByHero()
     {
         Directory.CreateDirectory(folder);
-        File.WriteAllText(SaveSystem.SaveFilePath, "{\"Version\":2,\"Name\":\"X\",\"Class\":9,\"Level\":3}");
-        Hero? hero = SaveSystem.Load(out string message);
-        Assert.Null(hero);
-        Assert.Contains("uszkodzony", message);
+        File.WriteAllText(store.FilePath, "{\"Version\":2,\"Name\":\"X\",\"Class\":9,\"Level\":3}");
+        SaveLoadResult result = store.Load();
+        Assert.NotNull(result.Data);
+        Assert.Throws<InvalidDataException>(() => Hero.FromSaveData(result.Data));
+        Assert.Null(store.Peek());
     }
 
     [Fact]
     public void Load_OldVersion_IsRejected()
     {
         Directory.CreateDirectory(folder);
-        File.WriteAllText(SaveSystem.SaveFilePath, "{\"Version\":1,\"Name\":\"X\",\"Class\":1}");
-        Assert.Null(SaveSystem.Load(out string message));
-        Assert.Contains("wersji", message);
+        File.WriteAllText(store.FilePath, "{\"Version\":1,\"Name\":\"X\",\"Class\":1}");
+        SaveLoadResult result = store.Load();
+        Assert.Null(result.Data);
+        Assert.Contains("wersji", result.Message, StringComparison.Ordinal);
     }
 }

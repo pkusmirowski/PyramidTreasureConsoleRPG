@@ -1,6 +1,6 @@
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Domain;
 
-/// <summary>Etapy fabuły. Dawniej int 0–4 w polu GameStatus.</summary>
+/// <summary>Etapy fabuły.</summary>
 public enum StoryStage
 {
     Start = 0,
@@ -42,18 +42,26 @@ public static class Story
         return hero.Stage < RequiredStageForTravel(hero.Level);
     }
 
-    /// <summary>Rozmowa z barmanem: przesuwa fabułę o jeden etap, jeśli poziom na to pozwala.</summary>
-    public static void TalkToBarman(Hero hero)
+    /// <summary>Przesuwa fabułę o jeden etap, jeśli poziom na to pozwala. Zwraca nowy etap albo null, gdy nie ma wieści.</summary>
+    public static StoryStage? AdvanceByBarman(Hero hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
         if (!BarmanHasNews(hero))
         {
-            GameIO.Info("Barman wzrusza ramionami: \"Na ten moment nie mam żadnych nowych wieści. Wróć, jak nabierzesz doświadczenia.\"");
-            return;
+            return null;
         }
 
-        StoryStage next = hero.Stage + 1;
-        Dialogues.Barman(next);
-        hero.Stage = next;
+        hero.Stage += 1;
+        return hero.Stage;
     }
+
+    public static string StageName(StoryStage stage) => stage switch
+    {
+        StoryStage.Start => "początek – pogadaj z barmanem",
+        StoryStage.BanditsCalmed => "bandyci za bramą",
+        StoryStage.WolvesCleared => "wilki w lasach",
+        StoryStage.CaravanAnnounced => "karawana w drodze",
+        StoryStage.CaravanReady => "karawana czeka przy bramie",
+        _ => stage.ToString(),
+    };
 }

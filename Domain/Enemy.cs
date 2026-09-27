@@ -1,4 +1,4 @@
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Domain;
 
 public enum EnemyKind
 {
@@ -61,15 +61,16 @@ public abstract class Enemy
 
     public bool IsAlive => Hp > 0;
 
-    public EnemyAttackResult Attack(Hero hero)
+    public EnemyAttackResult Attack(Hero hero, IRandomSource rng)
     {
         ArgumentNullException.ThrowIfNull(hero);
-        if (Rng.Chance(hero.Evasion))
+        ArgumentNullException.ThrowIfNull(rng);
+        if (rng.Chance(hero.Evasion))
         {
             return new EnemyAttackResult(false, 0);
         }
 
-        int damage = CombatMath.ReduceByArmor(Rng.Range(MinDmg, MaxDmg), hero.Armor);
+        int damage = CombatMath.ReduceByArmor(rng.Range(MinDmg, MaxDmg), hero.Armor);
         hero.TakeDamage(damage);
         return new EnemyAttackResult(true, damage);
     }

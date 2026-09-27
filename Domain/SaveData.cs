@@ -1,4 +1,4 @@
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Domain;
 
 /// <summary>Płaski obiekt zapisu (JSON). Statystyki pochodne nie są zapisywane – liczy się je z Vit/Str/Dex.</summary>
 public sealed class SaveData

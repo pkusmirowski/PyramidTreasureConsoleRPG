@@ -1,4 +1,4 @@
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Domain;
 
 public sealed class MediumPotion : Potion
 {

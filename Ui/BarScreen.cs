@@ -1,32 +1,32 @@
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Ui;
 
-/// <summary>Bar: rozmowa z barmanem (fabuła) i napoje. Napoje leczą, nie zmieniają statystyk na stałe.</summary>
-public static class Bar
+public sealed class BarScreen
 {
-    public const int WaterCost = 5;
-    public const int WhiskyCost = 15;
-    public const int SpecialDrinkCost = 150;
-    public const int SpecialDrinkExpGain = 5000;
-    public const int SpecialDrinkStatIncrease = 5;
-    public const int MinLevelForSpecialDrink = 15;
+    private readonly IGameIO io;
+    private readonly IRandomSource rng;
 
-    public static void Visit(Hero hero)
+    public BarScreen(IGameIO io, IRandomSource rng)
+    {
+        this.io = io ?? throw new ArgumentNullException(nameof(io));
+        this.rng = rng ?? throw new ArgumentNullException(nameof(rng));
+    }
+
+    public void Run(Hero hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
         while (true)
         {
-            GameIO.Menu(
+            int choice = io.Menu(
                 "Przy barze:",
                 "Zapytaj barmana, co słychać w okolicy",
                 "Napij się czegoś",
                 "Pokaż mi swoje towary",
                 "Odejdź od baru");
-            int choice = GameIO.ReadMenuChoice(4);
-            GameIO.Clear();
+            io.Clear();
             switch (choice)
             {
                 case 1:
-                    Story.TalkToBarman(hero);
+                    TalkToBarman(hero);
                     break;
                 case 2:
                     DrinkMenu(hero);
@@ -34,152 +34,117 @@ public static class Bar
                 case 3:
                     ShowGoods(hero);
                     break;
-                case 4:
+                default:
                     return;
             }
         }
     }
 
-    public static bool WhiskyAvailable(Hero hero) => hero.Stage >= StoryStage.WolvesCleared;
-
-    public static bool SpecialDrinkAvailable(Hero hero) => hero.Stage >= StoryStage.CaravanAnnounced && !hero.SpecialDrinkUsed;
-
-    private static void ShowGoods(Hero hero)
+    private void TalkToBarman(Hero hero)
     {
-        GameIO.Info($"Woda źródlana – {WaterCost} g – leczy 10% zdrowia.");
-        GameIO.Info(WhiskyAvailable(hero)
-            ? $"Szkocka whisky – {WhiskyCost} g – leczy 25% zdrowia."
+        StoryStage? stage = Story.AdvanceByBarman(hero);
+        if (stage is null)
+        {
+            io.ShowInfo(Dialogues.NoNews);
+            return;
+        }
+
+        io.Narrate(Dialogues.Barman(stage.Value));
+    }
+
+    private void ShowGoods(Hero hero)
+    {
+        io.ShowInfo($"Woda źródlana – {BarService.WaterCost} g – leczy 10% zdrowia.");
+        io.ShowInfo(BarService.WhiskyAvailable(hero)
+            ? $"Szkocka whisky – {BarService.WhiskyCost} g – leczy 25% zdrowia."
             : "Szkocka whisky – jeszcze nie dopłynęła.");
         if (hero.SpecialDrinkUsed)
         {
-            GameIO.Info("Miód \"Grunwald\" – wypity. \"To była jedyna butelka, niestety.\"");
+            io.ShowInfo("Miód \"Grunwald\" – wypity. \"To była jedyna butelka, niestety.\"");
         }
-        else if (SpecialDrinkAvailable(hero))
+        else if (BarService.SpecialDrinkAvailable(hero))
         {
-            GameIO.Info($"Miód \"Grunwald\" z Malborka – {SpecialDrinkCost} g – jedna butelka, tylko dla weteranów (poziom {MinLevelForSpecialDrink}+). Wzmacnia na stałe.");
+            io.ShowInfo($"Miód \"Grunwald\" z Malborka – {BarService.SpecialDrinkCost} g – jedna butelka, tylko dla weteranów (poziom {BarService.MinLevelForSpecialDrink}+). Wzmacnia na stałe.");
         }
         else
         {
-            GameIO.Info("Coś specjalnego – barman jeszcze o tym nie wspominał.");
+            io.ShowInfo("Coś specjalnego – barman jeszcze o tym nie wspominał.");
         }
     }
 
-    private static void DrinkMenu(Hero hero)
+    private void DrinkMenu(Hero hero)
     {
         while (true)
         {
-            GameIO.WriteLine($"Zdrowie: {hero.Hp}/{hero.MaxHp}   Złoto: {hero.Gold}", ConsoleColor.DarkYellow);
-            GameIO.Menu(
+            io.WriteLine($"Zdrowie: {hero.Hp}/{hero.MaxHp}   Złoto: {hero.Gold}", ConsoleColor.DarkYellow);
+            int choice = io.Menu(
                 "Co podać?",
-                $"Szklanka wody źródlanej / {WaterCost} g",
-                $"Szklanka szkockiej whisky / {WhiskyCost} g",
-                $"Coś specjalnego / {SpecialDrinkCost} g",
+                $"Szklanka wody źródlanej / {BarService.WaterCost} g",
+                $"Szklanka szkockiej whisky / {BarService.WhiskyCost} g",
+                $"Coś specjalnego / {BarService.SpecialDrinkCost} g",
                 "Zrezygnuj");
-            int choice = GameIO.ReadMenuChoice(4);
-            GameIO.Clear();
+            io.Clear();
             switch (choice)
             {
                 case 1:
-                    DrinkWater(hero);
+                    Report(hero, BarService.DrinkWater(hero), "Napiłeś się wody ze źródła. Czujesz, jak ciało odzyskuje siły.", "Masz pełne zdrowie. Szkoda pieniędzy na wodę.");
                     break;
                 case 2:
-                    DrinkWhisky(hero);
+                    Report(hero, BarService.DrinkWhisky(hero), "Whisky pali w gardle, ale ból mija.", "Masz pełne zdrowie, ale whisky i tak wchodzi. Barman patrzy z uznaniem.");
                     break;
                 case 3:
                     DrinkSpecial(hero);
                     break;
-                case 4:
+                default:
                     return;
             }
         }
     }
 
-    private static bool Pay(Hero hero, int cost)
+    private void Report(Hero hero, DrinkResult result, string okText, string fullText)
     {
-        if (hero.Gold < cost)
+        switch (result.Outcome)
         {
-            Dialogues.NoGold();
-            return false;
+            case DrinkOutcome.Ok:
+                io.ShowSuccess($"{okText} Masz {hero.Hp}/{hero.MaxHp} HP.");
+                break;
+            case DrinkOutcome.FullHealth:
+                io.ShowInfo(fullText);
+                break;
+            case DrinkOutcome.NotEnoughGold:
+                io.ShowError(Dialogues.NoGold(rng));
+                break;
+            case DrinkOutcome.NotAvailable:
+                io.ShowError("\"Whisky? Statek jeszcze nie przypłynął. Na razie tylko woda.\"");
+                break;
+            default:
+                io.ShowError("Barman kręci głową.");
+                break;
         }
-
-        hero.Gold -= cost;
-        return true;
     }
 
-    private static void DrinkWater(Hero hero)
+    private void DrinkSpecial(Hero hero)
     {
-        if (hero.Hp >= hero.MaxHp)
+        switch (BarService.CanDrinkSpecial(hero))
         {
-            GameIO.Info("Masz pełne zdrowie. Szkoda pieniędzy na wodę.");
-            return;
+            case DrinkOutcome.AlreadyUsed:
+                io.ShowInfo("\"To była jedyna butelka, niestety. Nie wiem, czy kiedykolwiek dostanę podobny towar.\"");
+                return;
+            case DrinkOutcome.NotAvailable:
+                io.ShowInfo("\"Coś specjalnego? Nie mam pojęcia, o czym mówisz.\" Barman odwraca wzrok.");
+                return;
+            case DrinkOutcome.LevelTooLow:
+                io.ShowError($"\"Jesteś zbyt słaby, by to przeżyć. Wróć na {BarService.MinLevelForSpecialDrink}. poziomie.\"");
+                return;
+            case DrinkOutcome.NotEnoughGold:
+                io.ShowError(Dialogues.NoGold(rng));
+                return;
         }
 
-        if (!Pay(hero, WaterCost))
-        {
-            return;
-        }
-
-        hero.Heal(Math.Max(10, hero.MaxHp / 10));
-        GameIO.Success($"Napiłeś się wody ze źródła. Czujesz, jak ciało odzyskuje siły. Masz {hero.Hp}/{hero.MaxHp} HP.");
-    }
-
-    private static void DrinkWhisky(Hero hero)
-    {
-        if (!WhiskyAvailable(hero))
-        {
-            GameIO.Error("\"Whisky? Statek jeszcze nie przypłynął. Na razie tylko woda.\"");
-            return;
-        }
-
-        if (hero.Hp >= hero.MaxHp)
-        {
-            GameIO.Info("Masz pełne zdrowie, ale whisky i tak wchodzi. Barman patrzy z uznaniem.");
-        }
-
-        if (!Pay(hero, WhiskyCost))
-        {
-            return;
-        }
-
-        hero.Heal(Math.Max(20, hero.MaxHp / 4));
-        GameIO.Success($"Whisky pali w gardle, ale ból mija. Masz {hero.Hp}/{hero.MaxHp} HP.");
-    }
-
-    private static void DrinkSpecial(Hero hero)
-    {
-        if (hero.SpecialDrinkUsed)
-        {
-            GameIO.Info("\"To była jedyna butelka, niestety. Nie wiem, czy kiedykolwiek dostanę podobny towar.\"");
-            return;
-        }
-
-        if (!SpecialDrinkAvailable(hero))
-        {
-            GameIO.Info("\"Coś specjalnego? Nie mam pojęcia, o czym mówisz.\" Barman odwraca wzrok.");
-            return;
-        }
-
-        if (hero.Level < MinLevelForSpecialDrink)
-        {
-            GameIO.Error($"\"Jesteś zbyt słaby, by to przeżyć. Wróć na {MinLevelForSpecialDrink}. poziomie.\"");
-            return;
-        }
-
-        if (!Pay(hero, SpecialDrinkCost))
-        {
-            return;
-        }
-
-        GameIO.Narrate(
-            "\"Specjalność prosto od krzyżaków z Malborka. Miód pitny zwany Grunwald!\"",
-            "Pijesz legendarny miód, który podobno stał na stołach biesiadnych przed bitwą pod Grunwaldem.",
-            "Świat wiruje. Kiedy dochodzisz do siebie, czujesz się silniejszy niż kiedykolwiek.");
-        hero.SpecialDrinkUsed = true;
-
-        GameIO.Menu("Którą statystykę wzmocnić?", "Siła", "Zręczność", "Żywotność");
-        var stat = (StatKind)GameIO.ReadMenuChoice(3);
-        hero.IncreaseStat(stat, SpecialDrinkStatIncrease);
-        int levels = hero.AddExp(SpecialDrinkExpGain);
-        GameIO.Success($"Wybrana statystyka wzrosła o {SpecialDrinkStatIncrease}. Zyskałeś {SpecialDrinkExpGain} punktów doświadczenia" + (levels > 0 ? $" i {levels} poziom(y)! Masz teraz poziom {hero.Level}." : "."));
+        io.Narrate(Dialogues.SpecialDrink);
+        int statChoice = io.Menu("Którą statystykę wzmocnić?", "Siła", "Zręczność", "Żywotność");
+        SpecialDrinkResult result = BarService.DrinkSpecial(hero, (StatKind)statChoice);
+        io.ShowSuccess($"Wybrana statystyka wzrosła o {result.StatIncrease}. Zyskałeś {result.ExpGained} punktów doświadczenia"
+            + (result.LevelsGained > 0 ? $" i {result.LevelsGained} poziom(y)! Masz teraz poziom {hero.Level}." : "."));
     }
 }

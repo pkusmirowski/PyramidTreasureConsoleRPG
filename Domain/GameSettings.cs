@@ -1,15 +1,10 @@
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Domain;
 
-/// <summary>Ustawienia gracza zapisywane obok pliku zapisu gry.</summary>
+/// <summary>Ustawienia gracza. Zapis i odczyt robi ISettingsStore.</summary>
 public sealed class GameSettings
 {
-    public const string FileName = "settings.json";
-
-    private static readonly JsonSerializerOptions WriteOptions = new() { WriteIndented = true };
-
     public bool MusicEnabled { get; set; } = true;
 
     /// <summary>Głośność 0–100.</summary>
@@ -37,40 +32,9 @@ public sealed class GameSettings
         _ => "normalnie",
     };
 
-    public static GameSettings Load(string folder)
+    public void Normalize()
     {
-        string path = Path.Combine(folder, FileName);
-        try
-        {
-            if (File.Exists(path))
-            {
-                var loaded = JsonSerializer.Deserialize<GameSettings>(File.ReadAllText(path));
-                if (loaded is not null)
-                {
-                    loaded.MusicVolume = Math.Clamp(loaded.MusicVolume, 0, 100);
-                    loaded.TextSpeed = Math.Clamp(loaded.TextSpeed, 0, 3);
-                    return loaded;
-                }
-            }
-        }
-        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
-        {
-            // Uszkodzone ustawienia – wracamy do domyślnych.
-        }
-
-        return new GameSettings();
-    }
-
-    public void Save(string folder)
-    {
-        try
-        {
-            Directory.CreateDirectory(folder);
-            File.WriteAllText(Path.Combine(folder, FileName), JsonSerializer.Serialize(this, WriteOptions));
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            GameIO.Error($"Nie udało się zapisać ustawień: {ex.Message}");
-        }
+        MusicVolume = Math.Clamp(MusicVolume, 0, 100);
+        TextSpeed = Math.Clamp(TextSpeed, 0, 3);
     }
 }

@@ -1,4 +1,4 @@
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Domain;
 
 /// <summary>Obrażenia ze zręczności, najwyższe uniki, słabszy pancerz. Atak specjalny: podwójny strzał.</summary>
 public sealed class Archer : Hero
@@ -50,11 +50,11 @@ public sealed class Archer : Hero
 
     protected override int EvasionFormula() => Dex / 2;
 
-    protected override AttackResult PerformSpecialAttack(Enemy enemy)
+    protected override AttackResult PerformSpecialAttack(Enemy enemy, IRandomSource rng)
     {
         var result = new AttackResult();
-        result.Strikes.Add(RollStrike(enemy, HitChance, 0.8, CritChance, "Pierwsza strzała"));
-        result.Strikes.Add(RollStrike(enemy, HitChance, 0.8, CritChance, "Druga strzała"));
+        result.Strikes.Add(RollStrike(enemy, HitChance, 0.8, CritChance, "Pierwsza strzała", rng));
+        result.Strikes.Add(RollStrike(enemy, HitChance, 0.8, CritChance, "Druga strzała", rng));
         return result;
     }
 }

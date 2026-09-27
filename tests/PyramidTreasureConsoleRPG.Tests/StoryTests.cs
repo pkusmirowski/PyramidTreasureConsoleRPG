@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace PyramidTreasureConsoleRPG.Tests;
 
 public class StoryTests
@@ -10,9 +8,10 @@ public class StoryTests
         Hero hero = Hero.Create(HeroClass.Warrior, "Test");
         Assert.False(Story.CanTravel(hero));
         Assert.True(Story.BarmanHasNews(hero));
-        hero.Stage = StoryStage.BanditsCalmed;
+        Assert.Equal(StoryStage.BanditsCalmed, Story.AdvanceByBarman(hero));
         Assert.True(Story.CanTravel(hero));
         Assert.False(Story.BarmanHasNews(hero));
+        Assert.Null(Story.AdvanceByBarman(hero));
     }
 
     [Theory]
@@ -41,10 +40,10 @@ public class StoryTests
     [Fact]
     public void Encounters_CoverEveryLevelWithAtLeastOneEnemy()
     {
-        Rng.Source = new SeededRandomSource(1);
+        var rng = new SeededRandomSource(1);
         for (int level = 1; level <= CombatMath.MaxLevel; level++)
         {
-            var group = Encounters.ForLevel(level);
+            var group = Encounters.ForLevel(level, rng);
             Assert.NotEmpty(group);
             Assert.All(group, e => Assert.True(e.IsAlive));
         }

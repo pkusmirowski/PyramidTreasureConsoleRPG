@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace PyramidTreasureConsoleRPG.Tests;
 
 public class CombatMathTests

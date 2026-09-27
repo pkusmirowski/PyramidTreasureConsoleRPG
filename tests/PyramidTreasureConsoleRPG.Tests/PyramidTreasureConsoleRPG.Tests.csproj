@@ -15,6 +15,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Using Include="PyramidTreasureConsoleRPG.Domain" />
+    <Using Include="PyramidTreasureConsoleRPG.Engine" />
+    <Using Include="PyramidTreasureConsoleRPG.Infrastructure" />
+    <Using Include="PyramidTreasureConsoleRPG.Ui" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\PyramidTreasureConsoleRPG.csproj" />
   </ItemGroup>
 

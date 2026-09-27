@@ -1,4 +1,4 @@
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Domain;
 
 /// <summary>Zrównoważone statystyki, najwyższa szansa trafienia i krytyk. Atak specjalny: zatrute ostrze.</summary>
 public sealed class Assassin : Hero
@@ -52,6 +52,6 @@ public sealed class Assassin : Hero
 
     protected override double ExtraHitChance() => Dex / 4.0;
 
-    protected override AttackResult PerformSpecialAttack(Enemy enemy)
-        => SingleStrike(enemy, HitChance - 10, 1.2, Math.Min(75, CritChance * 3), SpecialAttackName);
+    protected override AttackResult PerformSpecialAttack(Enemy enemy, IRandomSource rng)
+        => SingleStrike(enemy, HitChance - 10, 1.2, Math.Min(75, CritChance * 3), SpecialAttackName, rng);
 }

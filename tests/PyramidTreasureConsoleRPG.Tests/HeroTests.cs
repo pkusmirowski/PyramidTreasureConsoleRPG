@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace PyramidTreasureConsoleRPG.Tests;
 
 public class HeroTests
@@ -86,13 +84,13 @@ public class HeroTests
     [Fact]
     public void Attack_NeverHealsEnemy()
     {
-        Rng.Source = new SeededRandomSource(7);
+        var rng = new SeededRandomSource(7);
         Hero hero = Hero.Create(HeroClass.Archer, "Test");
         for (int i = 0; i < 500; i++)
         {
             var enemy = new Thief();
             int before = enemy.Hp;
-            AttackResult result = hero.Attack((AttackKind)(1 + (i % 3)), enemy);
+            AttackResult result = hero.Attack((AttackKind)(1 + (i % 3)), enemy, rng);
             Assert.True(enemy.Hp <= before);
             Assert.All(result.Strikes, s => Assert.True(s.Damage >= 0));
             Assert.All(result.Strikes.Where(s => !s.Hit), s => Assert.Equal(0, s.Damage));

@@ -1,17 +1,23 @@
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Ui;
 
 /// <summary>Menu główne: bramka wiekowa, nowa gra, wczytanie, ustawienia.</summary>
-public sealed class Game
+public sealed class MainMenuScreen
 {
+    private readonly IGameIO io;
+    private readonly ISaveStore saves;
+    private readonly ISettingsStore settingsStore;
     private readonly GameSettings settings;
-    private readonly MusicPlayer? music;
-    private readonly string settingsFolder;
+    private readonly IMusicPlayer music;
+    private readonly TownScreen town;
 
-    public Game(GameSettings settings, MusicPlayer? music, string settingsFolder)
+    public MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore settingsStore, GameSettings settings, IMusicPlayer music, TownScreen town)
     {
+        this.io = io ?? throw new ArgumentNullException(nameof(io));
+        this.saves = saves ?? throw new ArgumentNullException(nameof(saves));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        this.music = music;
-        this.settingsFolder = settingsFolder;
+        this.music = music ?? throw new ArgumentNullException(nameof(music));
+        this.town = town ?? throw new ArgumentNullException(nameof(town));
     }
 
     public void Run()
@@ -23,38 +29,26 @@ public sealed class Game
 
         while (true)
         {
-            GameIO.Clear();
-            GameIO.WriteLine("PYRAMID TREASURE – konsolowe RPG", ConsoleColor.Cyan);
-            SaveInfo? save = SaveSystem.Peek();
+            io.Clear();
+            io.WriteLine("PYRAMID TREASURE – konsolowe RPG", ConsoleColor.Cyan);
+            SaveInfo? save = saves.Peek();
             string load = save is null
                 ? "Wczytaj grę (brak zapisu)"
                 : $"Wczytaj grę ({save.Name}, poziom {save.Level}, {save.SavedAt:yyyy-MM-dd HH:mm})";
-            GameIO.Menu("Menu główne", "Nowa gra", load, "Ustawienia", "Wyjdź z gry");
-            switch (GameIO.ReadMenuChoice(4))
+            switch (io.Menu("Menu główne", "Nowa gra", load, "Ustawienia", "Wyjdź z gry"))
             {
                 case 1:
-                    GameIO.Clear();
+                    io.Clear();
                     Play(NewHero());
                     break;
                 case 2:
-                    GameIO.Clear();
-                    Hero? loaded = SaveSystem.Load(out string message);
-                    if (loaded is null)
-                    {
-                        GameIO.Error(message);
-                        GameIO.PressAnyKey();
-                    }
-                    else
-                    {
-                        GameIO.Success(message);
-                        Play(loaded);
-                    }
-
+                    io.Clear();
+                    LoadGame();
                     break;
                 case 3:
                     SettingsMenu();
                     break;
-                case 4:
+                default:
                     return;
             }
         }
@@ -67,47 +61,71 @@ public sealed class Game
             return true;
         }
 
-        GameIO.Clear();
-        GameIO.WriteLine("UWAGA: gra zawiera treści przeznaczone dla osób dorosłych:", ConsoleColor.Red);
-        GameIO.WriteLine("brutalne opisy przemocy, alkohol, hazard i wulgarny język.");
-        GameIO.Menu("Czy masz ukończone 18 lat?", "Tak, mam 18 lat lub więcej", "Nie");
-        if (GameIO.ReadMenuChoice(2) == 2)
+        io.Clear();
+        io.WriteLine("UWAGA: gra zawiera treści przeznaczone dla osób dorosłych:", ConsoleColor.Red);
+        io.WriteLine("brutalne opisy przemocy, alkohol, hazard i wulgarny język.");
+        if (io.Menu("Czy masz ukończone 18 lat?", "Tak, mam 18 lat lub więcej", "Nie") == 2)
         {
-            GameIO.Info("Rozumiem. Wróć, gdy dorośniesz.");
+            io.ShowInfo("Rozumiem. Wróć, gdy dorośniesz.");
             return false;
         }
 
         settings.AgeConfirmed = true;
-        settings.Save(settingsFolder);
+        SaveSettings();
         return true;
     }
 
-    private static Hero NewHero()
+    private Hero NewHero()
     {
-        Dialogues.Intro();
-        GameIO.WriteLine();
-        string name = GameIO.ReadText("Podaj swoje imię: ");
-        GameIO.Clear();
-        GameIO.Menu(
+        io.Narrate(Dialogues.Intro);
+        io.WriteLine();
+        string name = io.ReadText("Podaj swoje imię: ");
+        io.Clear();
+        int choice = io.Menu(
             "Wybierz klasę:",
             "Wojownik – dużo zdrowia, ciężkie ciosy, pancerz rośnie z poziomem. Specjalność: trzystronne cięcie.",
             "Łucznik – obrażenia ze zręczności, najlepsze uniki, słabszy pancerz. Specjalność: podwójny strzał.",
             "Asasyn – najcelniejszy, najczęstsze krytyki. Specjalność: zatrute ostrze.");
-        HeroClass heroClass = (HeroClass)GameIO.ReadMenuChoice(3);
-        GameIO.Clear();
-        Hero hero = Hero.Create(heroClass, name);
-        GameIO.Success($"{hero.Name}, {hero.ClassName}, rusza na wyprawę po Graala. Zacznij od rozmowy z barmanem w tawernie.");
+        io.Clear();
+        Hero hero = Hero.Create((HeroClass)choice, name);
+        io.ShowSuccess($"{hero.Name}, {hero.ClassName}, rusza na wyprawę po Graala. Zacznij od rozmowy z barmanem w tawernie.");
         return hero;
     }
 
-    private static void Play(Hero hero)
+    private void LoadGame()
     {
-        SessionEnd end = new GameSession(hero).Run();
-        GameIO.Clear();
+        SaveLoadResult result = saves.Load();
+        if (result.Data is null)
+        {
+            io.ShowError(result.Message);
+            io.PressAnyKey();
+            return;
+        }
+
+        Hero hero;
+        try
+        {
+            hero = Hero.FromSaveData(result.Data);
+        }
+        catch (InvalidDataException ex)
+        {
+            io.ShowError($"Plik zapisu jest uszkodzony: {ex.Message}");
+            io.PressAnyKey();
+            return;
+        }
+
+        io.ShowSuccess($"Wczytano: {hero.Name}, {hero.ClassName}, poziom {hero.Level}.");
+        Play(hero);
+    }
+
+    private void Play(Hero hero)
+    {
+        SessionEnd end = town.Run(hero);
+        io.Clear();
         if (end == SessionEnd.Completed)
         {
-            GameIO.Success("Dziękujemy za grę!");
-            GameIO.PressAnyKey();
+            io.ShowSuccess("Dziękujemy za grę!");
+            io.PressAnyKey();
         }
     }
 
@@ -115,51 +133,52 @@ public sealed class Game
     {
         while (true)
         {
-            GameIO.Clear();
-            string musicState = music is null || !music.IsAvailable
-                ? "niedostępna na tym systemie"
-                : settings.MusicEnabled ? "włączona" : "wyłączona";
-            GameIO.Menu(
+            io.Clear();
+            string musicState = !music.IsAvailable ? "niedostępna na tym systemie" : settings.MusicEnabled ? "włączona" : "wyłączona";
+            switch (io.Menu(
                 "Ustawienia",
                 $"Muzyka: {musicState}",
                 $"Głośność muzyki: {settings.MusicVolume}%",
                 $"Prędkość tekstu: {GameSettings.TextSpeedName(settings.TextSpeed)}",
-                "Wróć");
-            switch (GameIO.ReadMenuChoice(4))
+                "Wróć"))
             {
                 case 1:
                     settings.MusicEnabled = !settings.MusicEnabled;
                     ApplyMusic();
                     break;
                 case 2:
-                    settings.MusicVolume = GameIO.ReadChoice(0, 100, "Głośność (0-100): ");
-                    music?.SetVolume(settings.MusicVolume);
+                    settings.MusicVolume = io.ReadNumber("Głośność (0-100): ", 0, 100);
+                    music.SetVolume(settings.MusicVolume);
                     break;
                 case 3:
                     settings.TextSpeed = (settings.TextSpeed + 1) % 4;
-                    GameIO.NarrationDelayMs = settings.NarrationDelayMs;
+                    io.NarrationDelayMs = settings.NarrationDelayMs;
                     break;
-                case 4:
-                    settings.Save(settingsFolder);
+                default:
+                    SaveSettings();
                     return;
             }
         }
     }
 
+    private void SaveSettings()
+    {
+        string? error = settingsStore.Save(settings);
+        if (error is not null)
+        {
+            io.ShowError(error);
+        }
+    }
+
     private void ApplyMusic()
     {
-        if (music is null)
-        {
-            return;
-        }
-
         if (settings.MusicEnabled)
         {
             music.Play(settings.MusicVolume);
         }
         else
         {
-            music.Stop();
+            music.StopPlayback();
         }
     }
 }

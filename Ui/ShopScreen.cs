@@ -1,45 +1,44 @@
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Ui;
 
-public static class Shop
+public sealed class ShopScreen
 {
-    public static void Visit(Hero hero)
+    private readonly IGameIO io;
+    private readonly IRandomSource rng;
+
+    public ShopScreen(IGameIO io, IRandomSource rng)
+    {
+        this.io = io ?? throw new ArgumentNullException(nameof(io));
+        this.rng = rng ?? throw new ArgumentNullException(nameof(rng));
+    }
+
+    public void Run(Hero hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
         while (true)
         {
-            GameIO.Header("Sklep alchemika");
-            GameIO.WriteLine($"Twoje złoto: {hero.Gold}", ConsoleColor.DarkYellow);
-            var offers = Potion.AllKinds.Select(Potion.Create).ToList();
-            var options = offers
+            io.Header("Sklep alchemika");
+            io.WriteLine($"Twoje złoto: {hero.Gold}", ConsoleColor.DarkYellow);
+            var options = ShopService.Offers
                 .Select(p => $"{p.Name} – leczy {p.RestoreHp} HP – {p.Price} g (masz: {hero.CountPotions(p.Kind)})")
                 .Append("Wyjdź ze sklepu")
                 .ToArray();
-            GameIO.Menu("Co chcesz kupić?", options);
-            int choice = GameIO.ReadMenuChoice(options.Length);
-            GameIO.Clear();
+            int choice = io.Menu("Co chcesz kupić?", options);
+            io.Clear();
             if (choice == options.Length)
             {
-                GameIO.WriteLine("Wychodzisz ze sklepu...");
+                io.WriteLine("Wychodzisz ze sklepu...");
                 return;
             }
 
-            Buy(hero, offers[choice - 1]);
+            PurchaseResult result = ShopService.Buy(hero, ShopService.Offers[choice - 1].Kind);
+            if (result.Outcome == PurchaseOutcome.Bought)
+            {
+                io.ShowSuccess($"Kupiłeś: {result.Potion.Name}. Zostało ci {hero.Gold} złota.");
+            }
+            else
+            {
+                io.ShowError(Dialogues.NoGold(rng));
+            }
         }
-    }
-
-    public static bool Buy(Hero hero, Potion potion)
-    {
-        ArgumentNullException.ThrowIfNull(hero);
-        ArgumentNullException.ThrowIfNull(potion);
-        if (hero.Gold < potion.Price)
-        {
-            Dialogues.NoGold();
-            return false;
-        }
-
-        hero.Gold -= potion.Price;
-        hero.Inventory.Add(potion);
-        GameIO.Success($"Kupiłeś: {potion.Name}. Zostało ci {hero.Gold} złota.");
-        return true;
     }
 }

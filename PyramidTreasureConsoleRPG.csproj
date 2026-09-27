@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="NAudio" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
 </Project>

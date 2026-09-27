@@ -1,19 +1,19 @@
 using NAudio.Wave;
 
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Infrastructure;
 
 /// <summary>
 /// Muzyka w tle (NAudio, zapętlona). Działa tylko na Windows; na innych systemach
 /// cicho się wyłącza zamiast psuć grę.
 /// </summary>
-public sealed class MusicPlayer : IDisposable
+public sealed class NAudioMusicPlayer : IMusicPlayer, IDisposable
 {
     private readonly string path;
     private WaveOutEvent? output;
     private AudioFileReader? reader;
     private bool disposing;
 
-    public MusicPlayer(string path)
+    public NAudioMusicPlayer(string path)
     {
         this.path = path;
     }
@@ -47,11 +47,11 @@ public sealed class MusicPlayer : IDisposable
         {
             // Brak urządzenia audio, brak sterowników itp. – gra działa dalej bez muzyki.
             IsAvailable = false;
-            Stop();
+            StopPlayback();
         }
     }
 
-    public void Stop()
+    public void StopPlayback()
     {
         try
         {

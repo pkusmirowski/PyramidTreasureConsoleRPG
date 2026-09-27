@@ -1,33 +1,44 @@
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Ui;
 
-/// <summary>Ekran ekwipunku (poza walką). W walce mikstury pije się z menu walki.</summary>
-public static class Inventory
+/// <summary>Sakwa poza walką. Wybór mikstury jest wspólny z ekranem walki.</summary>
+public sealed class InventoryScreen
 {
-    public static void Visit(Hero hero)
+    private readonly IGameIO io;
+
+    public InventoryScreen(IGameIO io)
+    {
+        this.io = io ?? throw new ArgumentNullException(nameof(io));
+    }
+
+    public void Run(Hero hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
         while (true)
         {
-            GameIO.Header("Sakwa");
+            io.Header("Sakwa");
             Show(hero);
-            GameIO.Menu("Co chcesz zrobić?", "Wypij miksturę", "Wyjdź");
-            int choice = GameIO.ReadMenuChoice(2);
-            GameIO.Clear();
+            int choice = io.Menu("Co chcesz zrobić?", "Wypij miksturę", "Wyjdź");
+            io.Clear();
             if (choice == 2)
             {
                 return;
             }
 
-            DrinkMenu(hero);
+            PotionKind? kind = ChoosePotion(io, hero);
+            if (kind.HasValue)
+            {
+                int healed = hero.DrinkPotion(kind.Value) ?? 0;
+                io.ShowSuccess($"Wypiłeś miksturę i odzyskałeś {healed} HP. Masz teraz {hero.Hp}/{hero.MaxHp} HP.");
+            }
         }
     }
 
-    public static void Show(Hero hero)
+    private void Show(Hero hero)
     {
-        GameIO.WriteLine($"Punkty zdrowia: {hero.Hp}/{hero.MaxHp}    Złoto: {hero.Gold}", ConsoleColor.DarkYellow);
+        io.WriteLine($"Punkty zdrowia: {hero.Hp}/{hero.MaxHp}    Złoto: {hero.Gold}", ConsoleColor.DarkYellow);
         if (hero.Inventory.Count == 0)
         {
-            GameIO.Error("Nie posiadasz żadnych mikstur.");
+            io.ShowError("Nie posiadasz żadnych mikstur.");
             return;
         }
 
@@ -37,47 +48,43 @@ public static class Inventory
             if (count > 0)
             {
                 Potion sample = Potion.Create(kind);
-                GameIO.Info($"{count} x {sample.Name} (leczy {sample.RestoreHp} HP)");
+                io.ShowInfo($"{count} x {sample.Name} (leczy {sample.RestoreHp} HP)");
             }
         }
     }
 
-    /// <summary>Menu wyboru mikstury. Zwraca true, jeśli coś wypito.</summary>
-    public static bool DrinkMenu(Hero hero)
+    /// <summary>Menu wyboru mikstury. Zwraca rodzaj, który bohater posiada, albo null przy rezygnacji lub braku sensu.</summary>
+    public static PotionKind? ChoosePotion(IGameIO io, Hero hero)
     {
+        ArgumentNullException.ThrowIfNull(io);
         ArgumentNullException.ThrowIfNull(hero);
         if (hero.Inventory.Count == 0)
         {
-            GameIO.Error("Nie masz żadnych mikstur.");
-            return false;
+            io.ShowError("Nie masz żadnych mikstur.");
+            return null;
         }
 
         if (hero.Hp >= hero.MaxHp)
         {
-            GameIO.Info($"Masz pełne zdrowie ({hero.Hp}/{hero.MaxHp}). Szkoda mikstury.");
-            return false;
+            io.ShowInfo($"Masz pełne zdrowie ({hero.Hp}/{hero.MaxHp}). Szkoda mikstury.");
+            return null;
         }
 
         var kinds = Potion.AllKinds.ToList();
-        var options = kinds
-            .Select(k => $"{Potion.Create(k).Name} (masz: {hero.CountPotions(k)})")
-            .Append("Zrezygnuj")
-            .ToArray();
-        GameIO.Menu("Którą miksturę wypić?", options);
-        int choice = GameIO.ReadMenuChoice(options.Length);
+        var options = kinds.Select(k => $"{Potion.Create(k).Name} (masz: {hero.CountPotions(k)})").Append("Zrezygnuj").ToArray();
+        int choice = io.Menu("Którą miksturę wypić?", options);
         if (choice == options.Length)
         {
-            return false;
+            return null;
         }
 
-        int? healed = hero.DrinkPotion(kinds[choice - 1]);
-        if (healed is null)
+        PotionKind kind = kinds[choice - 1];
+        if (hero.CountPotions(kind) == 0)
         {
-            GameIO.Error("Nie masz takiej mikstury!");
-            return false;
+            io.ShowError("Nie masz takiej mikstury!");
+            return null;
         }
 
-        GameIO.Success($"Wypiłeś miksturę i odzyskałeś {healed} HP. Masz teraz {hero.Hp}/{hero.MaxHp} HP.");
-        return true;
+        return kind;
     }
 }

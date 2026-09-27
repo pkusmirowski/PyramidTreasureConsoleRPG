@@ -1,20 +1,13 @@
 using System.Text;
 
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Ui;
 
-/// <summary>
-/// Wszystkie operacje na konsoli w jednym miejscu: kolory, bezpieczne czytanie liczb,
-/// pomijalne pauzy narracji. Dzięki temu logika gry nie zależy od Console i da się ją testować.
-/// </summary>
-public static class GameIO
+/// <summary>Implementacja IGameIO na gołym System.Console. Działa też z przekierowanym wejściem (testy, boty).</summary>
+public sealed class ConsoleGameIO : IGameIO
 {
-    /// <summary>Czas pauzy po każdej linii narracji (ms). 0 = brak pauz.</summary>
-    public static int NarrationDelayMs { get; set; } = 1500;
+    private readonly bool interactive;
 
-    private static bool interactive = true;
-
-    /// <summary>Ustawia kodowanie UTF-8, żeby polskie znaki i symbole działały w każdym terminalu.</summary>
-    public static void Initialize()
+    public ConsoleGameIO()
     {
         try
         {
@@ -23,13 +16,15 @@ public static class GameIO
         }
         catch (IOException)
         {
-            // Konsola przekierowana (np. testy) – kodowanie nie ma znaczenia.
+            // Konsola przekierowana – kodowanie nie ma znaczenia.
         }
 
         interactive = !Console.IsInputRedirected && !Console.IsOutputRedirected;
     }
 
-    public static void Clear()
+    public int NarrationDelayMs { get; set; } = 1500;
+
+    public void Clear()
     {
         if (!interactive)
         {
@@ -42,100 +37,68 @@ public static class GameIO
         }
         catch (IOException)
         {
-            // Brak prawdziwego terminala – ignorujemy.
+            // Brak prawdziwego terminala.
         }
     }
 
-    public static void WriteLine(string text = "") => Console.WriteLine(text);
+    public void WriteLine(string text = "") => Console.WriteLine(text);
 
-    public static void WriteLine(string text, ConsoleColor color)
+    public void WriteLine(string text, ConsoleColor color)
     {
         Console.ForegroundColor = color;
         Console.WriteLine(text);
         Console.ResetColor();
     }
 
-    public static void Write(string text, ConsoleColor color)
-    {
-        Console.ForegroundColor = color;
-        Console.Write(text);
-        Console.ResetColor();
-    }
+    public void ShowInfo(string text) => WriteLine(text, ConsoleColor.Yellow);
 
-    public static void Info(string text) => WriteLine(text, ConsoleColor.Yellow);
+    public void ShowSuccess(string text) => WriteLine(text, ConsoleColor.Green);
 
-    public static void Success(string text) => WriteLine(text, ConsoleColor.Green);
+    public void ShowError(string text) => WriteLine(text, ConsoleColor.Red);
 
-    public static void Error(string text) => WriteLine(text, ConsoleColor.Red);
-
-    public static void Header(string text)
+    public void Header(string text)
     {
         WriteLine();
         WriteLine($"=== {text} ===", ConsoleColor.Cyan);
     }
 
-    /// <summary>Wyświetla listę opcji ponumerowanych od 1.</summary>
-    public static void Menu(string title, params string[] options)
+    public int Menu(string title, params string[] options)
     {
+        ArgumentNullException.ThrowIfNull(options);
         WriteLine();
         WriteLine(title, ConsoleColor.Cyan);
         for (int i = 0; i < options.Length; i++)
         {
             WriteLine($"{i + 1}. {options[i]}");
         }
+
+        return ReadNumber("Wybór: ", 1, options.Length);
     }
 
-    /// <summary>
-    /// Czyta liczbę całkowitą. Zwraca null przy pustym wejściu, złym formacie lub przepełnieniu.
-    /// Nigdy nie rzuca wyjątku (dawniej OverflowException zamykał grę).
-    /// </summary>
-    public static int? ReadInt()
-    {
-        string? line = Console.ReadLine();
-        if (line is null)
-        {
-            // Koniec strumienia wejścia (np. Ctrl+Z / zamknięty terminal) – kończymy grę zamiast pętlić się w nieskończoność.
-            throw new EndOfStreamException("Wejście konsoli zostało zamknięte.");
-        }
-
-        return int.TryParse(line.Trim(), out int value) ? value : null;
-    }
-
-    /// <summary>Czyta wybór z zakresu [min, max]; powtarza pytanie do skutku.</summary>
-    public static int ReadChoice(int min, int max, string prompt = "Wybór: ")
+    public int ReadNumber(string prompt, int min, int max)
     {
         while (true)
         {
             Console.Write(prompt);
-            int? value = ReadInt();
-            if (value.HasValue && value.Value >= min && value.Value <= max)
+            string? line = Console.ReadLine() ?? throw new EndOfStreamException("Wejście konsoli zostało zamknięte.");
+            if (int.TryParse(line.Trim(), out int value) && value >= min && value <= max)
             {
-                return value.Value;
+                return value;
             }
 
-            Error($"Nieprawidłowy wybór. Podaj liczbę od {min} do {max}.");
+            ShowError($"Nieprawidłowy wybór. Podaj liczbę od {min} do {max}.");
         }
     }
 
-    /// <summary>Czyta wybór z menu o podanej liczbie opcji (1..count).</summary>
-    public static int ReadMenuChoice(int count) => ReadChoice(1, count);
-
-    /// <summary>Czyta niepustą linię tekstu (np. imię bohatera).</summary>
-    public static string ReadText(string prompt, int maxLength = 20)
+    public string ReadText(string prompt, int maxLength = 20)
     {
         while (true)
         {
             Console.Write(prompt);
-            string? line = Console.ReadLine();
-            if (line is null)
-            {
-                throw new EndOfStreamException("Wejście konsoli zostało zamknięte.");
-            }
-
-            line = line.Trim();
+            string line = (Console.ReadLine() ?? throw new EndOfStreamException("Wejście konsoli zostało zamknięte.")).Trim();
             if (line.Length == 0)
             {
-                Error("Wpisz przynajmniej jeden znak.");
+                ShowError("Wpisz przynajmniej jeden znak.");
                 continue;
             }
 
@@ -143,12 +106,9 @@ public static class GameIO
         }
     }
 
-    /// <summary>
-    /// Narracja: każda linia jest wyświetlana z pauzą. Dowolny klawisz pomija pauzę,
-    /// Esc pomija całą resztę tekstu.
-    /// </summary>
-    public static void Narrate(ConsoleColor color, params string[] lines)
+    public void Narrate(IReadOnlyList<string> lines, ConsoleColor color = ConsoleColor.Yellow)
     {
+        ArgumentNullException.ThrowIfNull(lines);
         bool skipAll = false;
         Console.ForegroundColor = color;
         foreach (string line in lines)
@@ -163,12 +123,9 @@ public static class GameIO
         Console.ResetColor();
     }
 
-    public static void Narrate(params string[] lines) => Narrate(ConsoleColor.Yellow, lines);
+    public void Pause(int milliseconds = 700) => WaitOrSkip(milliseconds);
 
-    /// <summary>Krótka pauza (np. po komunikacie w walce), również pomijalna.</summary>
-    public static void Pause(int milliseconds = 700) => WaitOrSkip(milliseconds);
-
-    public static void PressAnyKey(string text = "Naciśnij dowolny klawisz, aby kontynuować...")
+    public void PressAnyKey(string text = "Naciśnij dowolny klawisz, aby kontynuować...")
     {
         if (!interactive)
         {
@@ -186,6 +143,35 @@ public static class GameIO
         }
     }
 
+    public void ShowCombatStatus(Hero hero, Enemy enemy)
+    {
+        ArgumentNullException.ThrowIfNull(hero);
+        ArgumentNullException.ThrowIfNull(enemy);
+        WriteLine();
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.Write($"{hero.Name}: {hero.Hp}/{hero.MaxHp} HP");
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        Console.Write("   vs   ");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"{enemy.Name}: {enemy.Hp}/{enemy.MaxHp} HP");
+        Console.ResetColor();
+    }
+
+    public void ShowStats(Hero hero)
+    {
+        ArgumentNullException.ThrowIfNull(hero);
+        Header("Statystyki bohatera");
+        WriteLine($"Imię: {hero.Name}   Klasa: {hero.ClassName}");
+        WriteLine($"Poziom: {hero.Level}" + (hero.IsMaxLevel ? " (maksymalny)" : $"   Doświadczenie: {hero.Exp}/{hero.ExpToNextLevel}"));
+        WriteLine($"Punkty zdrowia: {hero.Hp}/{hero.MaxHp}");
+        WriteLine($"Żywotność: {hero.Vit}   Siła: {hero.Str}   Zręczność: {hero.Dex}");
+        WriteLine($"Obrażenia: {hero.MinDmg}-{hero.MaxDmg}   Szansa trafienia: {hero.HitChance:0}%   Krytyk: {hero.CritChance:0}%");
+        WriteLine($"Pancerz: {hero.Armor} (redukcja {100 - (100 * 100 / (100 + hero.Armor))}%)   Uniki: {hero.Evasion}%   Ucieczka: {hero.FleeChance}%");
+        WriteLine($"Złoto: {hero.Gold}   Mikstury: {hero.Inventory.Count}");
+        WriteLine($"Etap wyprawy: {Story.StageName(hero.Stage)}");
+        WriteLine("-------------------");
+    }
+
     private enum SkipResult
     {
         None,
@@ -193,14 +179,9 @@ public static class GameIO
         SkipAll,
     }
 
-    private static SkipResult WaitOrSkip(int milliseconds)
+    private SkipResult WaitOrSkip(int milliseconds)
     {
-        if (milliseconds <= 0)
-        {
-            return SkipResult.None;
-        }
-
-        if (!interactive)
+        if (milliseconds <= 0 || !interactive)
         {
             return SkipResult.None;
         }

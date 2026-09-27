@@ -1,99 +1,89 @@
-namespace PyramidTreasureConsoleRPG;
+namespace PyramidTreasureConsoleRPG.Ui;
 
-/// <summary>Pokoje na górze: nocleg, rozmowy, noc w towarzystwie (z konsekwencjami).</summary>
-public static class Rest
+public sealed class RestScreen
 {
-    public const int RoomCost = 10;
-    public const int CompanyCost = 30;
+    private readonly IGameIO io;
+    private readonly IRandomSource rng;
+    private readonly RestService rest;
 
-    public static void Visit(Hero hero)
+    public RestScreen(IGameIO io, IRandomSource rng, RestService rest)
+    {
+        this.io = io ?? throw new ArgumentNullException(nameof(io));
+        this.rng = rng ?? throw new ArgumentNullException(nameof(rng));
+        this.rest = rest ?? throw new ArgumentNullException(nameof(rest));
+    }
+
+    public void Run(Hero hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
         while (true)
         {
-            GameIO.WriteLine($"Zdrowie: {hero.Hp}/{hero.MaxHp}   Złoto: {hero.Gold}", ConsoleColor.DarkYellow);
-            GameIO.Menu(
+            io.WriteLine($"Zdrowie: {hero.Hp}/{hero.MaxHp}   Złoto: {hero.Gold}", ConsoleColor.DarkYellow);
+            int choice = io.Menu(
                 "Na górze:",
-                $"Wynajmij pokój i prześpij się / {RoomCost} g (leczy do pełna)",
+                $"Wynajmij pokój i prześpij się / {RestService.RoomCost} g (leczy do pełna)",
                 "Pogadaj z dziewczynami z tawerny",
-                $"Spędź noc w towarzystwie / {CompanyCost} g",
+                $"Spędź noc w towarzystwie / {RestService.CompanyCost} g",
                 "Zejdź na dół");
-            int choice = GameIO.ReadMenuChoice(4);
-            GameIO.Clear();
+            io.Clear();
             switch (choice)
             {
                 case 1:
                     RentRoom(hero);
                     break;
                 case 2:
-                    Dialogues.TalkToTheGirls();
+                    io.ShowInfo(Dialogues.TalkToTheGirls(rng));
                     break;
                 case 3:
                     SpendNight(hero);
                     break;
-                case 4:
+                default:
                     return;
             }
         }
     }
 
-    private static void RentRoom(Hero hero)
+    private void RentRoom(Hero hero)
     {
-        if (hero.Hp >= hero.MaxHp)
+        switch (RestService.RentRoom(hero))
         {
-            GameIO.Info($"Nie potrzebujesz odpoczynku, masz pełne zdrowie: {hero.Hp}/{hero.MaxHp}.");
-            return;
+            case RestOutcome.Ok:
+                io.ShowSuccess($"Po długiej nocy czujesz się wypoczęty i pełen energii! Masz {hero.Hp}/{hero.MaxHp} HP i {hero.Gold} złota.");
+                break;
+            case RestOutcome.FullHealth:
+                io.ShowInfo($"Nie potrzebujesz odpoczynku, masz pełne zdrowie: {hero.Hp}/{hero.MaxHp}.");
+                break;
+            default:
+                io.ShowError(Dialogues.NoGold(rng));
+                break;
         }
-
-        if (hero.Gold < RoomCost)
-        {
-            Dialogues.NoGold();
-            return;
-        }
-
-        hero.Gold -= RoomCost;
-        hero.FullHeal();
-        GameIO.Success($"Po długiej nocy czujesz się wypoczęty i pełen energii! Masz {hero.Hp}/{hero.MaxHp} HP i {hero.Gold} złota.");
     }
 
-    private static void SpendNight(Hero hero)
+    private void SpendNight(Hero hero)
     {
-        if (hero.Gold < CompanyCost)
+        NightResult? result = rest.SpendNight(hero);
+        if (result is null)
         {
-            Dialogues.NoGold();
+            io.ShowError(Dialogues.NoGold(rng));
             return;
         }
 
-        hero.Gold -= CompanyCost;
-        hero.FullHeal();
-        GameIO.Narrate(
-            ConsoleColor.Magenta,
-            "Dziewczyna o oczach koloru pustynnego nieba bierze cię za rękę i prowadzi po skrzypiących schodach.",
-            "Drzwi się zamykają. Lampa gaśnie. Reszta nocy należy tylko do was dwojga.");
-
-        int roll = Rng.Range(1, 100);
-        if (roll <= 40)
+        io.Narrate(Dialogues.NightCompany, ConsoleColor.Magenta);
+        switch (result.Event)
         {
-            GameIO.Success($"Budzisz się rano wypoczęty, z uśmiechem i pełnym zdrowiem ({hero.Hp}/{hero.MaxHp} HP).");
-        }
-        else if (roll <= 70)
-        {
-            int exp = Math.Max(50, hero.ExpToNextLevel / 20);
-            int levels = hero.AddExp(exp);
-            GameIO.Success("Nad ranem opowiada ci, co słyszała od karawaniarzy o piramidzie. Uczysz się więcej niż z niejednej walki.");
-            GameIO.WriteLine($"Zyskałeś {exp} punktów doświadczenia" + (levels > 0 ? $" i awansowałeś na poziom {hero.Level}!" : "."), ConsoleColor.DarkCyan);
-        }
-        else if (roll <= 90)
-        {
-            int stolen = hero.Gold / 10;
-            hero.Gold -= stolen;
-            GameIO.Error($"Budzisz się sam. Sakwa jest lżejsza o {stolen} sztuk złota, a po dziewczynie ani śladu. Barman udaje, że nic nie widział.");
-        }
-        else
-        {
-            var potion = new MediumPotion();
-            hero.Inventory.Add(potion);
-            GameIO.Success($"Rano znajdujesz przy łóżku {potion.Name} i liścik: \"Wróć żywy.\"");
+            case NightEvent.Rumor:
+                io.ShowSuccess("Nad ranem opowiada ci, co słyszała od karawaniarzy o piramidzie. Uczysz się więcej niż z niejednej walki.");
+                io.WriteLine($"Zyskałeś {result.Amount} punktów doświadczenia" + (result.LevelsGained > 0 ? $" i awansowałeś na poziom {hero.Level}!" : "."), ConsoleColor.DarkCyan);
+                break;
+            case NightEvent.Robbed:
+                io.ShowError($"Budzisz się sam. Sakwa jest lżejsza o {result.Amount} sztuk złota, a po dziewczynie ani śladu. Barman udaje, że nic nie widział.");
+                break;
+            case NightEvent.Gift:
+                io.ShowSuccess($"Rano znajdujesz przy łóżku {result.Gift?.Name} i liścik: \"Wróć żywy.\"");
+                break;
+            default:
+                io.ShowSuccess($"Budzisz się rano wypoczęty, z uśmiechem i pełnym zdrowiem ({hero.Hp}/{hero.MaxHp} HP).");
+                break;
         }
     }
 }
