@@ -53,11 +53,11 @@ public static class TalentCatalog
     ];
 
     /// <summary>Poziomy, na których wybiera się talent (wynikają z katalogu).</summary>
-    public static IReadOnlyList<int> Levels { get; } = Talents.Select(t => t.Level).Distinct().Order().ToList();
+    public static IReadOnlyList<int> Levels { get; } = [.. Talents.Select(t => t.Level).Distinct().Order()];
 
     public static IReadOnlyList<TalentDefinition> All => Talents;
 
     public static TalentDefinition Get(TalentId id) => Talents.First(t => t.Id == id);
 
-    public static IReadOnlyList<TalentDefinition> ForClassAtLevel(HeroClass heroClass, int level) => Talents.Where(t => t.Class == heroClass && t.Level == level).ToList();
+    public static IReadOnlyList<TalentDefinition> ForClassAtLevel(HeroClass heroClass, int level) => [.. Talents.Where(t => t.Class == heroClass && t.Level == level)];
 }

@@ -44,7 +44,7 @@ public sealed record Potion(PotionKind Kind, string Name, int Price, int Restore
     /// <summary>Tylko lecznicze – to, co sprzedaje alchemik w każdym sklepie.</summary>
     public static IReadOnlyList<Potion> Healing { get; } = [Small, Medium, Large];
 
-    public static IReadOnlyList<PotionKind> AllKinds { get; } = All.Select(p => p.Kind).ToList();
+    public static IReadOnlyList<PotionKind> AllKinds { get; } = [.. All.Select(p => p.Kind)];
 
     public string Description => Effect switch
     {

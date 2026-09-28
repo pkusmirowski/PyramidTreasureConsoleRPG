@@ -15,7 +15,7 @@ public sealed class QuestGiverScreen(IGameIO io, IRandomSource rng, GameSettings
             io.Header(RegionCatalog.GiverName(giver));
             IReadOnlyList<QuestDefinition> ready = QuestEngine.ReadyToTurnIn(hero, giver);
             IReadOnlyList<QuestDefinition> available = QuestEngine.Available(hero, giver);
-            IReadOnlyList<QuestDefinition> active = QuestEngine.Active(hero).Where(q => q.Giver == giver && !ready.Contains(q)).ToList();
+            IReadOnlyList<QuestDefinition> active = [.. QuestEngine.Active(hero).Where(q => q.Giver == giver && !ready.Contains(q))];
 
             var options = new List<(string Label, Action Action)>();
             foreach (QuestDefinition quest in ready)
@@ -41,7 +41,7 @@ public sealed class QuestGiverScreen(IGameIO io, IRandomSource rng, GameSettings
             }
 
             options.Add(("Odejdź", () => { }));
-            int choice = io.Menu("Rozmowa:", options.Select(o => o.Label).ToArray());
+            int choice = io.Menu("Rozmowa:", [.. options.Select(o => o.Label)]);
             io.Clear();
             if (choice == options.Count)
             {

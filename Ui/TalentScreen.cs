@@ -18,7 +18,7 @@ public sealed class TalentScreen(IGameIO io)
 
             io.Header($"Talent za poziom {level}");
             io.ShowInfo("Wybór jest ostateczny.");
-            int choice = io.Menu("Który talent?", choices.Select(t => $"{t.Name} – {t.Description}").ToArray());
+            int choice = io.Menu("Który talent?", [.. choices.Select(t => $"{t.Name} – {t.Description}")]);
             hero.ChooseTalent(choices[choice - 1].Id);
             io.Clear();
             io.ShowSuccess($"Wybrano talent: {choices[choice - 1].Name}.");

@@ -52,7 +52,7 @@ public sealed class RegionScreen(
 
             io.Header($"{region.Name}, dzień {hero.Day} – {hero.Name}, {hero.ClassName} {hero.Level} lvl, {hero.Hp}/{hero.MaxHp} HP, {hero.Gold} złota");
             var options = BuildMenu(hero, region);
-            int choice = io.Menu("Co chcesz zrobić?", options.Select(o => o.Label).ToArray());
+            int choice = io.Menu("Co chcesz zrobić?", [.. options.Select(o => o.Label)]);
             io.Clear();
             SessionEnd? end = options[choice - 1].Action();
             if (end.HasValue)
@@ -250,12 +250,13 @@ public sealed class RegionScreen(
 
     private void SaveGame(Hero hero)
     {
-        string[] labels = Enumerable.Range(1, ISaveStore.SlotCount)
-            .Select(slot => saves.Peek(slot) is SaveInfo info
+        string[] labels =
+        [
+            .. Enumerable.Range(1, ISaveStore.SlotCount).Select(slot => saves.Peek(slot) is SaveInfo info
                 ? $"{ISaveStore.SlotName(slot)}: {info.Name}, poziom {info.Level}, {info.SavedAt:yyyy-MM-dd HH:mm}"
-                : $"{ISaveStore.SlotName(slot)}: pusty")
-            .Append("Wróć")
-            .ToArray();
+                : $"{ISaveStore.SlotName(slot)}: pusty"),
+            "Wróć",
+        ];
         int slot = io.Menu("Zapisz w slocie:", labels);
         if (slot > ISaveStore.SlotCount)
         {

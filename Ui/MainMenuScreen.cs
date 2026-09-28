@@ -71,9 +71,9 @@ public sealed class MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore 
         io.WriteLine();
         string name = io.ReadText("Podaj swoje imię: ");
         io.Clear();
-        int choice = io.Menu("Wybierz klasę:", HeroClasses.All.Select(c => $"{c.Name} – {c.Description}").ToArray());
+        int choice = io.Menu("Wybierz klasę:", [.. HeroClasses.All.Select(c => $"{c.Name} – {c.Description}")]);
         io.Clear();
-        int level = io.Menu("Poziom trudności:", DifficultyCatalog.All.Select(d => $"{d.Name} – {d.Description}").ToArray());
+        int level = io.Menu("Poziom trudności:", [.. DifficultyCatalog.All.Select(d => $"{d.Name} – {d.Description}")]);
         io.Clear();
         Hero hero = Hero.Create(HeroClasses.All[choice - 1].Kind, name, DifficultyCatalog.All[level - 1].Kind);
         io.ShowArt(ArtCatalog.ForClass(hero.HeroClass));

@@ -13,9 +13,7 @@ public sealed class EndingScreen(IGameIO io)
         io.WriteLine();
 
         IReadOnlyList<EndingOption> options = EndingEngine.Options(hero);
-        string[] labels = options
-            .Select(o => o.Available ? o.Ending.Choice : $"{o.Ending.Choice} – niedostępne: {o.Reason}")
-            .ToArray();
+        string[] labels = [.. options.Select(o => o.Available ? o.Ending.Choice : $"{o.Ending.Choice} – niedostępne: {o.Reason}")];
         int index;
         while (true)
         {

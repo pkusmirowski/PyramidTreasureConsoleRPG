@@ -36,7 +36,7 @@ public class CatalogTests
     [Fact]
     public void Potions_AreOrderedByPriceAndPower()
     {
-        Assert.Equal(new[] { PotionKind.Small, PotionKind.Medium, PotionKind.Large }, Potion.Healing.Select(p => p.Kind));
+        Assert.Equal([PotionKind.Small, PotionKind.Medium, PotionKind.Large], Potion.Healing.Select(p => p.Kind));
         Assert.Equal(Enum.GetValues<PotionKind>().Length, Potion.AllKinds.Count);
         Assert.All(Potion.All, p => Assert.Same(p, Potion.Create(p.Kind)));
         Assert.All(Potion.All.Where(p => p.Effect != PotionUse.Heal), p => Assert.Equal(0, p.RestoreHp));

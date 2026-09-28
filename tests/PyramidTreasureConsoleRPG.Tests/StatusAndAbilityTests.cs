@@ -168,7 +168,7 @@ public class StatusAndAbilityTests
         }
 
         // Trzech templariuszy, kostka zawsze 0: każdy blok tarczą (20%) wchodzi, każdy cios trafia.
-        var engine = new CombatEngine(hero, [EnemyCatalog.Templar.Spawn(), EnemyCatalog.Templar.Spawn(), EnemyCatalog.Templar.Spawn()], new ScriptedRandomSource(Enumerable.Repeat(0, 400).ToArray()));
+        var engine = new CombatEngine(hero, [EnemyCatalog.Templar.Spawn(), EnemyCatalog.Templar.Spawn(), EnemyCatalog.Templar.Spawn()], new ScriptedRandomSource([.. Enumerable.Repeat(0, 400)]));
         engine.Begin();
         for (int turn = 0; turn < 3 && engine.Status == CombatStatus.InProgress; turn++)
         {

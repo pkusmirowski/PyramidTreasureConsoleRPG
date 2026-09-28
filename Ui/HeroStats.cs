@@ -3,8 +3,8 @@ namespace PyramidTreasureConsoleRPG.Ui;
 /// <summary>Wiersze ekranu statystyk – wspólne dla wszystkich implementacji IGameIO.</summary>
 internal static class HeroStats
 {
-    public static IReadOnlyList<(string Label, string Value)> Rows(Hero hero) => new[]
-    {
+    public static IReadOnlyList<(string Label, string Value)> Rows(Hero hero) =>
+    [
         ("Imię", hero.Name),
         ("Klasa", hero.ClassName),
         ("Poziom", hero.IsMaxLevel ? $"{hero.Level} (maksymalny)" : $"{hero.Level}   doświadczenie {hero.Exp}/{hero.ExpToNextLevel}"),
@@ -25,7 +25,7 @@ internal static class HeroStats
         ("Zadania", $"{hero.Quests.Count(q => q.Value.Status == QuestStatus.Active)} aktywne, {hero.Quests.Count(q => q.Value.Status == QuestStatus.Completed)} ukończone"),
         ("Trudność", $"{hero.DifficultyDefinition.Name} (wrogowie {hero.EnemyScalePercent}%, nagrody {hero.RewardPercent}%)"),
         ("Wyprawa", $"{(hero.NewGamePlus > 0 ? $"nowa gra+ (cykl {hero.NewGamePlus}, wrogowie +{hero.EnemyScalePercent - 100}%), " : "")}{hero.Stats.Fights} walk, {hero.Stats.Kills} zabitych, {hero.Stats.DarkChoices} mrocznych i {hero.Stats.LightChoices} jasnych wyborów"),
-    };
+    ];
 
     /// <summary>Wiersze podsumowania po zakończeniu gry.</summary>
     public static IReadOnlyList<(string Label, string Value)> SummaryRows(Hero hero)
@@ -34,8 +34,8 @@ internal static class HeroStats
         string moral = s.DarkChoices > s.LightChoices * 2 ? "bez skrupułów"
             : s.LightChoices > s.DarkChoices * 2 ? "z czystymi rękami"
             : "pragmatycznie";
-        return new[]
-        {
+        return
+        [
             ("Bohater", $"{hero.Name}, {hero.ClassName}, poziom {hero.Level}, trudność {hero.DifficultyDefinition.Name.ToLowerInvariant()}{(hero.NewGamePlus > 0 ? $", nowa gra+ {hero.NewGamePlus}" : "")}"),
             ("Dni w drodze", hero.Day.ToString(System.Globalization.CultureInfo.InvariantCulture)),
             ("Walki / zabici / bossowie", $"{s.Fights} / {s.Kills} / {s.BossKills}"),
@@ -46,6 +46,6 @@ internal static class HeroStats
             ("Wybory mroczne / jasne", $"{s.DarkChoices} / {s.LightChoices} – {moral}"),
             ("Reputacja", string.Join(", ", Enum.GetValues<Faction>().Select(f => $"{RegionCatalog.FactionName(f)} {hero.GetReputation(f):+0;-0;0}"))),
             ("Nałóg / dług", $"lotos {hero.Addiction} dawek / {(hero.Debt > 0 ? $"{hero.Debt} g" : "brak")}"),
-        };
+        ];
     }
 }

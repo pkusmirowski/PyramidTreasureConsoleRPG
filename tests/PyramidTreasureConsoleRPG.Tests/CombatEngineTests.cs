@@ -2,12 +2,12 @@ namespace PyramidTreasureConsoleRPG.Tests;
 
 public class CombatEngineTests
 {
-    public static IEnumerable<object[]> Classes => new[]
-    {
-        new object[] { HeroClass.Warrior },
+    public static IEnumerable<object[]> Classes =>
+    [
+        [HeroClass.Warrior],
         [HeroClass.Archer],
         [HeroClass.Assassin],
-    };
+    ];
 
     private static Hero MaxLevelHero(HeroClass heroClass)
     {
@@ -93,7 +93,7 @@ public class CombatEngineTests
         hero.AddPotion(Potion.Small);
         hero.TakeDamage(60);
         // heroFirst: 50 + Dex(2) - Agility(5) = 47 -> roll 10 < 47 => hero acts first
-        var engine = new CombatEngine(hero, new[] { EnemyCatalog.Thief.Spawn() }, new ScriptedRandomSource(10, 0, 5));
+        var engine = new CombatEngine(hero, [EnemyCatalog.Thief.Spawn()], new ScriptedRandomSource(10, 0, 5));
         engine.Begin();
         Assert.True(engine.HeroActsFirst);
 
@@ -121,7 +121,7 @@ public class CombatEngineTests
         Hero hero = Hero.Create(HeroClass.Assassin, "Test");
         int gold = hero.Gold;
         // initiative roll 10 (hero first), flee roll 0 (< FleeChance)
-        var engine = new CombatEngine(hero, new[] { EnemyCatalog.Wolf.Spawn(), EnemyCatalog.Wolf.Spawn() }, new ScriptedRandomSource(10, 0));
+        var engine = new CombatEngine(hero, [EnemyCatalog.Wolf.Spawn(), EnemyCatalog.Wolf.Spawn()], new ScriptedRandomSource(10, 0));
         engine.Begin();
         IReadOnlyList<CombatEvent> events = engine.HeroFlee();
         Assert.Equal(CombatStatus.Fled, engine.Status);
@@ -155,7 +155,7 @@ public class CombatEngineTests
     {
         Hero hero = Hero.Create(HeroClass.Warrior, "Test");
         // initiative roll 99 -> enemy first, enemy attack: evasion roll 99 (no dodge), damage roll
-        var engine = new CombatEngine(hero, new[] { EnemyCatalog.Thief.Spawn() }, new ScriptedRandomSource(99, 99, 5));
+        var engine = new CombatEngine(hero, [EnemyCatalog.Thief.Spawn()], new ScriptedRandomSource(99, 99, 5));
         IReadOnlyList<CombatEvent> events = engine.Begin();
         Assert.False(engine.HeroActsFirst);
         Assert.IsType<FightStartedEvent>(events[0]);

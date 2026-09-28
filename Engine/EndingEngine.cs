@@ -10,7 +10,7 @@ public static class EndingEngine
     public static IReadOnlyList<EndingOption> Options(Hero hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
-        return EndingCatalog.All.Select(e => Check(hero, e)).ToList();
+        return [.. EndingCatalog.All.Select(e => Check(hero, e))];
     }
 
     public static EndingOption Check(Hero hero, EndingDefinition ending)

@@ -12,7 +12,7 @@ public static class QuestEngine
     public static IReadOnlyList<QuestDefinition> Available(Hero hero, QuestGiverId giver)
     {
         ArgumentNullException.ThrowIfNull(hero);
-        return QuestCatalog.ByGiver(giver).Where(q => IsAvailable(hero, q)).ToList();
+        return [.. QuestCatalog.ByGiver(giver).Where(q => IsAvailable(hero, q))];
     }
 
     public static bool IsAvailable(Hero hero, QuestDefinition quest)
@@ -35,13 +35,13 @@ public static class QuestEngine
     public static IReadOnlyList<QuestDefinition> Active(Hero hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
-        return hero.Quests.Where(kv => kv.Value.Status == QuestStatus.Active).Select(kv => QuestCatalog.Get(kv.Key)).ToList();
+        return [.. hero.Quests.Where(kv => kv.Value.Status == QuestStatus.Active).Select(kv => QuestCatalog.Get(kv.Key))];
     }
 
     public static IReadOnlyList<QuestDefinition> ReadyToTurnIn(Hero hero, QuestGiverId giver)
     {
         ArgumentNullException.ThrowIfNull(hero);
-        return Active(hero).Where(q => q.Giver == giver && IsObjectiveMet(hero, q)).ToList();
+        return [.. Active(hero).Where(q => q.Giver == giver && IsObjectiveMet(hero, q))];
     }
 
     public static bool HasNews(Hero hero, QuestGiverId giver) => Available(hero, giver).Count > 0 || ReadyToTurnIn(hero, giver).Count > 0;

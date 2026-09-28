@@ -239,7 +239,7 @@ public sealed class Hero
 
     /// <summary>Poziomy talentów, które bohater już osiągnął, ale jeszcze nie wybrał.</summary>
     public IReadOnlyList<int> PendingTalentLevels() =>
-        TalentCatalog.Levels.Where(l => Level >= l && !talents.Any(t => TalentCatalog.Get(t).Level == l)).ToList();
+        [.. TalentCatalog.Levels.Where(l => Level >= l && !talents.Any(t => TalentCatalog.Get(t).Level == l))];
 
     public void ChooseTalent(TalentId id)
     {
@@ -404,12 +404,12 @@ public sealed class Hero
 
     // --- akcje ---
 
-    public IReadOnlyList<AttackOption> GetAttackOptions() => new[]
-    {
+    public IReadOnlyList<AttackOption> GetAttackOptions() =>
+    [
         new AttackOption(AttackKind.Normal, Definition.NormalAttackName, $"{MinDmg}-{MaxDmg} obrażeń, trafienie {CombatMath.ClampChance(HitChance + 20):0}%, krytyk {CritChance:0}%"),
         new AttackOption(AttackKind.Strong, Definition.StrongAttackName, $"{MinDmg * 3 / 2}-{MaxDmg * 3 / 2} obrażeń, trafienie {CombatMath.ClampChance(HitChance):0}%, krytyk {Math.Min(75, CritChance * 2):0}%"),
         new AttackOption(AttackKind.Special, Definition.SpecialAttackName, SpecialAttackDescription()),
-    };
+    ];
 
     public AttackResult Attack(AttackKind kind, Enemy enemy, IRandomSource rng)
     {
@@ -640,17 +640,17 @@ public sealed class Hero
         Stage = (int)Stage,
         SpecialDrinkUsed = SpecialDrinkUsed,
         Completed = Completed,
-        Potions = Inventory.Select(p => (int)p.Kind).ToList(),
+        Potions = [.. Inventory.Select(p => (int)p.Kind)],
         Day = Day,
         Region = (int)CurrentRegion,
         Reputation = reputation.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value),
-        Flags = flags.ToList(),
-        Quests = quests.Select(kv => new QuestSaveEntry { Id = kv.Key.ToString(), Status = (int)kv.Value.Status, Progress = kv.Value.Progress }).ToList(),
+        Flags = [.. flags],
+        Quests = [.. quests.Select(kv => new QuestSaveEntry { Id = kv.Key.ToString(), Status = (int)kv.Value.Status, Progress = kv.Value.Progress })],
         Weapon = Weapon is null ? null : (int)Weapon.Id,
         ArmorItem = EquippedArmor is null ? null : (int)EquippedArmor.Id,
         Trinket = Trinket is null ? null : (int)Trinket.Id,
-        Gear = gear.Select(i => (int)i.Id).ToList(),
-        Talents = talents.Select(t => (int)t).ToList(),
+        Gear = [.. gear.Select(i => (int)i.Id)],
+        Talents = [.. talents.Select(t => (int)t)],
         Addiction = Addiction,
         LastLotusDay = LastLotusDay,
         Craving = Craving,

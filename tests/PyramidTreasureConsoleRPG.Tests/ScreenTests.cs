@@ -38,7 +38,7 @@ public class ScreenTests
         hero.AddExp(1_000_000);
         var answers = Enumerable.Repeat("1", 50).ToArray();
         var io = new ScriptedGameIO(answers);
-        CombatStatus status = new CombatScreen(io, new SeededRandomSource(9)).Run(hero, new[] { EnemyCatalog.Thief.Spawn() });
+        CombatStatus status = new CombatScreen(io, new SeededRandomSource(9)).Run(hero, [EnemyCatalog.Thief.Spawn()]);
 
         Assert.Equal(CombatStatus.Victory, status);
         Assert.Contains(io.Output, line => line.StartsWith("Pokonałeś:", StringComparison.Ordinal));

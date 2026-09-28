@@ -64,7 +64,7 @@ public sealed class CombatEngine
         Hero = hero ?? throw new ArgumentNullException(nameof(hero));
         ArgumentNullException.ThrowIfNull(enemies);
         this.rng = rng ?? throw new ArgumentNullException(nameof(rng));
-        this.enemies = enemies.ToList();
+        this.enemies = [.. enemies];
         if (this.enemies.Count == 0)
         {
             throw new ArgumentException("Walka wymaga przynajmniej jednego wroga.", nameof(enemies));
@@ -88,7 +88,7 @@ public sealed class CombatEngine
     /// <summary>Wszyscy wrogowie, także pokonani i zbiegli.</summary>
     public IReadOnlyList<Enemy> Enemies => enemies;
 
-    public IReadOnlyList<Enemy> Alive => enemies.Where(e => e.IsAlive && !e.Fled).ToList();
+    public IReadOnlyList<Enemy> Alive => [.. enemies.Where(e => e.IsAlive && !e.Fled)];
 
     public CombatStatus Status { get; private set; } = CombatStatus.InProgress;
 

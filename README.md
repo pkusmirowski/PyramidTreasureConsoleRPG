@@ -77,6 +77,8 @@ Symulacja balansu na prawdziwym silniku walki (szansa wygranej i utrata HP dla k
 dotnet run --project tools/BalanceSim -c Release -- 200
 ```
 
+Reguły stylu kolekcji (IDE0300–IDE0305) są tylko sugestią: analizator z SDK 9 zgłasza ich więcej niż SDK 8, a formatowanie w CI nie powinno być czerwone przez wersję narzędzi.
+
 CI (GitHub Actions) sprawdza formatowanie, buduje projekt z ostrzeżeniami jako błędami, uruchamia testy i przechodzi grę botem.
 
 ## Licencja

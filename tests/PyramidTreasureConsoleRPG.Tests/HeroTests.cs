@@ -2,12 +2,12 @@ namespace PyramidTreasureConsoleRPG.Tests;
 
 public class HeroTests
 {
-    public static IEnumerable<object[]> Classes => new[]
-    {
-        new object[] { HeroClass.Warrior },
+    public static IEnumerable<object[]> Classes =>
+    [
+        [HeroClass.Warrior],
         [HeroClass.Archer],
         [HeroClass.Assassin],
-    };
+    ];
 
     [Theory]
     [MemberData(nameof(Classes))]

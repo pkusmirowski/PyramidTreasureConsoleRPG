@@ -34,7 +34,7 @@ public static class ShopService
     public static IReadOnlyList<Item> Stock(RegionDefinition region)
     {
         ArgumentNullException.ThrowIfNull(region);
-        return region.Stock.Select(ItemCatalog.Get).ToList();
+        return [.. region.Stock.Select(ItemCatalog.Get)];
     }
 
     /// <summary>Mnożnik cen w procentach: reputacja (Miasto, a w Starym Mieście Podziemie) i zniżka z amuletu.</summary>

@@ -117,7 +117,7 @@ public sealed class InventoryScreen(IGameIO io)
             }
 
             options.Add(("Wróć", () => { }));
-            int choice = io.Menu("Wyposażenie:", options.Select(o => o.Label).ToArray());
+            int choice = io.Menu("Wyposażenie:", [.. options.Select(o => o.Label)]);
             io.Clear();
             if (choice == options.Count)
             {
@@ -167,7 +167,7 @@ public sealed class InventoryScreen(IGameIO io)
         var kinds = Potion.AllKinds.Where(k => hero.CountPotions(k) > 0).ToList();
         if (hero.Hp >= hero.MaxHp)
         {
-            kinds = kinds.Where(k => Potion.Create(k).Effect != PotionUse.Heal).ToList();
+            kinds = [.. kinds.Where(k => Potion.Create(k).Effect != PotionUse.Heal)];
             if (kinds.Count == 0)
             {
                 io.ShowInfo($"Masz pełne zdrowie ({hero.Hp}/{hero.MaxHp}). Szkoda mikstury.");
