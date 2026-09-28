@@ -10,6 +10,7 @@ import os, re, subprocess, sys, time, select
 DLL = sys.argv[1]
 CLASS = sys.argv[2] if len(sys.argv) > 2 else "1"
 MAX_SECONDS = int(sys.argv[3]) if len(sys.argv) > 3 else 900
+TOUR = bool(os.environ.get("PLAYBOT_TOUR"))  # wycieczka po usługach pobocznych (kasyno, sprzedaż, zapis/wczytanie)
 home = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".playbot-home")
 os.makedirs(home, exist_ok=True)
 env = dict(os.environ, DOTNET_CLI_TELEMETRY_OPTOUT="1", HOME=home, APPDATA=home)
@@ -109,6 +110,9 @@ def decide(text):
     if "Czy masz ukończone 18 lat?" in last: return "1"
     if "Co robisz z Graalem?" in last: state["finished"] = True
     if "Menu główne" in last:
+        if TOUR and state["saved"] and not state.get("tour_reloaded") and not state.get("finished"):
+            state["tour_reloaded"] = True
+            return "2"
         if state.get("finished") or state["deaths"] > 0: return "4"
         return "1"
     if "Podaj swoje imię" in last: return "Tester"
@@ -119,8 +123,10 @@ def decide(text):
         return "1" if ("Wejść?" in last or state["hp"] * 10 >= state["maxhp"] * 7 or state["potions"] > 0 or desperate) else "2"
     if "Niezapisany postęp" in last: return "2"
     if "Nadpisać istniejący zapis?" in last: return "2"
-    if "Zapisz w slocie:" in last: return "1"
-    if "Który zapis wczytać?" in last: return str(len(options_of(last, "Który zapis wczytać?")))
+    if "Zapisz w slocie:" in last: return "2" if TOUR else "1"
+    if "Który zapis wczytać?" in last:
+        opts = options_of(last, "Który zapis wczytać?")
+        return "1" if TOUR and state.get("tour_reloaded") else str(len(opts))
     if "Co robisz z Graalem?" in last:
         opts = options_of(last, "Co robisz z Graalem?")
         for n, t in reversed(opts):
@@ -157,6 +163,7 @@ def decide(text):
         return str(len(options_of(last, "Którą miksturę wypić?")))
     if "Co robisz?" in last and "Co chcesz zrobić?" not in last:
         opts = options_of(last, "Co robisz?")
+        if pick(opts, "Pasuj"): return pick(opts, "Pasuj")
         risky = state["hp"] * 10 < state["maxhp"] * 7 or state["potions"] == 0
         for n, t in opts:
             if "niedostępne" not in t and "[test" not in t and not (risky and "walka:" in t): return str(n)
@@ -222,12 +229,18 @@ def decide(text):
         return str(len(opts))
     if "Co sprzedajesz?" in last:
         opts = options_of(last, "Co sprzedajesz?")
+        if TOUR and len(opts) > 1 and not state.get("tour_sold"):
+            state["tour_sold"] = True
+            return "1"
         return str(len(opts))
     if "=== Sklep" in last and "Co chcesz zrobić?" in last:
         opts = options_of(last, "Co chcesz zrobić?")
         if state["shop_mode"] is None:
             state["shop_mode"] = "gear"
             return pick(opts, "Kup wyposażenie")
+        if state["shop_mode"] == "sell":
+            state["shop_mode"] = "gear"
+            return pick(opts, "Sprzedaj")
         if state["shop_mode"] == "gear":
             state["shop_mode"] = "potions"
             return pick(opts, "Kup mikstury")
@@ -235,7 +248,10 @@ def decide(text):
         return pick(opts, "Wyjdź")
     if "Witaj w tawernie" in last:
         opts = options_of(last, "Witaj w tawernie")
-        if state.get("want_loan") or state.get("want_repay"):
+        if state.get("want_loan") or state.get("want_repay") or state.get("tour_casino"):
+            if state.pop("tour_casino", False):
+                state["tour_games"] = ["Ruletka", "Jednoręki", "Blackjack", "Kości"]
+                state["tour_bet"] = True
             return pick(opts, "kasyna")
         if state["want_bar"]:
             state["want_bar"] = False
@@ -266,7 +282,11 @@ def decide(text):
         opts = options_of(last, "W co grasz?")
         if state.pop("want_loan", False) or state.pop("want_repay", False):
             return pick(opts, "Lichwiarz")
+        if TOUR and state.get("tour_games"):
+            return pick(opts, state["tour_games"].pop(0))
         return str(len(opts))
+    if "Na co stawiasz?" in last: return "1"
+    if "Numer (0-36)" in last: return "7"
     if "Ile pożyczasz" in last:
         state["debt"] = 150; state["gold"] += 150
         return "150"
@@ -275,8 +295,10 @@ def decide(text):
         amount = int(m.group(1)) if m else 0
         state["gold"] -= amount; state["debt"] = 0
         return str(amount)
-    if "Grasz dalej?" in last: return "2"
-    if "Ile stawiasz?" in last: return "0"
+    if "Grasz dalej?" in last:
+        state["tour_bet"] = False
+        return "2"
+    if "Ile stawiasz?" in last: return "1" if TOUR and state.get("tour_bet") else "0"
     if "Co chcesz zrobić?" in last:
         opts = options_of(last, "Co chcesz zrobić?")
         if "=== Sakwa ===" in last and len(opts) == 3:
@@ -331,6 +353,16 @@ def decide(text):
                 return pick(opts, "Mapa")
         else:
             state["bag_tried"] = False; state["heal_shop"] = False; state["heal_trip"] = False
+        # 2a. wycieczka po usługach (PLAYBOT_TOUR=1): kasyno raz, sprzedaż raz, powrót do menu i wczytanie po zapisie
+        if TOUR and "Tawerna" in last and state["gold"] >= 60 and not state.get("tour_casino_done"):
+            state["tour_casino_done"] = True; state["tour_casino"] = True
+            return pick(opts, "Tawerna")
+        if TOUR and "Sklep" in last and state["owned"] and not state.get("tour_sold") and not state.get("tour_shop_sell"):
+            state["tour_shop_sell"] = True; state["shop_mode"] = "sell"
+            return pick(opts, "Sklep")
+        if TOUR and state["saved"] and not state.get("tour_reloaded") and not state.get("tour_left"):
+            state["tour_left"] = True
+            return pick(opts, "Wróć do menu głównego")
         # 2b. odwiedziny na górze (wątki NPC) – raz na jakiś czas, gdy jest złoto
         if "Tawerna" in last and state["gold"] >= 150 and state["menus"] - state.get("last_npc_trip", -999) > 60:
             state["last_npc_trip"] = state["menus"]; state["npc_trip"] = True
