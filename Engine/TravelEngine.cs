@@ -13,6 +13,8 @@ public sealed record TravelCheck(bool Allowed, string? Reason);
 
 public sealed record TravelPlan(RegionDefinition Target, int Days, int Cost, IReadOnlyList<TravelStep> Steps);
 
+public sealed record ArrivalReport(IReadOnlyList<string> DayNotes);
+
 /// <summary>Podróż między regionami i eksploracja regionu. Każdy krok to walka, zdarzenie albo spokojny dzień.</summary>
 public static class TravelEngine
 {
@@ -76,22 +78,34 @@ public static class TravelEngine
         return new TravelPlan(target, target.TravelDays, target.TravelCost, steps);
     }
 
-    public static void Arrive(Hero hero, RegionDefinition target)
+    public static ArrivalReport Arrive(Hero hero, RegionDefinition target)
     {
         ArgumentNullException.ThrowIfNull(hero);
         ArgumentNullException.ThrowIfNull(target);
-        hero.Day += target.TravelDays;
+        DayReport report = DayService.AdvanceDays(hero, target.TravelDays);
         hero.CurrentRegion = target.Id;
         QuestEngine.OnArrived(hero, target.Id);
+        return new ArrivalReport(report.Notes);
     }
 
-    /// <summary>Eksploracja bieżącego regionu: jeden dzień, walka albo zdarzenie albo nic.</summary>
-    public static TravelStep Explore(Hero hero, RegionDefinition region, IRandomSource rng)
+    /// <summary>Eksploracja bieżącego regionu: jeden dzień, walka albo zdarzenie albo nic. Komunikaty dnia w DayNotes.</summary>
+    public static TravelStep Explore(Hero hero, RegionDefinition region, IRandomSource rng, out IReadOnlyList<string> dayNotes)
     {
         ArgumentNullException.ThrowIfNull(hero);
         ArgumentNullException.ThrowIfNull(region);
         ArgumentNullException.ThrowIfNull(rng);
-        hero.Day += 1;
+        dayNotes = DayService.AdvanceDays(hero, 1).Notes;
+        if (hero.HasFlag($"intel:{region.Id}"))
+        {
+            // Informacje z przesłuchania: zamiast zasadzki trafiasz na zdarzenie.
+            hero.ClearFlag($"intel:{region.Id}");
+            GameEvent? intel = EventEngine.Pick(hero, region.Id, rng);
+            if (intel is not null)
+            {
+                return new TravelStep(TravelStepKind.Event, intel.Title, null, intel);
+            }
+        }
+
         return RollStep(hero, region, rng, QuietExplore, region.FightChancePercent, region.EventChancePercent);
     }
 
@@ -100,7 +114,7 @@ public static class TravelEngine
         int roll = rng.Range(1, 100);
         if (roll <= fightChance && region.Encounters.Length > 0)
         {
-            return new TravelStep(TravelStepKind.Fight, "Ktoś zastępuje ci drogę.", Encounters.InRegion(region, rng), null);
+            return new TravelStep(TravelStepKind.Fight, "Ktoś zastępuje ci drogę.", Encounters.InRegion(region, rng, hero.Level), null);
         }
 
         if (roll <= fightChance + eventChance)

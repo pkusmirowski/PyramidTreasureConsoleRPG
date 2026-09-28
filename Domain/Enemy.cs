@@ -85,10 +85,13 @@ public static class EnemyCatalog
 
     public static EnemyDefinition Ra { get; } = new("Bóg Ra", EnemyKind.Divine, MaxHp: 2500, MinDmg: 90, MaxDmg: 132, Armor: 45, Agility: 12, Exp: 0, Gold: 20000, IsBoss: true, Ability: EnemyAbility.SunGod);
 
+    /// <summary>Egzekutor lichwiarza.</summary>
+    public static EnemyDefinition Breaker { get; } = new("Łamacz", EnemyKind.Human, MaxHp: 220, MinDmg: 24, MaxDmg: 36, Armor: 20, Agility: 9, Exp: 900, Gold: 60, Loot: [new LootEntry(20, ItemId.ChainMail)], Ability: EnemyAbility.Block);
+
     /// <summary>Wzywany przez Ra w drugiej fazie.</summary>
     public static EnemyDefinition ShadowAnubis { get; } = new("Cień Anubisa", EnemyKind.Divine, MaxHp: 300, MinDmg: 24, MaxDmg: 36, Armor: 15, Agility: 16, Exp: 0, Gold: 0, IsBoss: true);
 
-    public static IReadOnlyList<EnemyDefinition> All { get; } = [Thief, Wolf, WildBoar, ArmoredThief, FallenKnight, Templar, CryingMonk, Anubis, Ra, ShadowAnubis];
+    public static IReadOnlyList<EnemyDefinition> All { get; } = [Thief, Wolf, WildBoar, ArmoredThief, FallenKnight, Templar, CryingMonk, Anubis, Ra, ShadowAnubis, Breaker];
 }
 
 /// <summary>Żywy przeciwnik w walce: definicja plus aktualne HP.</summary>

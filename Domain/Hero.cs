@@ -136,6 +136,8 @@ public sealed class Hero
         return flags.Add(flag);
     }
 
+    public bool ClearFlag(string flag) => flags.Remove(flag);
+
     public QuestProgress? GetQuest(QuestId id) => quests.GetValueOrDefault(id);
 
     public QuestProgress StartQuest(QuestId id)
@@ -153,6 +155,49 @@ public sealed class Hero
 
     /// <summary>Statusy w walce (czyszczone po walce).</summary>
     public StatusList Statuses { get; } = new();
+
+    /// <summary>Używka wypita przed walką; działa przez jedną walkę.</summary>
+    public PotionKind? NextFightBuff { get; set; }
+
+    /// <summary>Bonusy z używki na czas bieżącej walki.</summary>
+    public int CombatHitBonus { get; private set; }
+
+    public int CombatEvasionBonus { get; private set; }
+
+    public int CombatDamagePercent { get; private set; }
+
+    /// <summary>Liczba dawek lotosu; od 3 zaczyna się głód.</summary>
+    public int Addiction { get; set; }
+
+    public int LastLotusDay { get; set; } = -100;
+
+    /// <summary>Głód lotosu: −15% obrażeń i −10 trafienia, dopóki nie zażyje albo nie przeczeka tygodnia.</summary>
+    public bool Craving { get; set; }
+
+    /// <summary>Dług u lichwiarza i dzień jego zaciągnięcia.</summary>
+    public int Debt { get; set; }
+
+    public int DebtDay { get; set; }
+
+    /// <summary>Noce koszmarów po przesłuchaniach: nocleg leczy tylko do 90%.</summary>
+    public int NightmareNights { get; set; }
+
+    /// <summary>Aktywuje używkę na czas walki (wywoływane przez silnik walki na jej początku).</summary>
+    public void ApplyNextFightBuff()
+    {
+        switch (NextFightBuff)
+        {
+            case PotionKind.Whisky:
+                CombatHitBonus = 10;
+                CombatEvasionBonus = -10;
+                break;
+            case PotionKind.Lotus:
+                CombatDamagePercent = 25;
+                break;
+        }
+
+        NextFightBuff = null;
+    }
 
     public const int GearCapacity = 8;
 
@@ -296,7 +341,7 @@ public sealed class Hero
     public int ShopDiscountPercent => TrinketPower(TrinketEffect.ShopDiscount);
 
     /// <summary>Mnożnik obrażeń bohatera (talenty).</summary>
-    public double DamageMultiplier => (100 + TalentPower(TalentEffect.DamagePercent) + (Hp * 3 < MaxHp ? TalentPower(TalentEffect.DamageWhenLow) : 0)) / 100.0 * Statuses.DamageMultiplier;
+    public double DamageMultiplier => (100 + TalentPower(TalentEffect.DamagePercent) + (Hp * 3 < MaxHp ? TalentPower(TalentEffect.DamageWhenLow) : 0) + CombatDamagePercent - (Craving ? 15 : 0)) / 100.0 * Statuses.DamageMultiplier;
 
     public int Hp
     {
@@ -314,14 +359,14 @@ public sealed class Hero
 
     public int MaxDmg => Definition.BaseMaxDmg + (Power / 2) + (Weapon?.MaxDmgBonus ?? 0);
 
-    public double HitChance => CombatMath.ClampChance(Definition.BaseHitChance + (Level * 1.5) + ExtraHitChance + (Weapon?.HitBonus ?? 0) + TalentPower(TalentEffect.HitFlat) - Statuses.HitPenalty);
+    public double HitChance => CombatMath.ClampChance(Definition.BaseHitChance + (Level * 1.5) + ExtraHitChance + (Weapon?.HitBonus ?? 0) + TalentPower(TalentEffect.HitFlat) + CombatHitBonus - (Craving ? 10 : 0) - Statuses.HitPenalty);
 
     public double CritChance => Math.Clamp(Definition.BaseCritChance + Level + (Weapon?.CritBonus ?? 0) + TrinketPower(TrinketEffect.Crit) + TalentPower(TalentEffect.CritFlat), 0, 75);
 
     public int Armor => (Dex / Definition.ArmorDexDivisor) + (Definition.ArmorAddsLevel ? Level : 0) + (EquippedArmor?.ArmorBonus ?? 0) + TalentPower(TalentEffect.ArmorFlat);
 
     /// <summary>Szansa (w %) na uniknięcie ataku wroga.</summary>
-    public int Evasion => Math.Clamp((Dex / Definition.EvasionDexDivisor) + (EquippedArmor?.EvasionBonus ?? 0) + TrinketPower(TrinketEffect.Evasion) + TalentPower(TalentEffect.EvasionFlat), 0, 50);
+    public int Evasion => Math.Clamp((Dex / Definition.EvasionDexDivisor) + (EquippedArmor?.EvasionBonus ?? 0) + TrinketPower(TrinketEffect.Evasion) + TalentPower(TalentEffect.EvasionFlat) + CombatEvasionBonus, 0, 50);
 
     /// <summary>Szansa (w %) na ucieczkę z walki.</summary>
     public int FleeChance => Math.Clamp(35 + Dex + TrinketPower(TrinketEffect.FleeChance) + TalentPower(TalentEffect.FleeFlat), 20, 90);
@@ -383,6 +428,9 @@ public sealed class Hero
     {
         Statuses.Clear();
         GuaranteedCrit = false;
+        CombatHitBonus = 0;
+        CombatEvasionBonus = 0;
+        CombatDamagePercent = 0;
     }
 
     private string SpecialAttackDescription() => Definition.SpecialAttack switch
@@ -512,7 +560,10 @@ public sealed class Hero
 
     public int CountPotions(PotionKind kind) => inventory.Count(p => p.Kind == kind);
 
-    /// <summary>Wypija miksturę danego rodzaju. Zwraca ilość faktycznie uleczonych HP lub null, gdy brak mikstury.</summary>
+    /// <summary>
+    /// Wypija miksturę danego rodzaju. Zwraca ilość uleczonych HP (0 dla używek) lub null, gdy brak mikstury.
+    /// Używki ustawiają bonus na następną walkę; lotos zwiększa uzależnienie.
+    /// </summary>
     public int? DrinkPotion(PotionKind kind)
     {
         Potion? potion = inventory.Find(p => p.Kind == kind);
@@ -523,7 +574,28 @@ public sealed class Hero
 
         inventory.Remove(potion);
         int before = Hp;
-        Heal(potion.RestoreHp);
+        switch (potion.Effect)
+        {
+            case PotionUse.Heal:
+                Heal(potion.RestoreHp);
+                break;
+            case PotionUse.Whisky:
+                NextFightBuff = PotionKind.Whisky;
+                break;
+            case PotionUse.Lotus:
+                NextFightBuff = PotionKind.Lotus;
+                Addiction++;
+                LastLotusDay = Day;
+                Craving = false;
+                Statuses.Remove(StatusKind.Weak);
+                break;
+            case PotionUse.Antidote:
+                Statuses.Remove(StatusKind.Poison);
+                Statuses.Remove(StatusKind.Weak);
+                Craving = false;
+                break;
+        }
+
         return Hp - before;
     }
 
@@ -555,6 +627,13 @@ public sealed class Hero
         Trinket = Trinket is null ? null : (int)Trinket.Id,
         Gear = gear.Select(i => (int)i.Id).ToList(),
         Talents = talents.Select(t => (int)t).ToList(),
+        Addiction = Addiction,
+        LastLotusDay = LastLotusDay,
+        Craving = Craving,
+        Debt = Debt,
+        DebtDay = DebtDay,
+        NightmareNights = NightmareNights,
+        NextFightBuff = NextFightBuff is null ? null : (int)NextFightBuff,
     };
 
     public static Hero Create(HeroClass heroClass, string name) => new(HeroClasses.Get(heroClass), name);
@@ -643,6 +722,13 @@ public sealed class Hero
             }
         }
 
+        hero.Addiction = Math.Max(0, data.Addiction);
+        hero.LastLotusDay = data.LastLotusDay;
+        hero.Craving = data.Craving;
+        hero.Debt = Math.Max(0, data.Debt);
+        hero.DebtDay = data.DebtDay;
+        hero.NightmareNights = Math.Max(0, data.NightmareNights);
+        hero.NextFightBuff = data.NextFightBuff is int buff && Enum.IsDefined((PotionKind)buff) ? (PotionKind)buff : null;
         hero.Hp = data.Hp <= 0 ? hero.MaxHp : data.Hp;
 
         if (data.Version < 3)

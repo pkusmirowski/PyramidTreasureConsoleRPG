@@ -24,7 +24,7 @@ GIVER_PLACE = {"Barman": "Tawerna", "Kapitan portu": "Kapitanat portu", "Przemyt
 CLASS_NAME = {"1": "Wojownik", "2": "Łucznik", "3": "Asasyn"}[CLASS]
 state = dict(level=1, hp=1, maxhp=1, gold=0, potions=0, region="Port Sokoła", deaths=0, saved=False, fights=0, menus=0,
              pending=set(), giver=None, locked=set(), want_bar=False, went_temple=False, last_target=None,
-             bag_tried=False, owned=set(), equipped=set(), bought_tier=0, shop_mode=None, bag=0, talents=0)
+             bag_tried=False, owned=set(), equipped=set(), bought_tier=0, shop_mode=None, bag=0, talents=0, npc_visits={})
 
 def send(s):
     log.write(f">>> {s}\n"); log.flush()
@@ -70,6 +70,9 @@ def parse(text):
     if "Wybrano talent" in text: state["talents"] += 1
     for m in re.finditer(r"Wróć do zleceniodawcy \((.*?)\)", text):
         state["pending"].add(m.group(1))
+    for m in re.finditer(r"GOTOWE – oddaj u: (.*?)$", text, re.M):
+        state["pending"].add(m.group(1).strip())
+    if "Zadanie ukończone:" in text or "Przyjęto zadanie" in text: state["since_log"] = 0
     if "Zadanie ukończone:" in text and state["giver"]:
         state["pending"].discard(state["giver"])
     if "Nie posiadasz żadnych mikstur" in text or "Nie masz żadnych mikstur" in text: state["potions"] = 0
@@ -110,7 +113,8 @@ def decide(text):
     if "Podaj swoje imię" in last: return "Tester"
     if "Wybierz klasę" in last: return CLASS
     if "Wyruszyć?" in last or "Wejść?" in last:
-        return "1" if ("Wejść?" in last or state["hp"] * 2 >= state["maxhp"] or state["potions"] > 0) else "2"
+        desperate = state["gold"] < 25 and state["potions"] == 0 and state["hp"] * 4 >= state["maxhp"]
+        return "1" if ("Wejść?" in last or state["hp"] * 2 >= state["maxhp"] or state["potions"] > 0 or desperate) else "2"
     if "Niezapisany postęp" in last: return "2"
     if "Nadpisać istniejący zapis?" in last: return "2"
     if "Przyjąć zadanie?" in last: return "1"
@@ -120,6 +124,9 @@ def decide(text):
             return pick(opts, "Wypij")
         if "Broń się!" in last or "zbiera moc" in last:
             return pick(opts, "Obrona")
+        alive = last.count(" HP\n") - 1
+        if state["hp"] * 100 < state["maxhp"] * 20 and state["potions"] == 0 and alive >= 2 and "Uciekaj" in last:
+            return pick(opts, "Uciekaj")
         return "2" if state["level"] >= 8 else "1"
     if "Cel:" in last and "Twoja tura:" not in last.split("Cel:")[-1]:
         opts = options_of(last, "Cel:")
@@ -150,6 +157,13 @@ def decide(text):
                     return str(n)
         return str(len(opts))
     if "Który talent?" in last: return "1"
+    if "Co mówisz?" in last:
+        opts = options_of(last, "Co mówisz?")
+        for n, t in opts:
+            if "niedostępne" not in t: return str(n)
+        return str(len(opts))
+    if "Jeden z nich jeszcze dyszy" in last or "Co robisz z jeńcem?" in last:
+        return pick(options_of(last, "Co robisz z jeńcem?"), "Puść") or "2"
     if "Rozmowa:" in last:
         opts = options_of(last, "Rozmowa:")
         return pick(opts, "Oddaj:") or pick(opts, "Przyjmij:") or str(len(opts))
@@ -205,6 +219,7 @@ def decide(text):
             state["want_bar"] = False
             return pick(opts, "Podejdź do baru")
         if state["hp"] < state["maxhp"] and state["gold"] >= 10: return pick(opts, "Zapytaj o pokój")
+        if state.pop("npc_trip", False): return pick(opts, "Zapytaj o pokój")
         return str(len(opts))
     if "Przy barze:" in last:
         opts = options_of(last, "Przy barze:")
@@ -215,6 +230,14 @@ def decide(text):
         if state["hp"] < state["maxhp"] and state["gold"] >= 10:
             state["hp"] = state["maxhp"]
             return pick(opts, "Wynajmij")
+        if state["gold"] >= 80:
+            for n, t in opts:
+                if t.startswith("Odwiedź:"):
+                    name = t.split(":")[1].split("–")[0].strip()
+                    if state["npc_visits"].get(name, 0) < 4:
+                        state["npc_visits"][name] = state["npc_visits"].get(name, 0) + 1
+                        state["gold"] -= 40
+                        return str(n)
         return str(len(opts))
     if "Co podać?" in last: return str(len(options_of(last, "Co podać?")))
     if "Grasz dalej?" in last: return "2"
@@ -233,6 +256,10 @@ def decide(text):
         region = state["region"]
         t = pick(opts, "Wybierz talent")
         if t: return t
+        state["since_log"] = state.get("since_log", 0) + 1
+        if state["since_log"] >= 15 and "Dziennik zadań" in last:
+            state["since_log"] = 0
+            return pick(opts, "Dziennik zadań")
         if state.get("loot_pending"):
             state["loot_pending"] = False
             return pick(opts, "Sakwa")
@@ -251,6 +278,9 @@ def decide(text):
         # 2. leczenie
         if state["hp"] * 2 < state["maxhp"]:
             if "Tawerna" in last and state["gold"] >= 10: return pick(opts, "Tawerna")
+            if state["gold"] < 25 and state["potions"] == 0 and state["hp"] * 4 >= state["maxhp"]:
+                state["fights"] += 1
+                return "1"  # bieda: walcz ze słabymi wrogami, żeby zarobić na nocleg
             if state["potions"] > 0 and not state["bag_tried"]: return pick(opts, "Sakwa")
             if "Sklep" in last and state["gold"] >= 25 and not state.get("heal_shop"):
                 state["heal_shop"] = True; state["shop_mode"] = "gear"
@@ -260,6 +290,10 @@ def decide(text):
                 return pick(opts, "Mapa")
         else:
             state["bag_tried"] = False; state["heal_shop"] = False; state["heal_trip"] = False
+        # 2b. odwiedziny na górze (wątki NPC) – raz na jakiś czas, gdy jest złoto
+        if "Tawerna" in last and state["gold"] >= 150 and state["menus"] - state.get("last_npc_trip", -999) > 60:
+            state["last_npc_trip"] = state["menus"]; state["npc_trip"] = True
+            return pick(opts, "Tawerna")
         # 3. zakupy
         if "Sklep" in last and (state["gold"] >= 130 and state["potions"] < 4 or state["gold"] >= 200 and not state.get("shopped_at") == (region, state["gold"] // 200)):
             state["shopped_at"] = (region, state["gold"] // 200)

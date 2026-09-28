@@ -169,7 +169,7 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
                     io.Pause(500);
                     break;
                 case PotionDrunkEvent potion:
-                    io.ShowSuccess($"Wypiłeś miksturę i odzyskałeś {potion.Healed} HP. Masz teraz {engine.Hero.Hp}/{engine.Hero.MaxHp} HP.");
+                    io.ShowSuccess(InventoryScreen.DrinkMessage(engine.Hero, potion.Kind, potion.Healed));
                     break;
                 case FleeAttemptEvent flee:
                     if (flee.Success)

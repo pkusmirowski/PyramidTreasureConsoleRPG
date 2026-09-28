@@ -122,6 +122,7 @@ public static class QuestEngine
         }
 
         progress.Status = QuestStatus.Completed;
+        hero.SetFlag($"quest:{quest.Id}");
         QuestReward reward = quest.Reward;
         hero.Gold += reward.Gold;
         int levels = hero.AddExp(reward.Exp);

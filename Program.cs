@@ -29,6 +29,7 @@ services.AddSingleton<InventoryScreen>();
 services.AddSingleton<ShopScreen>();
 services.AddSingleton<BarScreen>();
 services.AddSingleton<CasinoScreen>();
+services.AddSingleton<NpcScreen>();
 services.AddSingleton<RestScreen>();
 services.AddSingleton<TavernScreen>();
 services.AddSingleton<EventScreen>();

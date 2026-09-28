@@ -43,7 +43,7 @@ public class TravelEngineTests
         var rng = new SeededRandomSource(11);
         for (int i = 0; i < 100; i++)
         {
-            kinds.Add(TravelEngine.Explore(hero, RegionCatalog.Port, rng).Kind);
+            kinds.Add(TravelEngine.Explore(hero, RegionCatalog.Port, rng, out _).Kind);
         }
 
         Assert.Equal(101, hero.Day);

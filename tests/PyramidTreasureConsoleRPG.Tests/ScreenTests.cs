@@ -7,9 +7,9 @@ public class ScreenTests
     {
         Hero hero = Hero.Create(HeroClass.Warrior, "Test");
         hero.Gold = 0;
-        // 1: mikstury, 3: duża (brak złota), 4: wróć, 4: wyjdź
-        var io = new ScriptedGameIO("1", "3", "4", "4");
-        new ShopScreen(io, new SeededRandomSource(1)).Run(hero);
+        // 1: mikstury, 3: duża (brak złota), 5: wróć (Port ma 4 pozycje), 4: wyjdź
+        var io = new ScriptedGameIO("1", "3", "5", "4");
+        new ShopScreen(io, new SeededRandomSource(1), new GameSettings()).Run(hero);
 
         Assert.Empty(hero.Inventory);
         Assert.Equal(0, hero.Gold);
@@ -22,9 +22,9 @@ public class ScreenTests
     {
         Hero hero = Hero.Create(HeroClass.Warrior, "Test");
         hero.Gold = 300;
-        // 1: mikstury, 1: mała, 4: wróć, 2: wyposażenie, 1: topór, 4+: wróć... stock Portu ma 6 pozycji, więc "Wróć" = 7; 4: wyjdź
-        var io = new ScriptedGameIO("1", "1", "4", "2", "1", "7", "4");
-        new ShopScreen(io, new SeededRandomSource(1)).Run(hero);
+        // 1: mikstury, 1: mała, 5: wróć, 2: wyposażenie, 1: topór, 7: wróć (stock Portu ma 6 pozycji), 4: wyjdź
+        var io = new ScriptedGameIO("1", "1", "5", "2", "1", "7", "4");
+        new ShopScreen(io, new SeededRandomSource(1), new GameSettings()).Run(hero);
 
         Assert.Equal(1, hero.CountPotions(PotionKind.Small));
         Assert.Single(hero.Gear, g => g.Id == ItemId.MercenaryAxe);
@@ -52,7 +52,7 @@ public class ScreenTests
         var rng = new SeededRandomSource(1);
         // 1: pogadaj -> zleceniodawca; 1: przyjmij Bandyci; 1: tak; 2: odejdź; 4: odejdź od baru
         var io = new ScriptedGameIO("1", "1", "1", "2", "4");
-        new BarScreen(io, rng, new QuestGiverScreen(io, rng)).Run(hero);
+        new BarScreen(io, rng, new QuestGiverScreen(io, rng, new GameSettings()), new GameSettings()).Run(hero);
 
         Assert.Equal(QuestStatus.Active, hero.GetQuest(QuestId.Bandits)?.Status);
         Assert.Contains(io.Output, line => line.StartsWith("Przyjęto zadanie", StringComparison.Ordinal));

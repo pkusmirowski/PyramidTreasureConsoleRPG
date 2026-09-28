@@ -21,13 +21,34 @@ public class StoryTests
         {
             for (int i = 0; i < 10; i++)
             {
-                var group = Encounters.InRegion(region, rng);
+                var group = Encounters.InRegion(region, rng, heroLevel: 20);
                 Assert.NotEmpty(group);
                 Assert.All(group, e => Assert.True(e.IsAlive));
             }
         }
 
-        Assert.Empty(Encounters.InRegion(RegionCatalog.Pyramid, rng));
+        Assert.Empty(Encounters.InRegion(RegionCatalog.Pyramid, rng, heroLevel: 20));
+    }
+
+    [Fact]
+    public void Encounters_UnlockLargerGroupsWithLevel()
+    {
+        RegionDefinition delta = RegionCatalog.Delta;
+        Assert.Equal(1, Encounters.UnlockedGroups(delta, delta.RecommendedLevel - 2));
+        Assert.Equal(1, Encounters.UnlockedGroups(delta, delta.RecommendedLevel));
+        Assert.Equal(2, Encounters.UnlockedGroups(delta, delta.RecommendedLevel + 1));
+        Assert.Equal(3, Encounters.UnlockedGroups(delta, delta.RecommendedLevel + 3));
+
+        var rng = new SeededRandomSource(7);
+        for (int i = 0; i < 30; i++)
+        {
+            List<Enemy> group = Encounters.InRegion(delta, rng, delta.RecommendedLevel);
+            Assert.Equal(delta.Encounters[0].Length, group.Count);
+            Assert.All(group, e => Assert.Contains(e.Definition, delta.Encounters[0]));
+        }
+
+        int largest = delta.Encounters[^1].Length;
+        Assert.Contains(largest, Enumerable.Range(0, 60).Select(_ => Encounters.InRegion(delta, rng, 20).Count));
     }
 
     [Fact]

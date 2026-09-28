@@ -74,7 +74,7 @@ public sealed class RegionScreen(
         if (region.HasTavern)
         {
             bool news = region.IsHome && QuestEngine.HasNews(hero, QuestGiverId.Barman);
-            options.Add((news ? "Tawerna (barman ma wieści!)" : "Tawerna", Wrap(() => tavern.Run(hero))));
+            options.Add((news ? "Tawerna (barman ma wieści!)" : "Tawerna", () => tavern.Run(hero) == CombatStatus.Defeat ? Defeat() : null));
         }
 
         if (region.HasShop)
@@ -133,7 +133,12 @@ public sealed class RegionScreen(
             }
         }
 
-        TravelStep step = TravelEngine.Explore(hero, region, rng);
+        TravelStep step = TravelEngine.Explore(hero, region, rng, out IReadOnlyList<string> dayNotes);
+        foreach (string note in dayNotes)
+        {
+            io.WriteLine(note, ConsoleColor.Magenta);
+        }
+
         return RunStep(hero, step);
     }
 
@@ -146,13 +151,46 @@ public sealed class RegionScreen(
         {
             case TravelStepKind.Fight:
                 io.ShowInfo(step.Text);
-                return combat.Run(hero, step.Enemies!) == CombatStatus.Defeat ? Defeat() : null;
+                return AfterFight(hero, combat.Run(hero, step.Enemies!), step.Enemies!);
             case TravelStepKind.Event:
                 return events.Run(hero, step.Event!) == CombatStatus.Defeat ? Defeat() : null;
             default:
                 io.ShowInfo(step.Text);
                 return null;
         }
+    }
+
+    /// <summary>Po zwycięstwie nad ludźmi czasem jeden z nich żyje: egzekucja, łaska albo przesłuchanie.</summary>
+    private SessionEnd? AfterFight(Hero hero, CombatStatus status, IEnumerable<Enemy> enemies)
+    {
+        if (status == CombatStatus.Defeat)
+        {
+            return Defeat();
+        }
+
+        if (status != CombatStatus.Victory)
+        {
+            return null;
+        }
+
+        var killed = enemies.Where(e => !e.IsAlive).Select(e => e.Definition).ToList();
+        if (!InterrogationService.PrisonerSurvives(killed, rng))
+        {
+            return null;
+        }
+
+        io.WriteLine("Jeden z nich jeszcze dyszy. Krew bulgocze mu w gardle, ale oczy są przytomne.", ConsoleColor.White);
+        int choice = io.Menu("Co robisz z jeńcem?", "Dobij go (Podziemie +3, Miasto −3)", "Puść wolno (Miasto +5)", "Przesłuchaj (test siły; Miasto −8, Podziemie +5, koszmary; sukces = informacje)");
+        io.Clear();
+        PrisonerResult result = InterrogationService.Resolve(hero, (PrisonerChoice)choice, hero.CurrentRegion, rng);
+        io.Narrate([result.Text], ConsoleColor.DarkRed);
+        foreach (string note in result.Notes)
+        {
+            io.WriteLine(note, ConsoleColor.Cyan);
+        }
+
+        io.PressAnyKey();
+        return null;
     }
 
     private SessionEnd? EnterPyramid(Hero hero)

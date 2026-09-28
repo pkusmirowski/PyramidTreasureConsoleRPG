@@ -1,9 +1,10 @@
 namespace PyramidTreasureConsoleRPG.Ui;
 
-public sealed class ShopScreen(IGameIO io, IRandomSource rng)
+public sealed class ShopScreen(IGameIO io, IRandomSource rng, GameSettings settings)
 {
     private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
     private readonly IRandomSource rng = rng ?? throw new ArgumentNullException(nameof(rng));
+    private readonly GameSettings settings = settings ?? throw new ArgumentNullException(nameof(settings));
 
     public void Run(Hero hero)
     {
@@ -39,8 +40,9 @@ public sealed class ShopScreen(IGameIO io, IRandomSource rng)
         while (true)
         {
             io.WriteLine($"Twoje złoto: {hero.Gold}", ConsoleColor.DarkYellow);
-            var options = ShopService.Potions
-                .Select(p => $"{p.Name} – leczy {p.RestoreHp} HP – {ShopService.Price(hero, region, p.Price)} g (masz: {hero.CountPotions(p.Kind)})")
+            IReadOnlyList<Potion> potions = ShopService.Potions(region);
+            var options = potions
+                .Select(p => $"{p.Name} – {p.Description} – {ShopService.Price(hero, region, p.Price)} g (masz: {hero.CountPotions(p.Kind)})")
                 .Append("Wróć")
                 .ToArray();
             int choice = io.Menu("Mikstury:", options);
@@ -50,7 +52,7 @@ public sealed class ShopScreen(IGameIO io, IRandomSource rng)
                 return;
             }
 
-            Report(hero, ShopService.BuyPotion(hero, region, ShopService.Potions[choice - 1].Kind));
+            Report(hero, ShopService.BuyPotion(hero, region, potions[choice - 1].Kind));
         }
     }
 
@@ -116,7 +118,7 @@ public sealed class ShopScreen(IGameIO io, IRandomSource rng)
                 io.ShowError("Torba jest pełna. Sprzedaj coś albo załóż.");
                 break;
             default:
-                io.ShowError(Dialogues.NoGold(rng));
+                io.ShowError(Dialogues.NoGold(rng, settings.ProfanityEnabled));
                 break;
         }
     }

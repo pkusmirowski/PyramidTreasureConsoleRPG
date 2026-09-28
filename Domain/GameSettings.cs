@@ -15,6 +15,9 @@ public sealed class GameSettings
 
     public bool AgeConfirmed { get; set; }
 
+    /// <summary>Ostrzejszy język w dialogach.</summary>
+    public bool ProfanityEnabled { get; set; } = true;
+
     [JsonIgnore]
     public int NarrationDelayMs => TextSpeed switch
     {

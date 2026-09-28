@@ -12,7 +12,24 @@ public sealed record PurchaseResult(PurchaseOutcome Outcome, string Name, int Pr
 /// <summary>Sklepy: mikstury wszędzie, wyposażenie zależne od regionu, ceny zależne od reputacji i amuletu.</summary>
 public static class ShopService
 {
-    public static IReadOnlyList<Potion> Potions => Potion.All;
+    /// <summary>Mikstury lecznicze wszędzie; odtrutka w porcie i oazie; lotos i whisky w Starym Mieście i oazie.</summary>
+    public static IReadOnlyList<Potion> Potions(RegionDefinition region)
+    {
+        ArgumentNullException.ThrowIfNull(region);
+        var list = Potion.Healing.ToList();
+        if (region.Id is RegionId.Port or RegionId.Oasis)
+        {
+            list.Add(Potion.Antidote);
+        }
+
+        if (region.Id is RegionId.OldTown or RegionId.Oasis)
+        {
+            list.Add(Potion.Whisky);
+            list.Add(Potion.Lotus);
+        }
+
+        return list;
+    }
 
     public static IReadOnlyList<Item> Stock(RegionDefinition region)
     {

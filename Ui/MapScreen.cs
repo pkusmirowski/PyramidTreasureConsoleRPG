@@ -43,9 +43,14 @@ public sealed class MapScreen(IGameIO io, IRandomSource rng, CombatScreen combat
             }
         }
 
-        TravelEngine.Arrive(hero, target);
+        ArrivalReport arrival = TravelEngine.Arrive(hero, target);
         io.Clear();
         io.Narrate(target.Arrival);
+        foreach (string note in arrival.DayNotes)
+        {
+            io.WriteLine(note, ConsoleColor.Magenta);
+        }
+
         return null;
     }
 
@@ -73,7 +78,7 @@ public sealed class MapScreen(IGameIO io, IRandomSource rng, CombatScreen combat
         }
 
         TravelCheck check = TravelEngine.CanTravel(hero, region);
-        string cost = region.TravelCost > 0 ? $"{region.TravelDays} dni, {region.TravelCost} g" : $"{region.TravelDays} dni";
+        string cost = region.TravelCost > 0 ? $"{region.TravelDays} dni, {region.TravelCost} g, poziom {region.RecommendedLevel}+" : $"{region.TravelDays} dni, poziom {region.RecommendedLevel}+";
         return check.Allowed ? $"{region.Name} ({cost})" : $"{region.Name} ({cost}) – {check.Reason}";
     }
 }

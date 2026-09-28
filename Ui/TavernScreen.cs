@@ -7,7 +7,8 @@ public sealed class TavernScreen(IGameIO io, BarScreen bar, CasinoScreen casino,
     private readonly CasinoScreen casino = casino ?? throw new ArgumentNullException(nameof(casino));
     private readonly RestScreen rest = rest ?? throw new ArgumentNullException(nameof(rest));
 
-    public void Run(Hero hero)
+    /// <summary>Zwraca Defeat, gdy rozmowa na górze skończyła się przegraną walką.</summary>
+    public CombatStatus? Run(Hero hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
         while (true)
@@ -29,11 +30,15 @@ public sealed class TavernScreen(IGameIO io, BarScreen bar, CasinoScreen casino,
                     casino.Run(hero);
                     break;
                 case 3:
-                    rest.Run(hero);
+                    if (rest.Run(hero) == CombatStatus.Defeat)
+                    {
+                        return CombatStatus.Defeat;
+                    }
+
                     break;
                 default:
                     io.WriteLine("Do zobaczenia!");
-                    return;
+                    return null;
             }
         }
     }

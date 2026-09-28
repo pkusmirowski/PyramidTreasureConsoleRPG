@@ -13,10 +13,14 @@ public sealed class CasinoScreen(IGameIO io, IRandomSource rng)
         {
             io.Header("Kasyno");
             io.WriteLine($"Twoje złoto: {hero.Gold}   (maksymalna stawka: {CasinoEngine.MaxBet})", ConsoleColor.DarkYellow);
-            int choice = io.Menu("W co grasz?", "Ruletka", "Jednoręki bandyta", "Blackjack", "Kości", "Wyjdź z kasyna");
+            string loan = hero.Debt > 0 ? $"Lichwiarz (dług: {hero.Debt} g, termin: dzień {hero.DebtDay + DayService.DebtGraceDays})" : "Lichwiarz (pożyczka do 500 g)";
+            int choice = io.Menu("W co grasz?", "Ruletka", "Jednoręki bandyta", "Blackjack", "Kości", loan, "Wyjdź z kasyna");
             io.Clear();
             switch (choice)
             {
+                case 5:
+                    LoanShark(hero);
+                    break;
                 case 1:
                     PlayLoop(hero, Roulette);
                     break;
@@ -33,6 +37,43 @@ public sealed class CasinoScreen(IGameIO io, IRandomSource rng)
                     io.WriteLine("Wychodzisz z kasyna...");
                     return;
             }
+        }
+    }
+
+    private void LoanShark(Hero hero)
+    {
+        io.Header("Lichwiarz");
+        io.WriteLine("Tłusty mężczyzna z liczydłem i dwoma zbirami za plecami. \"Dziesięć procent dziennie. Po pięciu dniach przychodzą chłopcy.\"", ConsoleColor.White);
+        if (hero.Debt > 0)
+        {
+            io.WriteLine($"Twój dług: {hero.Debt} g. Termin: dzień {hero.DebtDay + DayService.DebtGraceDays} (dziś {hero.Day}).", ConsoleColor.DarkYellow);
+            int max = Math.Min(hero.Gold, hero.Debt);
+            if (max <= 0)
+            {
+                io.ShowError("Nie masz czym spłacać. \"To wróć z czymś. Albo nie wracaj.\"");
+                return;
+            }
+
+            int amount = io.ReadNumber($"Ile spłacasz (0-{max})? ", 0, max);
+            if (amount == 0)
+            {
+                return;
+            }
+
+            RepayOutcome outcome = DebtService.Repay(hero, amount);
+            io.ShowSuccess(outcome == RepayOutcome.Repaid ? "Dług spłacony. Lichwiarz wygląda na rozczarowanego." : $"Spłacono {amount} g. Zostało {hero.Debt} g.");
+            return;
+        }
+
+        int loan = io.ReadNumber($"Ile pożyczasz (0-{DayService.MaxLoan})? ", 0, DayService.MaxLoan);
+        if (loan == 0)
+        {
+            return;
+        }
+
+        if (DebtService.Borrow(hero, loan) == LoanOutcome.Granted)
+        {
+            io.ShowSuccess($"Dostajesz {loan} g. Masz {hero.Gold} złota i {DayService.DebtGraceDays} dni na spłatę.");
         }
     }
 

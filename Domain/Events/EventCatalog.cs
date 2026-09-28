@@ -64,6 +64,31 @@ public static class EventCatalog
                     new SkillCheck(StatKind.Dexterity, 11), [new GoldEffect(-10)], "Pudło. Bukmacher zgarnia twoje dziesięć sztuk i nawet nie mrugnie."),
             ]),
 
+        new(
+            "debt_collectors_port", RegionId.Port, "Egzekutorzy",
+            [
+                "Trzech mężczyzn czeka przy bramie. Dwóch w kradzionych zbrojach, trzeci z młotem o rękojeści owiniętej drutem.",
+                "\"Lichwiarz kłania się. Mówi, że termin minął. My nie jesteśmy od gadania.\"",
+            ],
+            [
+                new("Walcz", [new FightEffect([EnemyCatalog.ArmoredThief, EnemyCatalog.ArmoredThief, EnemyCatalog.Breaker]), new ClearDebtEffect(), new ClearFlagEffect("debt:overdue"), new ReputationEffect(Faction.Underworld, -30)],
+                    "Jeśli przeżyjesz, dług przestanie istnieć. Razem z lichwiarzem, który go udzielił."),
+                new("Spłać dług na miejscu", [new ClearDebtEffect(), new ClearFlagEffect("debt:overdue")], "Łamacz liczy monety dwa razy. Odchodzą bez słowa.", RequiresFlag: "debt:canpay"),
+            ],
+            RequiresFlag: "debt:overdue", Forced: true),
+        new(
+            "debt_collectors_oldtown", RegionId.OldTown, "Egzekutorzy",
+            [
+                "W zaułku zastępują ci drogę: dwóch w kradzionych zbrojach i Łamacz z młotem.",
+                "\"Lichwiarz kłania się. Termin minął.\"",
+            ],
+            [
+                new("Walcz", [new FightEffect([EnemyCatalog.ArmoredThief, EnemyCatalog.ArmoredThief, EnemyCatalog.Breaker]), new ClearDebtEffect(), new ClearFlagEffect("debt:overdue"), new ReputationEffect(Faction.Underworld, -30)],
+                    "Jeśli przeżyjesz, dług przestanie istnieć."),
+                new("Spłać dług na miejscu", [new ClearDebtEffect(), new ClearFlagEffect("debt:overdue")], "Łamacz liczy monety dwa razy. Odchodzą bez słowa.", RequiresFlag: "debt:canpay"),
+            ],
+            RequiresFlag: "debt:overdue", Forced: true),
+
         // ---------------- STARE MIASTO ----------------
         new(
             "oldtown_beggar", RegionId.OldTown, "Żebrak",

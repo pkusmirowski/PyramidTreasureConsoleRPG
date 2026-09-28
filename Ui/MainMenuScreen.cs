@@ -126,6 +126,7 @@ public sealed class MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore 
                 $"Muzyka: {musicState}",
                 $"Głośność muzyki: {settings.MusicVolume}%",
                 $"Prędkość tekstu: {GameSettings.TextSpeedName(settings.TextSpeed)}",
+                $"Wulgarny język w dialogach: {(settings.ProfanityEnabled ? "włączony" : "wyłączony")}",
                 "Wróć"))
             {
                 case 1:
@@ -139,6 +140,9 @@ public sealed class MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore 
                 case 3:
                     settings.TextSpeed = (settings.TextSpeed + 1) % 4;
                     io.NarrationDelayMs = settings.NarrationDelayMs;
+                    break;
+                case 4:
+                    settings.ProfanityEnabled = !settings.ProfanityEnabled;
                     break;
                 default:
                     SaveSettings();

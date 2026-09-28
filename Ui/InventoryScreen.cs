@@ -21,7 +21,7 @@ public sealed class InventoryScreen(IGameIO io)
                     if (kind.HasValue)
                     {
                         int healed = hero.DrinkPotion(kind.Value) ?? 0;
-                        io.ShowSuccess($"Wypiłeś miksturę i odzyskałeś {healed} HP. Masz teraz {hero.Hp}/{hero.MaxHp} HP.");
+                        io.ShowSuccess(DrinkMessage(hero, kind.Value, healed));
                     }
 
                     break;
@@ -32,6 +32,18 @@ public sealed class InventoryScreen(IGameIO io)
                     return;
             }
         }
+    }
+
+    public static string DrinkMessage(Hero hero, PotionKind kind, int healed)
+    {
+        ArgumentNullException.ThrowIfNull(hero);
+        return Potion.Create(kind).Effect switch
+        {
+            PotionUse.Whisky => "Whisky pali w gardle. W następnej walce ręka będzie pewniejsza, ale nogi wolniejsze.",
+            PotionUse.Lotus => $"Dym lotosu. Świat mięknie, ból znika. Następna walka będzie łatwa. Dawek: {hero.Addiction}.",
+            PotionUse.Antidote => "Gorycz odtrutki wypala truciznę i głód.",
+            _ => $"Wypiłeś miksturę i odzyskałeś {healed} HP. Masz teraz {hero.Hp}/{hero.MaxHp} HP.",
+        };
     }
 
     private void Show(Hero hero)
@@ -49,8 +61,18 @@ public sealed class InventoryScreen(IGameIO io)
             if (count > 0)
             {
                 Potion sample = Potion.Create(kind);
-                io.ShowInfo($"{count} x {sample.Name} (leczy {sample.RestoreHp} HP)");
+                io.ShowInfo($"{count} x {sample.Name} ({sample.Description})");
             }
+        }
+
+        if (hero.NextFightBuff is PotionKind buff)
+        {
+            io.WriteLine($"Na następną walkę: {Potion.Create(buff).Name}.", ConsoleColor.Magenta);
+        }
+
+        if (hero.Craving)
+        {
+            io.ShowError("Głód lotosu: −15% obrażeń, −10 trafienia.");
         }
 
         io.WriteLine($"Torba ({hero.Gear.Count}/{Hero.GearCapacity}): " + (hero.Gear.Count == 0 ? "pusta" : string.Join(", ", hero.Gear.Select(g => g.Name))), ConsoleColor.Gray);
@@ -142,14 +164,18 @@ public sealed class InventoryScreen(IGameIO io)
             return null;
         }
 
+        var kinds = Potion.AllKinds.Where(k => hero.CountPotions(k) > 0).ToList();
         if (hero.Hp >= hero.MaxHp)
         {
-            io.ShowInfo($"Masz pełne zdrowie ({hero.Hp}/{hero.MaxHp}). Szkoda mikstury.");
-            return null;
+            kinds = kinds.Where(k => Potion.Create(k).Effect != PotionUse.Heal).ToList();
+            if (kinds.Count == 0)
+            {
+                io.ShowInfo($"Masz pełne zdrowie ({hero.Hp}/{hero.MaxHp}). Szkoda mikstury.");
+                return null;
+            }
         }
 
-        var kinds = Potion.AllKinds.ToList();
-        var options = kinds.Select(k => $"{Potion.Create(k).Name} (masz: {hero.CountPotions(k)})").Append("Zrezygnuj").ToArray();
+        var options = kinds.Select(k => $"{Potion.Create(k).Name} – {Potion.Create(k).Description} (masz: {hero.CountPotions(k)})").Append("Zrezygnuj").ToArray();
         int choice = io.Menu("Którą miksturę wypić?", options);
         if (choice == options.Length)
         {

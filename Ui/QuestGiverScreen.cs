@@ -1,10 +1,11 @@
 namespace PyramidTreasureConsoleRPG.Ui;
 
 /// <summary>Rozmowa ze zleceniodawcą: oddawanie ukończonych zadań, przyjmowanie nowych, stan aktywnych.</summary>
-public sealed class QuestGiverScreen(IGameIO io, IRandomSource rng)
+public sealed class QuestGiverScreen(IGameIO io, IRandomSource rng, GameSettings settings)
 {
     private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
     private readonly IRandomSource rng = rng ?? throw new ArgumentNullException(nameof(rng));
+    private readonly GameSettings settings = settings ?? throw new ArgumentNullException(nameof(settings));
 
     public void Run(Hero hero, QuestGiverId giver)
     {
@@ -35,7 +36,7 @@ public sealed class QuestGiverScreen(IGameIO io, IRandomSource rng)
 
             if (options.Count == 0)
             {
-                io.ShowInfo(giver == QuestGiverId.Barman ? Dialogues.BarmanSmallTalk(hero, rng) : "\"Nie mam dla ciebie nic więcej. Na razie.\"");
+                io.ShowInfo(giver == QuestGiverId.Barman ? Dialogues.BarmanSmallTalk(hero, rng, settings.ProfanityEnabled) : "\"Nie mam dla ciebie nic więcej. Na razie.\"");
                 return;
             }
 

@@ -36,7 +36,10 @@ public class CatalogTests
     [Fact]
     public void Potions_AreOrderedByPriceAndPower()
     {
-        Assert.Equal(new[] { PotionKind.Small, PotionKind.Medium, PotionKind.Large }, Potion.AllKinds);
+        Assert.Equal(new[] { PotionKind.Small, PotionKind.Medium, PotionKind.Large }, Potion.Healing.Select(p => p.Kind));
+        Assert.Equal(Enum.GetValues<PotionKind>().Length, Potion.AllKinds.Count);
+        Assert.All(Potion.All, p => Assert.Same(p, Potion.Create(p.Kind)));
+        Assert.All(Potion.All.Where(p => p.Effect != PotionUse.Heal), p => Assert.Equal(0, p.RestoreHp));
         Assert.True(Potion.Small.Price < Potion.Medium.Price && Potion.Medium.Price < Potion.Large.Price);
         Assert.True(Potion.Small.RestoreHp < Potion.Medium.RestoreHp && Potion.Medium.RestoreHp < Potion.Large.RestoreHp);
         Assert.Same(Potion.Large, Potion.Create(PotionKind.Large));
@@ -46,6 +49,9 @@ public class CatalogTests
     public void EveryRegion_IsConsistent()
     {
         Assert.Equal(6, RegionCatalog.All.Count);
+        Assert.Equal(1, RegionCatalog.Port.RecommendedLevel);
+        Assert.Equal(RegionCatalog.All.Max(r => r.RecommendedLevel), RegionCatalog.Pyramid.RecommendedLevel);
+        Assert.All(RegionCatalog.All, r => Assert.InRange(r.RecommendedLevel, 1, 20));
         Assert.All(RegionCatalog.All, r =>
         {
             Assert.Same(r, RegionCatalog.Get(r.Id));

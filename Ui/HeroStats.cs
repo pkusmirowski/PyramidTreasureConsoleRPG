@@ -21,6 +21,7 @@ internal static class HeroStats
         ("Etap wyprawy", Story.StageName(hero.Stage)),
         ("Dzień / miejsce", $"{hero.Day} / {RegionCatalog.Get(hero.CurrentRegion).Name}"),
         ("Reputacja", string.Join(", ", Enum.GetValues<Faction>().Select(f => $"{RegionCatalog.FactionName(f)} {hero.GetReputation(f):+0;-0;0} ({Story.ReputationName(hero.GetReputation(f))})"))),
+        ("Nałóg / dług", $"lotos {hero.Addiction} dawek{(hero.Craving ? " (głód!)" : "")} / {(hero.Debt > 0 ? $"{hero.Debt} g" : "brak")}"),
         ("Zadania", $"{hero.Quests.Count(q => q.Value.Status == QuestStatus.Active)} aktywne, {hero.Quests.Count(q => q.Value.Status == QuestStatus.Completed)} ukończone"),
     };
 }

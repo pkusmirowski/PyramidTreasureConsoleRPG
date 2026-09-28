@@ -4,7 +4,7 @@ namespace PyramidTreasureConsoleRPG.Domain;
 /// Kolekcje są opcjonalne, żeby starsze zapisy (bez tych pól) dało się wczytać.</summary>
 public sealed class SaveData
 {
-    public const int CurrentVersion = 4;
+    public const int CurrentVersion = 5;
 
     /// <summary>Najstarsza wersja, którą umiemy wczytać (z migracją).</summary>
     public const int OldestSupportedVersion = 2;
@@ -56,6 +56,20 @@ public sealed class SaveData
     public IReadOnlyList<int>? Gear { get; init; }
 
     public IReadOnlyList<int>? Talents { get; init; }
+
+    public int Addiction { get; init; }
+
+    public int LastLotusDay { get; init; } = -100;
+
+    public bool Craving { get; init; }
+
+    public int Debt { get; init; }
+
+    public int DebtDay { get; init; }
+
+    public int NightmareNights { get; init; }
+
+    public int? NextFightBuff { get; init; }
 
     /// <summary>Ustawiane przez magazyn zapisu w chwili zapisu.</summary>
     public DateTime SavedAt { get; set; }

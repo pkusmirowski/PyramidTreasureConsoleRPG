@@ -17,6 +17,12 @@ public static class EventEngine
         ArgumentNullException.ThrowIfNull(hero);
         ArgumentNullException.ThrowIfNull(rng);
         var eligible = EventCatalog.InRegion(region).Where(e => IsEligible(hero, e)).ToList();
+        GameEvent? forced = eligible.Find(e => e.Forced);
+        if (forced is not null)
+        {
+            return forced;
+        }
+
         return eligible.Count == 0 ? null : rng.Pick(eligible);
     }
 
@@ -49,6 +55,11 @@ public static class EventEngine
         if (choice.RequiresFaction is Faction faction && hero.GetReputation(faction) < choice.RequiredReputation)
         {
             return new ChoiceAvailability(false, $"wymaga reputacji {RegionCatalog.FactionName(faction)} ≥ {choice.RequiredReputation}");
+        }
+
+        if (choice.RequiresFlag is not null && !hero.HasFlag(choice.RequiresFlag))
+        {
+            return new ChoiceAvailability(false, "niedostępne");
         }
 
         return new ChoiceAvailability(true, null);
@@ -94,15 +105,7 @@ public static class EventEngine
         }
 
         IReadOnlyList<EventEffect> effects = success ? choice.OnSuccess : choice.OnFailure ?? [];
-        EnemyDefinition[]? fight = null;
-        foreach (EventEffect effect in effects)
-        {
-            string? note = Apply(hero, effect, ref fight);
-            if (note is not null)
-            {
-                notes.Add(note);
-            }
-        }
+        EnemyDefinition[]? fight = ApplyAll(hero, effects, notes);
 
         if (ev.OncePerGame)
         {
@@ -113,10 +116,50 @@ public static class EventEngine
         return new EventResult(success, roll, text, notes, fight);
     }
 
+    /// <summary>Nakłada listę skutków; zwraca walkę do rozegrania (jeśli jest) i dopisuje opisy do notatek.</summary>
+    public static EnemyDefinition[]? ApplyAll(Hero hero, IReadOnlyList<EventEffect> effects, List<string> notes)
+    {
+        ArgumentNullException.ThrowIfNull(hero);
+        ArgumentNullException.ThrowIfNull(effects);
+        ArgumentNullException.ThrowIfNull(notes);
+        EnemyDefinition[]? fight = null;
+        foreach (EventEffect effect in effects)
+        {
+            string? note = Apply(hero, effect, ref fight);
+            if (note is not null)
+            {
+                notes.Add(note);
+            }
+        }
+
+        return fight;
+    }
+
     private static string? Apply(Hero hero, EventEffect effect, ref EnemyDefinition[]? fight)
     {
         switch (effect)
         {
+            case ClearFlagEffect clear:
+                hero.ClearFlag(clear.Flag);
+                return null;
+            case ClearDebtEffect:
+                if (hero.Debt <= 0)
+                {
+                    return null;
+                }
+
+                if (hero.HasFlag("debt:canpay") && hero.Gold >= hero.Debt)
+                {
+                    hero.Gold -= hero.Debt;
+                }
+
+                int cleared = hero.Debt;
+                hero.Debt = 0;
+                hero.ClearFlag("debt:canpay");
+                return $"Dług {cleared} g przestaje istnieć";
+            case NightmaresEffect nightmares:
+                hero.NightmareNights = Math.Max(hero.NightmareNights, nightmares.Nights);
+                return $"Koszmary przez {nightmares.Nights} noce";
             case GoldEffect gold:
                 int actual = Math.Max(-hero.Gold, gold.Amount);
                 hero.Gold += actual;

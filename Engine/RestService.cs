@@ -5,6 +5,9 @@ public enum RestOutcome
     Ok,
     FullHealth,
     NotEnoughGold,
+
+    /// <summary>Koszmary: sen leczy tylko do 90%.</summary>
+    Nightmares,
 }
 
 public enum NightEvent
@@ -39,6 +42,13 @@ public sealed class RestService(IRandomSource rng)
         }
 
         hero.Gold -= RoomCost;
+        if (hero.NightmareNights > 0)
+        {
+            hero.NightmareNights--;
+            hero.Hp = Math.Max(hero.Hp, hero.MaxHp * 9 / 10);
+            return RestOutcome.Nightmares;
+        }
+
         hero.FullHeal();
         return RestOutcome.Ok;
     }

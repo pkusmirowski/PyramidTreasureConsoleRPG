@@ -156,7 +156,7 @@ public static class Dialogues
         "\"Hasan przesyła pozdrowienia. Nie wiem, co to znaczy, i nie chcę wiedzieć.\"",
     ];
 
-    public static string BarmanSmallTalk(Hero hero, IRandomSource rng)
+    public static string BarmanSmallTalk(Hero hero, IRandomSource rng, bool harsh = false)
     {
         ArgumentNullException.ThrowIfNull(hero);
         int town = hero.GetReputation(Faction.Town);
@@ -167,7 +167,7 @@ public static class Dialogues
 
         if (town <= -30)
         {
-            return rng.Pick(BarmanSmallTalkVillain);
+            return rng.Pick(harsh ? BarmanSmallTalkVillainHarsh : BarmanSmallTalkVillain);
         }
 
         if (hero.GetReputation(Faction.Underworld) >= 30)
@@ -178,7 +178,21 @@ public static class Dialogues
         return rng.Pick(BarmanSmallTalkNeutral);
     }
 
-    public static string NoGold(IRandomSource rng) => rng.Pick(NoGoldLines);
+    private static readonly string[] NoGoldHarsh =
+    [
+        "Nie masz tyle złota, chuju złamany!",
+        "Spierdalaj, biedaku, aż nie uzbierasz.",
+        "Kurwa, golasie, tu się płaci, nie patrzy.",
+        "Bez złota to sobie możesz co najwyżej w dupę wsadzić tę prośbę.",
+    ];
+
+    private static readonly string[] BarmanSmallTalkVillainHarsh =
+    [
+        "\"Ludzie gadają, że jesteś skurwysynem, który zostawia trupy i płacz. Nie moja sprawa, dopóki płacisz.\"",
+        "\"Straż o ciebie pytała. Powiedziałem, że cię nie znam, chuju. Następnym razem mogę sobie przypomnieć.\"",
+    ];
+
+    public static string NoGold(IRandomSource rng, bool harsh = false) => harsh && rng.Chance(40) ? rng.Pick(NoGoldHarsh) : rng.Pick(NoGoldLines);
 
     public static string TalkToTheGirls(IRandomSource rng) => rng.Pick(GirlsLines);
 

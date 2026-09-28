@@ -69,6 +69,7 @@ public sealed class CombatEngine
         }
 
         Hero.ClearCombatState();
+        Hero.ApplyNextFightBuff();
     }
 
     public Hero Hero { get; }

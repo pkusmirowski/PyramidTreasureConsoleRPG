@@ -1,9 +1,10 @@
 namespace PyramidTreasureConsoleRPG.Ui;
 
-public sealed class BarScreen(IGameIO io, IRandomSource rng, QuestGiverScreen questGiver)
+public sealed class BarScreen(IGameIO io, IRandomSource rng, QuestGiverScreen questGiver, GameSettings settings)
 {
     private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
     private readonly IRandomSource rng = rng ?? throw new ArgumentNullException(nameof(rng));
+    private readonly GameSettings settings = settings ?? throw new ArgumentNullException(nameof(settings));
     private readonly QuestGiverScreen questGiver = questGiver ?? throw new ArgumentNullException(nameof(questGiver));
 
     public void Run(Hero hero)
@@ -44,7 +45,7 @@ public sealed class BarScreen(IGameIO io, IRandomSource rng, QuestGiverScreen qu
             return;
         }
 
-        io.ShowInfo(Dialogues.BarmanSmallTalk(hero, rng));
+        io.ShowInfo(Dialogues.BarmanSmallTalk(hero, rng, settings.ProfanityEnabled));
     }
 
     private void ShowGoods(Hero hero)
@@ -107,7 +108,7 @@ public sealed class BarScreen(IGameIO io, IRandomSource rng, QuestGiverScreen qu
                 io.ShowInfo(fullText);
                 break;
             case DrinkOutcome.NotEnoughGold:
-                io.ShowError(Dialogues.NoGold(rng));
+                io.ShowError(Dialogues.NoGold(rng, settings.ProfanityEnabled));
                 break;
             case DrinkOutcome.NotAvailable:
                 io.ShowError("\"Whisky? Statek jeszcze nie przypłynął. Na razie tylko woda.\"");
@@ -132,7 +133,7 @@ public sealed class BarScreen(IGameIO io, IRandomSource rng, QuestGiverScreen qu
                 io.ShowError($"\"Jesteś zbyt słaby, by to przeżyć. Wróć na {BarService.MinLevelForSpecialDrink}. poziomie.\"");
                 return;
             case DrinkOutcome.NotEnoughGold:
-                io.ShowError(Dialogues.NoGold(rng));
+                io.ShowError(Dialogues.NoGold(rng, settings.ProfanityEnabled));
                 return;
         }
 

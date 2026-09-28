@@ -163,11 +163,20 @@ złożoność, i systemy, które ją zbudują, są poniżej. Założenia: wdraż
 
 ---
 
-## Milestone 4 – Warstwa dla dorosłych z konsekwencjami
+## Milestone 4 – Warstwa dla dorosłych z konsekwencjami (WDROŻONE)
+
+> Stan: zrobione. Whisky, lotos i odtrutka w sklepach (`Potion` z `PotionUse`), nałóg i głód lotosu w
+> `DayService`, lichwiarz w kasynie (`DebtService`, 10 % dziennie, po 5 dniach wymuszone zdarzenie „Egzekutorzy”
+> z Łamaczem), trzy postacie na górze tawerny (`NpcCatalog`, `DialogueEngine`, `NpcScreen`), przesłuchanie jeńca
+> po walce z ludźmi (`InterrogationService`: koszmary ograniczają nocleg do 90 %), przełącznik przekleństw w
+> ustawieniach (`GameSettings.ProfanityEnabled`, ostre warianty w `Dialogues`), zapis v5. Przy okazji: pule wrogów
+> regionu odblokowują się z poziomem (`Encounters.UnlockedGroups`, `RegionDefinition.RecommendedLevel` na mapie),
+> bo symulacja na prawdziwym `CombatEngine` pokazała, że Łucznik na 1. poziomie przegrywał z trzema złodziejami.
+> 119 testów.
 
 - **Używki** (`Consumable`): whisky (+10 trafienie, −10 uniki na następną walkę), lotos (+25 % obrażeń na walkę,
   `Hero.Addiction += 1`; ≥3 → głód: −15 % statystyk, dopóki nie zażyje lub nie odczeka 5 dni z kacem),
-  odtrutka. `Engine/AddictionService.Tick(hero)` przy każdym dniu.
+  odtrutka. `Engine/DayService.AdvanceDays(hero, dni)` przy każdym upływie dnia (wdrożone jako `DayService`, nie `AddictionService`).
 - **Lichwiarz** w kasynie: pożyczka do 500 g, 10 % dziennie (`Hero.Debt`, `Hero.DebtDay`). Po 5 dniach niespłacony
   dług → zdarzenie „Egzekutorzy” w mieście (2 Opancerzonych złodziei + „Łamacz” – nowy wróg); przegrana
   = utrata 50 % złota i przedmiotu; wygrana = dług anulowany, `Underworld` −30.
