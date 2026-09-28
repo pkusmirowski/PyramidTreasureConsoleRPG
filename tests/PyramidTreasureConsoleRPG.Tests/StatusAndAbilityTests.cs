@@ -61,19 +61,35 @@ public class StatusAndAbilityTests
     }
 
     [Fact]
-    public void Thief_FleesWhenLow_AndGivesNoReward()
+    public void Thief_FleesWhenLow_KeepsGold_GivesHalfExp()
     {
-        Hero hero = MaxHero(HeroClass.Warrior);
+        Hero hero = Hero.Create(HeroClass.Archer, "Test");
         Enemy thief = EnemyCatalog.Thief.Spawn();
         thief.Hp = 5;
         int gold = hero.Gold;
-        // enemy first (99): thief at 5/22 HP flees immediately
-        var engine = new CombatEngine(hero, [thief], new ScriptedRandomSource(99));
+        // enemy first (99); flee roll 0 (< 50%): thief at 5/22 HP flees immediately
+        var engine = new CombatEngine(hero, [thief], new ScriptedRandomSource(99, 0));
         IReadOnlyList<CombatEvent> events = engine.Begin();
-        Assert.Contains(events, e => e is EnemyFledEvent);
+        EnemyFledEvent fled = Assert.Single(events.OfType<EnemyFledEvent>());
+        Assert.Equal(EnemyCatalog.Thief.Exp / 2, fled.Exp);
         Assert.Equal(CombatStatus.Victory, engine.Status);
         Assert.Empty(engine.Killed);
         Assert.Equal(gold, hero.Gold);
+        Assert.Equal(EnemyCatalog.Thief.Exp / 2, hero.Exp);
+    }
+
+    [Fact]
+    public void Thief_MayStandAndFight_WhenFleeRollFails()
+    {
+        Hero hero = Hero.Create(HeroClass.Archer, "Test");
+        Enemy thief = EnemyCatalog.Thief.Spawn();
+        thief.Hp = 5;
+        // enemy first (99); flee roll 99 (>= 50%): thief attacks instead (evasion 99, penalty 99, damage roll)
+        var engine = new CombatEngine(hero, [thief], new ScriptedRandomSource(99, 99, 99, 99, 5));
+        IReadOnlyList<CombatEvent> events = engine.Begin();
+        Assert.DoesNotContain(events, e => e is EnemyFledEvent);
+        Assert.Contains(events, e => e is EnemyAttackEvent);
+        Assert.False(thief.Fled);
     }
 
     [Fact]

@@ -41,7 +41,8 @@ public sealed record GuardEvent : CombatEvent;
 
 public sealed record EnemyAbilityEvent(Enemy Enemy, string Text) : CombatEvent;
 
-public sealed record EnemyFledEvent(Enemy Enemy) : CombatEvent;
+/// <summary>Wróg uciekł; łup przepada, ale połowa doświadczenia zostaje (pogoń też uczy).</summary>
+public sealed record EnemyFledEvent(Enemy Enemy, int Exp, int LevelsGained, int NewLevel) : CombatEvent;
 
 public sealed record SummonEvent(Enemy Summoner, IReadOnlyList<Enemy> Summoned) : CombatEvent;
 
@@ -332,9 +333,12 @@ public sealed class CombatEngine
     {
         switch (enemy.Ability)
         {
-            case EnemyAbility.Thievery when enemy.Hp * 10 < enemy.MaxHp * 3:
+            case EnemyAbility.Thievery when enemy.Hp * 10 < enemy.MaxHp * 3 && rng.Chance(50):
                 enemy.Fled = true;
-                events.Add(new EnemyFledEvent(enemy));
+                int fleeExp = enemy.Exp / 2;
+                int levelBefore = Hero.Level;
+                int fleeLevels = fleeExp > 0 ? Hero.AddExp(fleeExp) : 0;
+                events.Add(new EnemyFledEvent(enemy, fleeExp, fleeLevels, levelBefore + fleeLevels));
                 return true;
             case EnemyAbility.Block when enemy.Turn % 2 == 1:
                 enemy.Statuses.Add(StatusKind.Guard, 1);

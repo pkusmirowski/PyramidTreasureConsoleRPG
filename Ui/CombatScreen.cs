@@ -148,7 +148,12 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
                     io.WriteLine(ability.Text, ConsoleColor.Magenta);
                     break;
                 case EnemyFledEvent fled:
-                    io.ShowInfo($"{fled.Enemy.Name} rzuca się do ucieczki i znika w tłumie. Łup przepada.");
+                    io.ShowInfo($"{fled.Enemy.Name} rzuca się do ucieczki i znika w tłumie. Łup przepada, ale zyskujesz {fled.Exp} punktów doświadczenia.");
+                    if (fled.LevelsGained > 0)
+                    {
+                        io.ShowSuccess($"Nowy poziom: {fled.NewLevel}!");
+                    }
+
                     break;
                 case SummonEvent summon:
                     io.WriteLine($"{summon.Summoner.Name} wzywa: {string.Join(", ", summon.Summoned.Select(s => s.Name))}!", ConsoleColor.Magenta);
