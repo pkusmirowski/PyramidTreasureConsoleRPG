@@ -94,4 +94,42 @@ public sealed class JsonFileSaveStoreTests : IDisposable
         Assert.Null(result.Data);
         Assert.Contains("wersji", result.Message, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Load_Version2_MigratesQuestsFromStage()
+    {
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(store.FilePath, "{\"Version\":2,\"Name\":\"Stary\",\"Class\":1,\"Level\":9,\"Vit\":31,\"Str\":28,\"Dex\":10,\"Hp\":100,\"Gold\":77,\"Stage\":2,\"Potions\":[1]}");
+        SaveLoadResult result = store.Load();
+        Assert.NotNull(result.Data);
+        Hero hero = Hero.FromSaveData(result.Data);
+        Assert.Equal(StoryStage.WolvesCleared, hero.Stage);
+        Assert.Equal(QuestStatus.Completed, hero.GetQuest(QuestId.Bandits)?.Status);
+        Assert.Equal(QuestStatus.Completed, hero.GetQuest(QuestId.Wolves)?.Status);
+        Assert.Null(hero.GetQuest(QuestId.CaravanTrail));
+        Assert.Equal(RegionId.Port, hero.CurrentRegion);
+        Assert.Equal(1, hero.Day);
+        Assert.Contains(QuestEngine.Available(hero, QuestGiverId.Barman), q => q.Id == QuestId.CaravanTrail);
+    }
+
+    [Fact]
+    public void SaveAndLoad_RoundTripsWorldState()
+    {
+        Hero hero = Hero.Create(HeroClass.Warrior, "Wędrowiec");
+        hero.Day = 17;
+        hero.CurrentRegion = RegionId.Desert;
+        hero.AdjustReputation(Faction.Brotherhood, 35);
+        hero.SetFlag("map:nomads");
+        QuestEngine.Accept(hero, QuestId.Bandits);
+        QuestEngine.OnEnemyKilled(hero, EnemyCatalog.Thief);
+
+        Assert.True(store.Save(hero.ToSaveData(), out _));
+        Hero loaded = Hero.FromSaveData(store.Load().Data!);
+        Assert.Equal(17, loaded.Day);
+        Assert.Equal(RegionId.Desert, loaded.CurrentRegion);
+        Assert.Equal(35, loaded.GetReputation(Faction.Brotherhood));
+        Assert.True(loaded.HasFlag("map:nomads"));
+        Assert.Equal(1, loaded.GetQuest(QuestId.Bandits)?.Progress);
+        Assert.Equal(QuestStatus.Active, loaded.GetQuest(QuestId.Bandits)?.Status);
+    }
 }

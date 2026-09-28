@@ -26,19 +26,21 @@ Zapis gry i ustawienia trafiają do katalogu `GreatPyramidTreasureRPG_DataSave` 
 ## Rozgrywka
 
 - Trzy klasy: **Wojownik** (dużo zdrowia, ciężkie ciosy, pancerz z poziomu), **Łucznik** (obrażenia ze zręczności, najlepsze uniki), **Asasyn** (najcelniejszy, najczęstsze krytyki). Każda ma trzy ataki, w tym jeden specjalny.
-- Fabułę prowadzi barman w tawernie. Przed każdym nowym etapem wyprawy trzeba z nim pogadać.
+- Świat to sześć regionów (Port Sokoła, Stare Miasto, Delta i las, Szlak Karawan, Oaza Siwa, Piramida Chufu). Podróż kosztuje dni i złoto, a po drodze zdarzają się walki i zdarzenia z wyborami.
+- Fabułę prowadzą zadania: główną linię daje barman w porcie, poboczne kapitan portu, przemytnik ze Starego Miasta i kapłanka z oazy. Zadania odblokowują kolejne regiony.
+- Reputacja u trzech frakcji (Miasto, Podziemie, Bractwo) rośnie i spada od wyborów w zdarzeniach i zadaniach; otwiera lub zamyka niektóre opcje.
 - Walka turowa z inicjatywą, miksturami w trakcie walki i ucieczką (poza bossami).
 - Tawerna: bar (napoje leczą, jednorazowy miód „Grunwald” wzmacnia na stałe), kasyno (ruletka, jednoręki bandyta, blackjack, kości) i pokoje na górze.
-- Na 20. poziomie karawana zabiera bohatera pod piramidę: dwaj Anubisi, a potem bóg Ra.
+- Na 20. poziomie, po zadaniach barmana, karawana zabiera bohatera pod piramidę: dwaj Anubisi, a potem bóg Ra.
 - W narracji dowolny klawisz pomija pauzę, `Esc` pomija cały tekst. Prędkość tekstu i muzykę ustawia się w menu głównym.
 
 ## Struktura kodu
 
 | Katalog | Zawartość |
 |---|---|
-| `Domain/` | Modele i czyste reguły: `Hero` z definicjami klas (`HeroClasses`), `Enemy` z katalogiem wrogów (`EnemyCatalog`), mikstury, fabuła (`Story`), teksty (`Dialogues`), losowość (`IRandomSource`) |
-| `Engine/` | Logika bez UI: `CombatEngine` (walka jako zdarzenia), `CasinoEngine`, serwisy baru, sklepu i noclegu, tabele spotkań |
-| `Ui/` | Ekrany konsolowe rozmawiające tylko z `IGameIO`; dwie implementacje: `SpectreGameIO` (domyślna) i `ConsoleGameIO` (`--plain`) |
+| `Domain/` | Modele i czyste reguły: `Hero`, definicje klas (`HeroClasses`), katalog wrogów (`EnemyCatalog`), regiony (`World/RegionCatalog`), zdarzenia (`Events/EventCatalog`), zadania (`Quests/QuestCatalog`), mikstury, fabuła, teksty, losowość |
+| `Engine/` | Logika bez UI: `CombatEngine` (walka jako zdarzenia), `TravelEngine`, `EventEngine`, `QuestEngine`, `CasinoEngine`, serwisy baru, sklepu i noclegu |
+| `Ui/` | Ekrany konsolowe rozmawiające tylko z `IGameIO` (region, mapa, zdarzenia, zleceniodawcy, dziennik, walka, tawerna, kasyno, sklep, sakwa); dwie implementacje: `SpectreGameIO` (domyślna) i `ConsoleGameIO` (`--plain`) |
 | `Infrastructure/` | Zapis gry i ustawień (JSON z generatorem źródeł), odtwarzacz muzyki (NAudio) |
 | `Program.cs` | Rejestracja zależności (Microsoft.Extensions.DependencyInjection) i start gry |
 | `tests/` | Testy xUnit: wzory walki, awanse, silnik walki i kasyna, zapis/odczyt, ekrany z dublerem konsoli, reguły architektury |

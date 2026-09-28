@@ -43,7 +43,10 @@ złożoność, i systemy, które ją zbudują, są poniżej. Założenia: wdraż
 
 ---
 
-## Milestone 1 – Świat: regiony, podróż, zdarzenia, reputacja, zadania (największy)
+## Milestone 1 – Świat: regiony, podróż, zdarzenia, reputacja, zadania (WDROŻONE)
+
+> Stan: zrobione. Sześć regionów, 24 zdarzenia, 7 zadań (4 główne), reputacja trzech frakcji, licznik dni,
+> zapis v3 z migracją z v2, 88 testów, bot przechodzi grę przez mapę i zadania.
 
 ### Model (Domain/World)
 - `enum RegionId { Port, OldTown, Delta, Desert, Oasis, Pyramid }`.

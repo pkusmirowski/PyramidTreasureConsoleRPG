@@ -5,8 +5,6 @@ namespace PyramidTreasureConsoleRPG.Domain;
 /// <summary>Wszystkie teksty narracyjne w jednym miejscu. Klasa tylko zwraca tekst – nie zna konsoli.</summary>
 public static class Dialogues
 {
-    public const string NoNews = "Barman wzrusza ramionami: \"Na ten moment nie mam żadnych nowych wieści. Wróć, jak nabierzesz doświadczenia.\"";
-
     private static readonly string[] NoGoldLines =
     [
         "Nie masz tyle złota, paskudo!",
@@ -122,47 +120,6 @@ public static class Dialogues
         "--- KONIEC GRY (na razie) ---",
     ];
 
-    private static readonly string[] BarmanBandits =
-    [
-        "\"Chłopie! Ostatnie kilka dni musieliśmy się chować przed bandytami.\"",
-        "\"Ciągle nas atakują. Mam nadzieję, że w końcu przyjedzie kawaleria i zrobi z nimi porządek.\"",
-        "\"Poza tym to, co zawsze. Czekamy, aż przypłynie statek z towarami.\"",
-        "\"Najlepsze towary: whisky i rum... Ahh, tego mi trzeba!\"",
-        "\"Na razie mam tylko czystą wodę źródlaną. Postawi cię na nogi, jak cię bandyci poturbują.\"",
-        "\"Jeśli chcesz zarobić, złodzieje kręcą się tuż za bramą. Tylko uważaj na siebie.\"",
-    ];
-
-    private static readonly string[] BarmanWolves =
-    [
-        "\"Ostatnio ataki bandytów się uspokoiły. Twoja robota, co?\"",
-        "\"Słyszałem od ludzi, że w pobliskich lasach czają się wilki!\"",
-        "\"Dziwne, dawno ich nie widziałem.\"",
-        "\"A, przypłynął ten statek, o którym ci mówiłem.\"",
-        "\"W końcu możesz skosztować najlepszej szkockiej whisky!\"",
-    ];
-
-    private static readonly string[] BarmanCaravanAnnounced =
-    [
-        "\"O, to znowu ty. W mieście przybyło sporo nowych ludzi.\"",
-        "\"Odkąd wilki i bandyci przestali atakować w pobliskim lesie, przejazd jest o wiele bezpieczniejszy.\"",
-        "\"Od podróżników, którzy biesiadowali parę dni temu, dowiedziałem się, że niedługo przybędzie karawana.\"",
-        "\"Mają zamiar jechać na pustynię szukać jakichś piramid. Jeśli chcesz się z nimi zabrać, zagadaj do mnie za jakiś czas.\"",
-        "\"A, i jeszcze coś. Dostałem od nich specjalny trunek. Prosto z jakiegoś Malborka. Boję się tego spróbować.\"",
-        "\"Jeśli będziesz chciał, mogę ci polać szklankę, ale pamiętaj: to nie są tanie rzeczy!\"",
-    ];
-
-    private static readonly string[] BarmanCaravanReady =
-    [
-        "\"A to ty! Dawno cię nie widziałem.\"",
-        "\"Sporo się zmieniło. Okolica stała się bardzo bezpieczna. Sporo nowych twarzy przewija się przez miasto!\"",
-        "\"Wczoraj przybyła karawana. Okazuje się, że wyruszają pod samą piramidę Chufu!\"",
-        "\"To prawdopodobnie jedyna okazja, aby się tam dostać. Mało kto zna drogę w tamte dalekie rejony.\"",
-        "\"Stoją obok bramy wjazdowej do miasta. Niedługo wyruszają, jeśli chcesz jechać, śpiesz się!\"",
-        "\"Miło się z tobą gadało. Mam nadzieję, że nasze drogi jeszcze się skrzyżują!\"",
-    ];
-
-    private static readonly string[] BarmanDefault = ["Barman kiwa głową i wraca do polerowania szklanek."];
-
     private static readonly string[] SpecialDrinkLines =
     [
         "\"Specjalność prosto od krzyżaków z Malborka. Miód pitny zwany Grunwald!\"",
@@ -175,6 +132,51 @@ public static class Dialogues
         "Dziewczyna o oczach koloru pustynnego nieba bierze cię za rękę i prowadzi po skrzypiących schodach.",
         "Drzwi się zamykają. Lampa gaśnie. Reszta nocy należy tylko do was dwojga.",
     ];
+
+    private static readonly string[] BarmanSmallTalkNeutral =
+    [
+        "\"Na ten moment nie mam żadnych nowych wieści. Wróć, jak coś się ruszy.\"",
+        "\"Cicho dziś. Za cicho. Napijesz się czegoś?\"",
+    ];
+
+    private static readonly string[] BarmanSmallTalkHero =
+    [
+        "\"O, nasz bohater! Ludzie gadają o tobie w całym porcie. Dobrze gadają.\"",
+        "\"Kapitan portu pytał o ciebie. Z uznaniem, wyobrażasz sobie?\"",
+    ];
+
+    private static readonly string[] BarmanSmallTalkVillain =
+    [
+        "\"Ludzie gadają, że zostawiasz za sobą trupy i płacz. Nie moja sprawa, dopóki płacisz.\"",
+        "\"Straż o ciebie pytała. Powiedziałem, że cię nie znam. Następnym razem mogę sobie przypomnieć.\"",
+    ];
+
+    private static readonly string[] BarmanSmallTalkUnderworld =
+    [
+        "\"Hasan przesyła pozdrowienia. Nie wiem, co to znaczy, i nie chcę wiedzieć.\"",
+    ];
+
+    public static string BarmanSmallTalk(Hero hero, IRandomSource rng)
+    {
+        ArgumentNullException.ThrowIfNull(hero);
+        int town = hero.GetReputation(Faction.Town);
+        if (town >= 30)
+        {
+            return rng.Pick(BarmanSmallTalkHero);
+        }
+
+        if (town <= -30)
+        {
+            return rng.Pick(BarmanSmallTalkVillain);
+        }
+
+        if (hero.GetReputation(Faction.Underworld) >= 30)
+        {
+            return rng.Pick(BarmanSmallTalkUnderworld);
+        }
+
+        return rng.Pick(BarmanSmallTalkNeutral);
+    }
 
     public static string NoGold(IRandomSource rng) => rng.Pick(NoGoldLines);
 
@@ -206,13 +208,4 @@ public static class Dialogues
     public static IReadOnlyList<string> SpecialDrink => SpecialDrinkLines;
 
     public static IReadOnlyList<string> NightCompany => NightCompanyLines;
-
-    public static IReadOnlyList<string> Barman(StoryStage stage) => stage switch
-    {
-        StoryStage.BanditsCalmed => BarmanBandits,
-        StoryStage.WolvesCleared => BarmanWolves,
-        StoryStage.CaravanAnnounced => BarmanCaravanAnnounced,
-        StoryStage.CaravanReady => BarmanCaravanReady,
-        _ => BarmanDefault,
-    };
 }

@@ -43,13 +43,31 @@ public class ScreenTests
     }
 
     [Fact]
-    public void BarScreen_TalkingToBarman_AdvancesStory()
+    public void BarScreen_TalkingToBarman_OffersAndAcceptsMainQuest()
     {
         Hero hero = Hero.Create(HeroClass.Archer, "Test");
-        var io = new ScriptedGameIO("1", "1", "4");
-        new BarScreen(io, new SeededRandomSource(1)).Run(hero);
+        var rng = new SeededRandomSource(1);
+        // 1: pogadaj -> zleceniodawca; 1: przyjmij Bandyci; 1: tak; 2: odejdź; 4: odejdź od baru
+        var io = new ScriptedGameIO("1", "1", "1", "2", "4");
+        new BarScreen(io, rng, new QuestGiverScreen(io, rng)).Run(hero);
 
-        Assert.Equal(StoryStage.BanditsCalmed, hero.Stage);
-        Assert.Contains(Dialogues.NoNews, io.Output);
+        Assert.Equal(QuestStatus.Active, hero.GetQuest(QuestId.Bandits)?.Status);
+        Assert.Contains(io.Output, line => line.StartsWith("Przyjęto zadanie", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void EventScreen_ResolvesChoice_AndRunsResultingFight()
+    {
+        Hero hero = Hero.Create(HeroClass.Warrior, "Test");
+        hero.AddExp(1_000_000);
+        GameEvent customs = EventCatalog.All.First(e => e.Id == "port_customs");
+        var answers = new List<string> { "2" };
+        answers.AddRange(Enumerable.Repeat("1", 40));
+        var io = new ScriptedGameIO([.. answers]);
+        var rng = new SeededRandomSource(4);
+        CombatStatus? status = new EventScreen(io, rng, new CombatScreen(io, rng)).Run(hero, customs);
+
+        Assert.Equal(CombatStatus.Victory, status);
+        Assert.Contains("Celnik", io.Output);
     }
 }

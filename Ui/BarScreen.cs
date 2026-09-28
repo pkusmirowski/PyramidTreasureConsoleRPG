@@ -1,18 +1,20 @@
 namespace PyramidTreasureConsoleRPG.Ui;
 
-public sealed class BarScreen(IGameIO io, IRandomSource rng)
+public sealed class BarScreen(IGameIO io, IRandomSource rng, QuestGiverScreen questGiver)
 {
     private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
     private readonly IRandomSource rng = rng ?? throw new ArgumentNullException(nameof(rng));
+    private readonly QuestGiverScreen questGiver = questGiver ?? throw new ArgumentNullException(nameof(questGiver));
 
     public void Run(Hero hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
         while (true)
         {
+            bool news = hero.CurrentRegion == RegionId.Port && QuestEngine.HasNews(hero, QuestGiverId.Barman);
             int choice = io.Menu(
                 "Przy barze:",
-                "Zapytaj barmana, co słychać w okolicy",
+                news ? "Zapytaj barmana, co słychać w okolicy (ma wieści!)" : "Zapytaj barmana, co słychać w okolicy",
                 "Napij się czegoś",
                 "Pokaż mi swoje towary",
                 "Odejdź od baru");
@@ -36,14 +38,13 @@ public sealed class BarScreen(IGameIO io, IRandomSource rng)
 
     private void TalkToBarman(Hero hero)
     {
-        StoryStage? stage = Story.AdvanceByBarman(hero);
-        if (stage is null)
+        if (hero.CurrentRegion == RegionId.Port && QuestEngine.HasNews(hero, QuestGiverId.Barman))
         {
-            io.ShowInfo(Dialogues.NoNews);
+            questGiver.Run(hero, QuestGiverId.Barman);
             return;
         }
 
-        io.Narrate(Dialogues.Barman(stage.Value));
+        io.ShowInfo(Dialogues.BarmanSmallTalk(hero, rng));
     }
 
     private void ShowGoods(Hero hero)

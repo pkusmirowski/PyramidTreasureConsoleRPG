@@ -1,7 +1,8 @@
 """Bot grający w PyramidTreasureConsoleRPG przez potok (smoke test).
 
 Użycie: python3 tools/playbot.py <ścieżka do PyramidTreasureConsoleRPG.dll> [klasa 1-3] [limit sekund]
-Gra do napisu KONIEC GRY, podejmując proste decyzje na podstawie ostatniego menu.
+Gra do napisu KONIEC GRY, podejmując proste decyzje na podstawie ostatniego menu:
+robi zadania barmana, podróżuje po regionach stosownie do poziomu, pije mikstury, leczy się w tawernie.
 Kod wyjścia 0 = zakończenie osiągnięte bez wyjątku; 1 = brak zakończenia lub wyjątek w grze.
 """
 import os, re, subprocess, sys, time, select
@@ -15,7 +16,13 @@ env = dict(os.environ, DOTNET_CLI_TELEMETRY_OPTOUT="1", HOME=home, APPDATA=home)
 p = subprocess.Popen(["dotnet", DLL], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
 log = open(os.path.join(home, "playbot_%s.log" % CLASS), "w", encoding="utf-8")
 buf = ""
-state = dict(started=False, talked=False, hp=0, maxhp=0, gold=0, level=0, potions=0, deaths=0, saved=False, loaded=False, special=False, fights=0, menus=0)
+
+REGIONS = ["Port Sokoła", "Stare Miasto", "Delta i las", "Szlak Karawan", "Oaza Siwa", "Piramida Chufu"]
+GIVER_REGION = {"Barman": "Port Sokoła", "Kapitan portu": "Port Sokoła", "Przemytnik Hasan": "Stare Miasto", "Kapłanka Neferet": "Oaza Siwa"}
+GIVER_PLACE = {"Barman": "Tawerna", "Kapitan portu": "Kapitanat portu", "Przemytnik Hasan": "Melina Hasana", "Kapłanka Neferet": "Świątynia Bractwa"}
+
+state = dict(level=1, hp=1, maxhp=1, gold=0, potions=0, region="Port Sokoła", deaths=0, saved=False, fights=0, menus=0,
+             pending=set(), giver=None, locked=set(), want_bar=False, went_temple=False, last_target=None, explores=0)
 
 def send(s):
     log.write(f">>> {s}\n"); log.flush()
@@ -25,79 +32,167 @@ def read_chunk(timeout=0.06):
     r, _, _ = select.select([p.stdout], [], [], timeout)
     if r:
         data = os.read(p.stdout.fileno(), 65536)
-        if not data:
-            return None
-        return data.decode(errors="replace")
+        return data.decode(errors="replace") if data else None
     return ""
 
-def decide(text):
-    m = re.search(r"poziom (\d+), (\d+)/(\d+) HP, (\d+) złota", text)
-    if m:
-        state["level"], state["hp"], state["maxhp"], state["gold"] = map(int, m.groups())
-    for mm in re.finditer(r"(?:Masz |Tester: |zdrowie \()(\d+)/(\d+)", text):
-        state["hp"], state["maxhp"] = int(mm.group(1)), int(mm.group(2))
-    m = re.search(r"Mikstury: (\d+)", text)
-    if m: state["potions"] = int(m.group(1))
-    m = re.search(r"Wypij miksturę \(masz: (\d+)\)", text)
-    if m: state["potions"] = int(m.group(1))
+def options_of(text, title):
+    """Zwraca listę (numer, tekst) opcji menu o danym tytule (ostatnie wystąpienie)."""
+    idx = text.rfind(title)
+    if idx < 0:
+        return []
+    return [(int(n), t.strip()) for n, t in re.findall(r"^(\d+)\. (.*)$", text[idx:], re.M)]
+
+def pick(opts, *needles, avoid=()):
+    for n, t in opts:
+        if any(t.startswith(x) or x in t for x in needles) and not any(a in t for a in avoid):
+            return str(n)
+    return None
+
+def parse(text):
+    for m in re.finditer(r"dzień \d+ – .*?, .*? (\d+) lvl, (\d+)/(\d+) HP, (\d+) złota", text):
+        state["level"], state["hp"], state["maxhp"], state["gold"] = int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4))
+    for m in re.finditer(r"^(" + "|".join(map(re.escape, REGIONS)) + r"), dzień", text, re.M):
+        state["region"] = m.group(1)
+    for m in re.finditer(r"(?:Masz |Tester: |zdrowie \()(\d+)/(\d+)", text):
+        state["hp"], state["maxhp"] = int(m.group(1)), int(m.group(2))
+    for m in re.finditer(r"Mikstury(?: \| Wypij miksturę)?[^\d]*(\d+)", text):
+        state["potions"] = int(m.group(1))
+    for m in re.finditer(r"Wypij miksturę \(masz: (\d+)\)", text):
+        state["potions"] = int(m.group(1))
+    for m in re.finditer(r"Wróć do zleceniodawcy \((.*?)\)", text):
+        state["pending"].add(m.group(1))
+    if "Zadanie ukończone:" in text and state["giver"]:
+        state["pending"].discard(state["giver"])
     if "Zostałeś pokonany" in text: state["deaths"] += 1
     if "Gra została zapisana" in text: state["saved"] = True
-    if "Wczytano:" in text: state["loaded"] = True
+    if "Nie możesz tam teraz jechać" in text and state["last_target"]:
+        state["locked"].add(state["last_target"])
+    if "Nowy etap wyprawy" in text:
+        state["locked"].clear()
+    for g in GIVER_REGION:
+        if re.search(r"^=== " + re.escape(g) + r" ===$|^" + re.escape(g) + r"$", text, re.M):
+            state["giver"] = g
 
+def target_region():
+    for giver in list(state["pending"]):
+        return GIVER_REGION[giver]
+    lvl = state["level"]
+    if lvl >= 20: wish = ["Piramida Chufu", "Oaza Siwa"]
+    elif lvl >= 13: wish = ["Oaza Siwa", "Szlak Karawan"]
+    elif lvl >= 8: wish = ["Szlak Karawan", "Delta i las"]
+    elif lvl >= 4: wish = ["Delta i las", "Stare Miasto"]
+    else: wish = ["Port Sokoła"]
+    for w in wish:
+        if w not in state["locked"]:
+            return w
+    return state["region"]
+
+def decide(text):
+    parse(text)
     last = text
-    def menu(title): return title in last
-    if menu("Czy masz ukończone 18 lat?"): return "1"
-    if menu("Menu główne"):
-        if "Ukończyłeś grę" in text or "Dziękujemy za grę" in text: return "4"
-        if state["deaths"] > 0 and not state["loaded"] and state["saved"]: return "2"
-        if state["deaths"] > 0 and (state["loaded"] or not state["saved"]): return "4"
+    if "Czy masz ukończone 18 lat?" in last: return "1"
+    if "Menu główne" in last:
+        if "Dziękujemy za grę" in text or state["deaths"] > 0: return "4"
         return "1"
     if "Podaj swoje imię" in last: return "Tester"
-    if menu("Wybierz klasę"): return CLASS
-    if menu("Wyruszyć?"):
-        return "1" if ("Karawana rusza" in last or state["hp"] * 2 >= state["maxhp"]) else "2"
-    if menu("Niezapisany postęp"): return "2"
-    if menu("Nadpisać istniejący zapis?"): return "2"
-    if menu("Twoja tura:"):
-        if state["hp"] * 100 < state["maxhp"] * 35 and state["potions"] > 0: return "4"
+    if "Wybierz klasę" in last: return CLASS
+    if "Wyruszyć?" in last or "Wejść?" in last:
+        return "1" if ("Wejść?" in last or state["hp"] * 2 >= state["maxhp"] or state["potions"] > 0) else "2"
+    if "Niezapisany postęp" in last: return "2"
+    if "Nadpisać istniejący zapis?" in last: return "2"
+    if "Przyjąć zadanie?" in last: return "1"
+    if "Twoja tura:" in last:
+        opts = options_of(last, "Twoja tura:")
+        if state["hp"] * 100 < state["maxhp"] * 35 and state["potions"] > 0:
+            return pick(opts, "Wypij")
         return "2" if state["level"] >= 8 else "1"
-    if menu("Którą miksturę wypić?"):
-        opts = re.findall(r"(\d)\. .*\(masz: (\d+)\)", last)
-        for num, cnt in opts:
-            if int(cnt) > 0: return num
-        return str(len(opts) + 1)
-    if menu("Co chcesz kupić?"):
-        if state["gold"] >= 100: state["gold"] -= 100; state["potions"] += 1; return "3"
-        return "4"
-    if menu("Co chcesz zrobić?") and "Udaj się w drogę" in last or menu("Wyrusz z karawaną"):
-        if not state["saved"] and state["level"] >= 6: return "6"
-        need_barman = "barman ma wieści" in last
-        need_special = state["level"] >= 15 and not state["special"] and state["gold"] >= 150
-        need_rest = state["hp"] * 2 < state["maxhp"]
-        if need_barman or need_rest or need_special:
-            state["talked"] = False; return "2"
-        if state["gold"] >= 120 and state["potions"] < 3: return "3"
+    if "Którą miksturę wypić?" in last:
+        for n, t in options_of(last, "Którą miksturę wypić?"):
+            m = re.search(r"masz: (\d+)", t)
+            if m and int(m.group(1)) > 0: return str(n)
+        return str(len(options_of(last, "Którą miksturę wypić?")))
+    if "Co robisz?" in last and "Co chcesz zrobić?" not in last:
+        opts = options_of(last, "Co robisz?")
+        for n, t in opts:
+            if "niedostępne" not in t and "[test" not in t: return str(n)
+        for n, t in opts:
+            if "niedostępne" not in t: return str(n)
+        return "1"
+    if "Rozmowa:" in last:
+        opts = options_of(last, "Rozmowa:")
+        return pick(opts, "Oddaj:") or pick(opts, "Przyjmij:") or str(len(opts))
+    if "Dokąd?" in last:
+        opts = options_of(last, "Dokąd?")
+        target = target_region()
+        state["last_target"] = target
+        choice = pick(opts, target, avoid=("tu jesteś",))
+        if choice and "–" not in [t for n, t in opts if str(n) == choice][0].split(")")[-1]:
+            return choice
+        state["locked"].add(target)
+        return str(len(opts))
+    if "Co chcesz kupić?" in last:
+        opts = options_of(last, "Co chcesz kupić?")
+        if state["gold"] >= 130 and state["potions"] < 4:
+            state["gold"] -= 100; state["potions"] += 1
+            return pick(opts, "Duża")
+        return str(len(opts))
+    if "Witaj w tawernie" in last:
+        opts = options_of(last, "Witaj w tawernie")
+        if state["want_bar"]:
+            state["want_bar"] = False
+            return pick(opts, "Podejdź do baru")
+        if state["hp"] < state["maxhp"] and state["gold"] >= 10: return pick(opts, "Zapytaj o pokój")
+        return str(len(opts))
+    if "Przy barze:" in last:
+        opts = options_of(last, "Przy barze:")
+        if "ma wieści" in last: return pick(opts, "Zapytaj barmana")
+        return str(len(opts))
+    if "Na górze:" in last:
+        opts = options_of(last, "Na górze:")
+        if state["hp"] < state["maxhp"] and state["gold"] >= 10:
+            state["hp"] = state["maxhp"]
+            return pick(opts, "Wynajmij")
+        return str(len(opts))
+    if "Co podać?" in last: return str(len(options_of(last, "Co podać?")))
+    if "Grasz dalej?" in last: return "2"
+    if "Ile stawiasz?" in last: return "0"
+    if "Co chcesz zrobić?" in last:
+        opts = options_of(last, "Co chcesz zrobić?")
+        if "Sakwa" in last and "Wypij miksturę" in last and len(opts) == 2:
+            return "2"  # ekran sakwy – wyjdź
+        region = state["region"]
+        # 1. zlecenia i wieści
+        if "(barman ma wieści!)" in last:
+            state["want_bar"] = True
+            return pick(opts, "Tawerna")
+        z = pick(opts, "(zlecenie!)")
+        if z: return z
+        for giver in list(state["pending"]):
+            if GIVER_REGION[giver] == region:
+                if giver == "Barman":
+                    state["want_bar"] = True
+                    return pick(opts, "Tawerna")
+                return pick(opts, GIVER_PLACE[giver])
+        # 2. leczenie
+        if state["hp"] * 2 < state["maxhp"]:
+            if "Tawerna" in last and state["gold"] >= 10: return pick(opts, "Tawerna")
+            if state["potions"] > 0: return pick(opts, "Sakwa")
+        # 3. zakupy w porcie/oazie
+        if "Sklep" in last and state["gold"] >= 130 and state["potions"] < 4: return pick(opts, "Sklep")
+        # 4. zapis
+        if not state["saved"] and state["level"] >= 6: return pick(opts, "Zapisz grę")
+        # 5. świątynia w oazie (zadanie główne)
+        if region == "Oaza Siwa" and not state["went_temple"] and "Świątynia" in last:
+            state["went_temple"] = True
+            return pick(opts, "Świątynia")
+        # 6. podróż albo eksploracja
+        target = target_region()
+        if target != region:
+            return pick(opts, "Mapa")
         state["fights"] += 1
         return "1"
-    if menu("Witaj w tawernie"):
-        need_barman = "barman ma wieści" in last
-        need_special = state["level"] >= 15 and not state["special"] and state["gold"] >= 150
-        if need_barman or need_special: return "1"
-        if state["hp"] * 2 < state["maxhp"] and state["gold"] >= 10: return "3"
-        return "4"
-    if menu("Przy barze:"):
-        if not state["talked"]: state["talked"] = True; return "1"
-        if state["level"] >= 15 and not state["special"] and state["gold"] >= 150: return "2"
-        return "4"
-    if menu("Co podać?"):
-        if not state["special"]: state["special"] = True; state["gold"] -= 150; return "3"
-        return "4"
-    if menu("Którą statystykę wzmocnić?"): return "1"
-    if menu("Na górze:"):
-        if state["hp"] < state["maxhp"] and state["gold"] >= 10: state["hp"] = state["maxhp"]; return "1"
-        return "4"
-    if menu("Grasz dalej?"): return "2"
-    if "Ile stawiasz?" in last: return "0"
+    if "Sakwa" in last and "Co chcesz zrobić?" not in last:
+        return "2"
     return None
 
 start = time.time()
@@ -108,13 +203,13 @@ while time.time() - start < MAX_SECONDS:
     if chunk:
         log.write(chunk); log.flush(); buf += chunk; idle = 0; continue
     idle += 1
-    if idle < 2: continue  # wait for the process to finish printing
+    if idle < 2: continue
     if p.poll() is not None: break
     if buf.strip():
         ans = decide(buf)
         state["menus"] += 1
         if ans is None:
-            print("NO DECISION for:\n" + buf[-1500:]); send("1")
+            print("NO DECISION for:\n" + buf[-1200:]); send("1")
         else:
             send(ans)
         buf = ""
@@ -127,5 +222,5 @@ log.close()
 text = open(log.name, encoding="utf-8").read()
 finished = "KONIEC GRY" in text
 crashed = "Unhandled exception" in text or "   at " in text
-print(f"class={CLASS} exit={rc} level={state['level']} deaths={state['deaths']} fights={state['fights']} saved={state['saved']} special={state['special']} menus={state['menus']} finished={finished} crashed={crashed}")
+print(f"class={CLASS} exit={rc} level={state['level']} region={state['region']} deaths={state['deaths']} fights={state['fights']} saved={state['saved']} menus={state['menus']} finished={finished} crashed={crashed}")
 sys.exit(0 if finished and not crashed else 1)

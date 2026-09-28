@@ -41,4 +41,55 @@ public class CatalogTests
         Assert.True(Potion.Small.RestoreHp < Potion.Medium.RestoreHp && Potion.Medium.RestoreHp < Potion.Large.RestoreHp);
         Assert.Same(Potion.Large, Potion.Create(PotionKind.Large));
     }
+
+    [Fact]
+    public void EveryRegion_IsConsistent()
+    {
+        Assert.Equal(6, RegionCatalog.All.Count);
+        Assert.All(RegionCatalog.All, r =>
+        {
+            Assert.Same(r, RegionCatalog.Get(r.Id));
+            Assert.NotEmpty(r.Arrival);
+            Assert.True(r.TravelDays >= 1 && r.TravelCost >= 0, r.Name);
+            Assert.True(r.IsFinal || r.Encounters.Length > 0, r.Name);
+            Assert.All(r.Encounters, g => Assert.NotEmpty(g));
+        });
+        Assert.True(RegionCatalog.Port.IsHome && RegionCatalog.Port.HasTavern);
+    }
+
+    [Fact]
+    public void EveryEvent_HasChoicesAndUniqueId()
+    {
+        Assert.True(EventCatalog.All.Count >= 20);
+        Assert.Equal(EventCatalog.All.Count, EventCatalog.All.Select(e => e.Id).Distinct().Count());
+        Assert.All(EventCatalog.All, e =>
+        {
+            Assert.NotEmpty(e.Text);
+            Assert.True(e.Choices.Count >= 2, e.Id);
+            Assert.All(e.Choices, c =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(c.SuccessText), e.Id);
+                if (c.Check is not null)
+                {
+                    Assert.NotNull(c.FailureText);
+                }
+            });
+        });
+        Assert.All(RegionCatalog.All.Where(r => !r.IsFinal), r => Assert.NotEmpty(EventCatalog.InRegion(r.Id)));
+    }
+
+    [Fact]
+    public void EveryQuest_IsConsistent()
+    {
+        Assert.Equal(QuestCatalog.All.Count, QuestCatalog.All.Select(q => q.Id).Distinct().Count());
+        Assert.All(QuestCatalog.All, q =>
+        {
+            Assert.NotEmpty(q.Intro);
+            Assert.NotEmpty(q.Completion);
+            Assert.True(q.Reward.Gold > 0 && q.Reward.Exp > 0, q.Title);
+            Assert.Contains(q.Giver, RegionCatalog.All.SelectMany(r => r.QuestGivers));
+        });
+        var mainStages = QuestCatalog.All.Where(q => q.IsMain).Select(q => q.Reward.UnlocksStage).ToList();
+        Assert.Equal([StoryStage.BanditsCalmed, StoryStage.WolvesCleared, StoryStage.CaravanAnnounced, StoryStage.CaravanReady], mainStages);
+    }
 }

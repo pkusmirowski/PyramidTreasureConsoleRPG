@@ -15,7 +15,7 @@ public sealed class TavernScreen(IGameIO io, BarScreen bar, CasinoScreen casino,
             io.Header("Tawerna \"Pod Sokołem\"");
             int choice = io.Menu(
                 "Witaj w tawernie! Co chcesz zrobić?",
-                Story.BarmanHasNews(hero) ? "Podejdź do baru (barman ma wieści!)" : "Podejdź do baru",
+                hero.CurrentRegion == RegionId.Port && QuestEngine.HasNews(hero, QuestGiverId.Barman) ? "Podejdź do baru (barman ma wieści!)" : "Podejdź do baru",
                 "Podejdź do kasyna i spróbuj szczęścia",
                 "Zapytaj o pokój na górze",
                 "Wyjdź z tawerny");

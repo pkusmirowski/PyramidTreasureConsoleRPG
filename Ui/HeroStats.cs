@@ -17,5 +17,8 @@ internal static class HeroStats
         ("Złoto", hero.Gold.ToString(System.Globalization.CultureInfo.InvariantCulture)),
         ("Mikstury", hero.Inventory.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)),
         ("Etap wyprawy", Story.StageName(hero.Stage)),
+        ("Dzień / miejsce", $"{hero.Day} / {RegionCatalog.Get(hero.CurrentRegion).Name}"),
+        ("Reputacja", string.Join(", ", Enum.GetValues<Faction>().Select(f => $"{RegionCatalog.FactionName(f)} {hero.GetReputation(f):+0;-0;0} ({Story.ReputationName(hero.GetReputation(f))})"))),
+        ("Zadania", $"{hero.Quests.Count(q => q.Value.Status == QuestStatus.Active)} aktywne, {hero.Quests.Count(q => q.Value.Status == QuestStatus.Completed)} ukończone"),
     };
 }

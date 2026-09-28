@@ -1,9 +1,13 @@
 namespace PyramidTreasureConsoleRPG.Domain;
 
-/// <summary>Płaski obiekt zapisu (JSON). Statystyki pochodne nie są zapisywane – liczy się je z Vit/Str/Dex.</summary>
+/// <summary>Płaski obiekt zapisu (JSON). Statystyki pochodne nie są zapisywane – liczy się je z Vit/Str/Dex.
+/// Kolekcje są opcjonalne, żeby starsze zapisy (bez tych pól) dało się wczytać.</summary>
 public sealed class SaveData
 {
-    public const int CurrentVersion = 2;
+    public const int CurrentVersion = 3;
+
+    /// <summary>Najstarsza wersja, którą umiemy wczytać (z migracją).</summary>
+    public const int OldestSupportedVersion = 2;
 
     public int Version { get; init; } = CurrentVersion;
 
@@ -31,8 +35,27 @@ public sealed class SaveData
 
     public bool Completed { get; init; }
 
-    public IReadOnlyList<int> Potions { get; init; } = [];
+    public IReadOnlyList<int>? Potions { get; init; }
+
+    public int Day { get; init; } = 1;
+
+    public int Region { get; init; }
+
+    public Dictionary<string, int>? Reputation { get; init; }
+
+    public IReadOnlyList<string>? Flags { get; init; }
+
+    public IReadOnlyList<QuestSaveEntry>? Quests { get; init; }
 
     /// <summary>Ustawiane przez magazyn zapisu w chwili zapisu.</summary>
     public DateTime SavedAt { get; set; }
+}
+
+public sealed class QuestSaveEntry
+{
+    public required string Id { get; init; }
+
+    public int Status { get; init; }
+
+    public int Progress { get; init; }
 }

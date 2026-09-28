@@ -80,9 +80,9 @@ public sealed class JsonFileSaveStore : ISaveStore
                 return new SaveLoadResult(null, "Plik zapisu jest pusty.");
             }
 
-            if (data.Version != SaveData.CurrentVersion)
+            if (data.Version < SaveData.OldestSupportedVersion || data.Version > SaveData.CurrentVersion)
             {
-                return new SaveLoadResult(null, $"Plik zapisu pochodzi z innej wersji gry (wersja {data.Version}, wymagana {SaveData.CurrentVersion}). Zacznij nową grę.");
+                return new SaveLoadResult(null, $"Plik zapisu pochodzi z innej wersji gry (wersja {data.Version}, obsługiwane {SaveData.OldestSupportedVersion}-{SaveData.CurrentVersion}). Zacznij nową grę.");
             }
 
             return new SaveLoadResult(data, string.Empty);

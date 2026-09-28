@@ -1,14 +1,14 @@
 namespace PyramidTreasureConsoleRPG.Ui;
 
 /// <summary>Menu główne: bramka wiekowa, nowa gra, wczytanie, ustawienia.</summary>
-public sealed class MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore settingsStore, GameSettings settings, IMusicPlayer music, TownScreen town)
+public sealed class MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore settingsStore, GameSettings settings, IMusicPlayer music, RegionScreen region)
 {
     private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
     private readonly ISaveStore saves = saves ?? throw new ArgumentNullException(nameof(saves));
     private readonly ISettingsStore settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
     private readonly GameSettings settings = settings ?? throw new ArgumentNullException(nameof(settings));
     private readonly IMusicPlayer music = music ?? throw new ArgumentNullException(nameof(music));
-    private readonly TownScreen town = town ?? throw new ArgumentNullException(nameof(town));
+    private readonly RegionScreen region = region ?? throw new ArgumentNullException(nameof(region));
 
     public void Run()
     {
@@ -106,7 +106,7 @@ public sealed class MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore 
 
     private void Play(Hero hero)
     {
-        SessionEnd end = town.Run(hero);
+        SessionEnd end = region.Run(hero);
         io.Clear();
         if (end == SessionEnd.Completed)
         {

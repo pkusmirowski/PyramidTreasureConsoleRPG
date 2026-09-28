@@ -6,8 +6,10 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
     private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
     private readonly IRandomSource rng = rng ?? throw new ArgumentNullException(nameof(rng));
 
+    /// <summary>Prowadzi walkę do końca i aktualizuje postęp zadań za pokonanych wrogów.</summary>
     public CombatStatus Run(Hero hero, IEnumerable<Enemy> enemies)
     {
+        ArgumentNullException.ThrowIfNull(hero);
         var engine = new CombatEngine(hero, enemies, rng);
         io.Clear();
         Render(engine.Begin(), engine);
@@ -17,6 +19,21 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
             IReadOnlyList<CombatEvent> events = HeroTurn(engine);
             io.Clear();
             Render(events, engine);
+        }
+
+        foreach (EnemyDefinition definition in engine.Killed)
+        {
+            foreach (QuestUpdate update in QuestEngine.OnEnemyKilled(hero, definition))
+            {
+                io.WriteLine(update.JustCompleted
+                    ? $"Zadanie \"{update.Quest.Title}\": cel wykonany! Wróć do zleceniodawcy ({RegionCatalog.GiverName(update.Quest.Giver)})."
+                    : $"Zadanie \"{update.Quest.Title}\": {update.Progress}/{update.Target}.", ConsoleColor.Cyan);
+            }
+        }
+
+        if (engine.Status != CombatStatus.InProgress && engine.Killed.Count > 0)
+        {
+            io.PressAnyKey();
         }
 
         return engine.Status;
@@ -153,6 +170,6 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
                 : $"Gratulacje! Zdobyłeś poziom {level}!", ConsoleColor.DarkYellow);
         }
 
-        io.PressAnyKey();
+        io.Pause(900);
     }
 }

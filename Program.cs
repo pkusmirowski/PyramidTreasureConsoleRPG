@@ -31,7 +31,11 @@ services.AddSingleton<BarScreen>();
 services.AddSingleton<CasinoScreen>();
 services.AddSingleton<RestScreen>();
 services.AddSingleton<TavernScreen>();
-services.AddSingleton<TownScreen>();
+services.AddSingleton<EventScreen>();
+services.AddSingleton<QuestGiverScreen>();
+services.AddSingleton<QuestLogScreen>();
+services.AddSingleton<MapScreen>();
+services.AddSingleton<RegionScreen>();
 services.AddSingleton<MainMenuScreen>();
 
 using ServiceProvider provider = services.BuildServiceProvider();

@@ -103,6 +103,48 @@ public sealed class Hero
 
     public bool Completed { get; set; }
 
+    /// <summary>Dzień wyprawy (podróże i eksploracja go zwiększają).</summary>
+    public int Day { get; set; } = 1;
+
+    public RegionId CurrentRegion { get; set; } = RegionId.Port;
+
+    private readonly Dictionary<Faction, int> reputation = new() { [Faction.Town] = 0, [Faction.Underworld] = 0, [Faction.Brotherhood] = 0 };
+    private readonly HashSet<string> flags = new(StringComparer.Ordinal);
+    private readonly Dictionary<QuestId, QuestProgress> quests = new();
+
+    public IReadOnlyDictionary<Faction, int> Reputation => reputation;
+
+    public IReadOnlySet<string> Flags => flags;
+
+    public IReadOnlyDictionary<QuestId, QuestProgress> Quests => quests;
+
+    public int GetReputation(Faction faction) => reputation.GetValueOrDefault(faction);
+
+    /// <summary>Zmienia reputację (−100..100) i zwraca nową wartość.</summary>
+    public int AdjustReputation(Faction faction, int delta)
+    {
+        reputation[faction] = Math.Clamp(GetReputation(faction) + delta, -100, 100);
+        return reputation[faction];
+    }
+
+    public bool HasFlag(string flag) => flags.Contains(flag);
+
+    /// <summary>Ustawia flagę fabularną; true, jeśli była nowa.</summary>
+    public bool SetFlag(string flag)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(flag);
+        return flags.Add(flag);
+    }
+
+    public QuestProgress? GetQuest(QuestId id) => quests.GetValueOrDefault(id);
+
+    public QuestProgress StartQuest(QuestId id)
+    {
+        var progress = new QuestProgress();
+        quests[id] = progress;
+        return progress;
+    }
+
     private readonly List<Potion> inventory = new();
 
     public IReadOnlyList<Potion> Inventory => inventory;
@@ -327,6 +369,11 @@ public sealed class Hero
         SpecialDrinkUsed = SpecialDrinkUsed,
         Completed = Completed,
         Potions = Inventory.Select(p => (int)p.Kind).ToList(),
+        Day = Day,
+        Region = (int)CurrentRegion,
+        Reputation = reputation.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value),
+        Flags = flags.ToList(),
+        Quests = quests.Select(kv => new QuestSaveEntry { Id = kv.Key.ToString(), Status = (int)kv.Value.Status, Progress = kv.Value.Progress }).ToList(),
     };
 
     public static Hero Create(HeroClass heroClass, string name) => new(HeroClasses.Get(heroClass), name);
@@ -350,11 +397,46 @@ public sealed class Hero
         hero.SpecialDrinkUsed = data.SpecialDrinkUsed;
         hero.Completed = data.Completed;
         hero.Hp = data.Hp <= 0 ? hero.MaxHp : data.Hp;
-        foreach (int kind in data.Potions)
+        foreach (int kind in data.Potions ?? [])
         {
             if (Enum.IsDefined((PotionKind)kind))
             {
                 hero.AddPotion(Potion.Create((PotionKind)kind));
+            }
+        }
+
+        hero.Day = Math.Max(1, data.Day);
+        hero.CurrentRegion = Enum.IsDefined((RegionId)data.Region) ? (RegionId)data.Region : RegionId.Port;
+        foreach ((string key, int value) in data.Reputation ?? [])
+        {
+            if (Enum.TryParse(key, out Faction faction))
+            {
+                hero.reputation[faction] = Math.Clamp(value, -100, 100);
+            }
+        }
+
+        foreach (string flag in data.Flags ?? [])
+        {
+            if (!string.IsNullOrWhiteSpace(flag))
+            {
+                hero.flags.Add(flag);
+            }
+        }
+
+        foreach (QuestSaveEntry entry in data.Quests ?? [])
+        {
+            if (Enum.TryParse(entry.Id, out QuestId questId) && Enum.IsDefined((QuestStatus)entry.Status))
+            {
+                hero.quests[questId] = new QuestProgress { Status = (QuestStatus)entry.Status, Progress = Math.Max(0, entry.Progress) };
+            }
+        }
+
+        if (data.Version < 3)
+        {
+            // Zapis sprzed systemu zadań: główne zadania odblokowujące już osiągnięty etap uznajemy za wykonane.
+            foreach (QuestDefinition quest in QuestCatalog.All.Where(q => q.IsMain && q.Reward.UnlocksStage is not null && q.Reward.UnlocksStage <= hero.Stage))
+            {
+                hero.quests[quest.Id] = new QuestProgress { Status = QuestStatus.Completed };
             }
         }
 

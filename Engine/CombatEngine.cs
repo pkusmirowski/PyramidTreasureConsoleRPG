@@ -36,6 +36,7 @@ public sealed class CombatEngine
 {
     private readonly Queue<Enemy> pending;
     private readonly IRandomSource rng;
+    private readonly List<EnemyDefinition> killed = [];
 
     public CombatEngine(Hero hero, IEnumerable<Enemy> enemies, IRandomSource rng)
     {
@@ -60,6 +61,9 @@ public sealed class CombatEngine
     public bool HeroActsFirst { get; private set; }
 
     public bool CanFlee => !CurrentEnemy.IsBoss;
+
+    /// <summary>Pokonani wrogowie (do zadań i statystyk).</summary>
+    public IReadOnlyList<EnemyDefinition> Killed => killed;
 
     /// <summary>Rozpoczyna walkę z pierwszym wrogiem. Jeśli wróg jest szybszy, od razu atakuje.</summary>
     public IReadOnlyList<CombatEvent> Begin()
@@ -163,6 +167,7 @@ public sealed class CombatEngine
     private void Reward(List<CombatEvent> events)
     {
         Enemy enemy = CurrentEnemy;
+        killed.Add(enemy.Definition);
         Hero.Gold += enemy.Gold;
         int before = Hero.Level;
         int gained = enemy.Exp > 0 ? Hero.AddExp(enemy.Exp) : 0;
