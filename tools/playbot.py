@@ -156,6 +156,9 @@ def decide(text):
         return str(len(options_of(last, "Którą miksturę wypić?")))
     if "Co robisz?" in last and "Co chcesz zrobić?" not in last:
         opts = options_of(last, "Co robisz?")
+        risky = state["hp"] * 10 < state["maxhp"] * 7 or state["potions"] == 0
+        for n, t in opts:
+            if "niedostępne" not in t and "[test" not in t and not (risky and "walka:" in t): return str(n)
         for n, t in opts:
             if "niedostępne" not in t and "[test" not in t: return str(n)
         for n, t in opts:

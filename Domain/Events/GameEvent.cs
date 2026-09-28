@@ -51,7 +51,8 @@ public sealed record GameEvent(
     bool OncePerGame = false,
     string? RequiresFlag = null,
     string? ForbidsFlag = null,
-    bool Forced = false)
+    bool Forced = false,
+    int MinLevel = 0)
 {
     public string SeenFlag => $"event:{Id}";
 }

@@ -111,7 +111,8 @@ public static class EventCatalog
                 new("Rzuć 30 sztuk złota i przejdź", [new ReputationEffect(Faction.Underworld, 2)], "Zbierają monety z błota. Pozwalają ci przejść.", GoldCost: 30),
                 new("Przebij się przez lukę w murze", [new ExpEffect(150)], "Cegły sypią się za tobą. Nie gonią.",
                     new SkillCheck(StatKind.Dexterity, 15), [new FightEffect([EnemyCatalog.ArmoredThief, EnemyCatalog.Thief, EnemyCatalog.Thief])], "Luka jest za wąska. Odwracasz się z bronią w ręku."),
-            ]),
+            ],
+            MinLevel: 7),
         new(
             "oldtown_lotus_dealer", RegionId.OldTown, "Diler lotosu",
             [
@@ -185,7 +186,8 @@ public static class EventCatalog
                 new("Zakradnij się po skóry ze ścian jaskini", [new GoldEffect(30), new ExpEffect(100)], "Wychodzisz z trzema skórami, zanim wilki cię zwietrzą.",
                     new SkillCheck(StatKind.Dexterity, 14), [new FightEffect([EnemyCatalog.Wolf, EnemyCatalog.Wolf])], "Gałązka pęka pod stopą. Dwa wilki wyskakują z ciemności."),
                 new("Odejdź", [], "Szczenięta dorosną. Ktoś inny będzie miał problem."),
-            ]),
+            ],
+            MinLevel: 7),
         new(
             "delta_well", RegionId.Delta, "Studnia z ciałem",
             [
@@ -246,7 +248,8 @@ public static class EventCatalog
                     RequiresFaction: Faction.Brotherhood, RequiredReputation: 15),
                 new("Zblefuj, że jesteś kurierem kapłanki", [new ExpEffect(180)], "\"Neferet nie wspominała.\" Ale przepuszczają.",
                     new SkillCheck(StatKind.Dexterity, 15), [new FightEffect([EnemyCatalog.Templar, EnemyCatalog.Templar])], "\"Neferet nie ma kurierów.\" Miecze."),
-            ]),
+            ],
+            MinLevel: 11),
         new(
             "desert_mirage", RegionId.Desert, "Fatamorgana",
             [
@@ -309,7 +312,8 @@ public static class EventCatalog
                     new SkillCheck(StatKind.Dexterity, 13), [new FightEffect([EnemyCatalog.CryingMonk, EnemyCatalog.Templar])], "Kamyk pod stopą. Śpiew urywa się. Odwracają się wszyscy naraz."),
                 new("Przerwij rytuał", [new FightEffect([EnemyCatalog.CryingMonk, EnemyCatalog.Templar]), new ReputationEffect(Faction.Brotherhood, -25), new ReputationEffect(Faction.Town, 10)], "Wchodzisz z bronią. Płacz zmienia się w wycie."),
                 new("Odejdź", [], "Niektóre rzeczy lepiej wiedzieć z opowieści."),
-            ]),
+            ],
+            MinLevel: 15),
         new(
             "oasis_pilgrim", RegionId.Oasis, "Pielgrzym",
             [

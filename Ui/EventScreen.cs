@@ -25,6 +25,15 @@ public sealed class EventScreen(IGameIO io, IRandomSource rng, CombatScreen comb
                 label += $" [test {EventEngine.StatName(check.Stat)} {check.Difficulty}]";
             }
 
+            if (choice.OnSuccess.OfType<FightEffect>().FirstOrDefault() is FightEffect fight)
+            {
+                label += $" (walka: {DescribeGroup(fight.Enemies)})";
+            }
+            else if (choice.OnFailure?.OfType<FightEffect>().FirstOrDefault() is FightEffect failFight)
+            {
+                label += $" (porażka = walka: {DescribeGroup(failFight.Enemies)})";
+            }
+
             labels.Add(availability.Available ? label : $"{label} – niedostępne: {availability.Reason}");
         }
 
@@ -57,4 +66,8 @@ public sealed class EventScreen(IGameIO io, IRandomSource rng, CombatScreen comb
         io.Pause(900);
         return combat.Run(hero, result.Fight.Select(d => d.Spawn()));
     }
+
+    /// <summary>„Wilk ×3, Dzik” – skład grupy wrogów w etykiecie wyboru.</summary>
+    public static string DescribeGroup(IEnumerable<EnemyDefinition> enemies) =>
+        string.Join(", ", enemies.GroupBy(e => e.Name).Select(g => g.Count() > 1 ? $"{g.Key} ×{g.Count()}" : g.Key));
 }

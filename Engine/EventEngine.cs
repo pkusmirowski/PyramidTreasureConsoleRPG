@@ -35,6 +35,11 @@ public static class EventEngine
             return false;
         }
 
+        if (hero.Level < ev.MinLevel)
+        {
+            return false;
+        }
+
         if (ev.RequiresFlag is not null && !hero.HasFlag(ev.RequiresFlag))
         {
             return false;

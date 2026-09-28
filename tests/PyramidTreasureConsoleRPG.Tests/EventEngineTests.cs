@@ -95,4 +95,36 @@ public class EventEngineTests
         hero.AdjustReputation(Faction.Brotherhood, 20);
         Assert.True(EventEngine.Availability(hero, patrol.Choices[2]).Available);
     }
+
+    [Fact]
+    public void Events_WithMinLevel_AreHiddenFromLowHeroes()
+    {
+        GameEvent den = Find("delta_wolf_den");
+        Assert.True(den.MinLevel > RegionCatalog.Delta.RecommendedLevel);
+        Hero hero = Hero.Create(HeroClass.Archer, "Test");
+        Assert.False(EventEngine.IsEligible(hero, den));
+        while (hero.Level < den.MinLevel)
+        {
+            hero.AddExp(hero.ExpToNextLevel);
+        }
+
+        Assert.True(EventEngine.IsEligible(hero, den));
+
+        // Każde zdarzenie z walką grupową (3+ wrogów) na start ma próg poziomu.
+        foreach (GameEvent ev in EventCatalog.All.Where(e => !e.Forced))
+        {
+            int biggest = ev.Choices.SelectMany(c => c.OnSuccess.OfType<FightEffect>()).Select(f => f.Enemies.Length).DefaultIfEmpty(0).Max();
+            if (biggest >= 3)
+            {
+                Assert.True(ev.MinLevel > 0, $"{ev.Id}: walka z {biggest} wrogami bez progu poziomu");
+            }
+        }
+    }
+
+    [Fact]
+    public void EventScreen_LabelsFightChoices()
+    {
+        Assert.Equal("Wilk ×3", EventScreen.DescribeGroup([EnemyCatalog.Wolf, EnemyCatalog.Wolf, EnemyCatalog.Wolf]));
+        Assert.Equal("Wilk ×2, Dzik", EventScreen.DescribeGroup([EnemyCatalog.Wolf, EnemyCatalog.Wolf, EnemyCatalog.WildBoar]));
+    }
 }
