@@ -23,5 +23,28 @@ internal static class HeroStats
         ("Reputacja", string.Join(", ", Enum.GetValues<Faction>().Select(f => $"{RegionCatalog.FactionName(f)} {hero.GetReputation(f):+0;-0;0} ({Story.ReputationName(hero.GetReputation(f))})"))),
         ("Nałóg / dług", $"lotos {hero.Addiction} dawek{(hero.Craving ? " (głód!)" : "")} / {(hero.Debt > 0 ? $"{hero.Debt} g" : "brak")}"),
         ("Zadania", $"{hero.Quests.Count(q => q.Value.Status == QuestStatus.Active)} aktywne, {hero.Quests.Count(q => q.Value.Status == QuestStatus.Completed)} ukończone"),
+        ("Wyprawa", $"{(hero.NewGamePlus > 0 ? $"nowa gra+ (cykl {hero.NewGamePlus}, wrogowie +{hero.EnemyScalePercent - 100}%), " : "")}{hero.Stats.Fights} walk, {hero.Stats.Kills} zabitych, {hero.Stats.DarkChoices} mrocznych i {hero.Stats.LightChoices} jasnych wyborów"),
     };
+
+    /// <summary>Wiersze podsumowania po zakończeniu gry.</summary>
+    public static IReadOnlyList<(string Label, string Value)> SummaryRows(Hero hero)
+    {
+        HeroStatistics s = hero.Stats;
+        string moral = s.DarkChoices > s.LightChoices * 2 ? "bez skrupułów"
+            : s.LightChoices > s.DarkChoices * 2 ? "z czystymi rękami"
+            : "pragmatycznie";
+        return new[]
+        {
+            ("Bohater", $"{hero.Name}, {hero.ClassName}, poziom {hero.Level}{(hero.NewGamePlus > 0 ? $", nowa gra+ {hero.NewGamePlus}" : "")}"),
+            ("Dni w drodze", hero.Day.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            ("Walki / zabici / bossowie", $"{s.Fights} / {s.Kills} / {s.BossKills}"),
+            ("Złoto z łupów / na koniec", $"{s.GoldEarned} / {hero.Gold}"),
+            ("Kasyno: wygrane / przegrane", $"{s.CasinoWon} / {s.CasinoLost}"),
+            ("Zdarzenia / mikstury", $"{s.EventsResolved} / {s.PotionsDrunk}"),
+            ("Zadania ukończone", hero.Quests.Count(q => q.Value.Status == QuestStatus.Completed).ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            ("Wybory mroczne / jasne", $"{s.DarkChoices} / {s.LightChoices} – {moral}"),
+            ("Reputacja", string.Join(", ", Enum.GetValues<Faction>().Select(f => $"{RegionCatalog.FactionName(f)} {hero.GetReputation(f):+0;-0;0}"))),
+            ("Nałóg / dług", $"lotos {hero.Addiction} dawek / {(hero.Debt > 0 ? $"{hero.Debt} g" : "brak")}"),
+        };
+    }
 }

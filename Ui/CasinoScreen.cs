@@ -104,6 +104,15 @@ public sealed class CasinoScreen(IGameIO io, IRandomSource rng)
 
             hero.Gold -= bet;
             int payout = game(hero, bet);
+            if (payout > bet)
+            {
+                hero.Stats.CasinoWon += payout - bet;
+            }
+            else
+            {
+                hero.Stats.CasinoLost += bet - payout;
+            }
+
             if (payout > 0)
             {
                 hero.Gold += payout;

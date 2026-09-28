@@ -111,11 +111,14 @@ public sealed class Enemy
 
     public EnemyKind Kind => Definition.Kind;
 
-    public int MaxHp => Definition.MaxHp;
+    /// <summary>Mnożnik statystyk w procentach (nowa gra+: 130, 160...).</summary>
+    public int ScalePercent { get; private set; } = 100;
 
-    public int MinDmg => Definition.MinDmg;
+    public int MaxHp => Definition.MaxHp * ScalePercent / 100;
 
-    public int MaxDmg => Definition.MaxDmg;
+    public int MinDmg => Definition.MinDmg * ScalePercent / 100;
+
+    public int MaxDmg => Definition.MaxDmg * ScalePercent / 100;
 
     public int Armor => Definition.Armor;
 
@@ -124,7 +127,23 @@ public sealed class Enemy
 
     public int Exp => Definition.Exp;
 
-    public int Gold => Definition.Gold;
+    public int Gold => Definition.Gold * ScalePercent / 100;
+
+    /// <summary>Skaluje wroga (nowa gra+). Pełne HP po przeskalowaniu, o ile wróg jeszcze nie walczył.</summary>
+    public void Scale(int percent)
+    {
+        if (percent < 100 || percent == ScalePercent)
+        {
+            return;
+        }
+
+        bool untouched = hp == MaxHp;
+        ScalePercent = percent;
+        if (untouched)
+        {
+            hp = MaxHp;
+        }
+    }
 
     /// <summary>Bossowie: nie można od nich uciec.</summary>
     public bool IsBoss => Definition.IsBoss;

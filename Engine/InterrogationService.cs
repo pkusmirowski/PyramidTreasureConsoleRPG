@@ -29,15 +29,18 @@ public static class InterrogationService
         switch (choice)
         {
             case PrisonerChoice.Execute:
+                hero.Stats.RecordChoice(-1);
                 hero.AdjustReputation(Faction.Underworld, 3);
                 hero.AdjustReputation(Faction.Town, -3);
                 notes.Add("Reputacja Podziemie +3, Miasto −3");
                 return new PrisonerResult("Jeden ruch ostrzem. Nie prosi o litość, bo wie, że to nic nie da.", notes);
             case PrisonerChoice.Release:
+                hero.Stats.RecordChoice(1);
                 hero.AdjustReputation(Faction.Town, 5);
                 notes.Add("Reputacja Miasto +5");
                 return new PrisonerResult("Odchodzi kulejąc, nie oglądając się. Ktoś w mieście o tym usłyszy.", notes);
             default:
+                hero.Stats.RecordChoice(-1);
                 int dice = rng.Range(1, 20);
                 int roll = hero.Str + dice;
                 hero.AdjustReputation(Faction.Town, -8);

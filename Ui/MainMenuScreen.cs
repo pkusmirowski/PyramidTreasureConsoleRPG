@@ -21,10 +21,7 @@ public sealed class MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore 
         {
             io.Clear();
             io.WriteLine("PYRAMID TREASURE – konsolowe RPG", ConsoleColor.Cyan);
-            SaveInfo? save = saves.Peek();
-            string load = save is null
-                ? "Wczytaj grę (brak zapisu)"
-                : $"Wczytaj grę ({save.Name}, poziom {save.Level}, {save.SavedAt:yyyy-MM-dd HH:mm})";
+            string load = saves.AnyExists() ? "Wczytaj grę" : "Wczytaj grę (brak zapisu)";
             switch (io.Menu("Menu główne", "Nowa gra", load, "Ustawienia", "Wyjdź z gry"))
             {
                 case 1:
@@ -80,7 +77,33 @@ public sealed class MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore 
 
     private void LoadGame()
     {
-        SaveLoadResult result = saves.Load();
+        var slots = new List<int>();
+        var labels = new List<string>();
+        for (int slot = ISaveStore.AutoSlot; slot <= ISaveStore.SlotCount; slot++)
+        {
+            if (saves.Peek(slot) is SaveInfo info)
+            {
+                slots.Add(slot);
+                labels.Add($"{ISaveStore.SlotName(slot)}: {info.Name}, {HeroClasses.Get(info.HeroClass).Name}, poziom {info.Level}, {info.SavedAt:yyyy-MM-dd HH:mm}");
+            }
+        }
+
+        if (slots.Count == 0)
+        {
+            io.ShowError("Brak zapisanej gry.");
+            io.PressAnyKey();
+            return;
+        }
+
+        labels.Add("Wróć");
+        int choice = io.Menu("Który zapis wczytać?", [.. labels]);
+        io.Clear();
+        if (choice > slots.Count)
+        {
+            return;
+        }
+
+        SaveLoadResult result = saves.Load(slots[choice - 1]);
         if (result.Data is null)
         {
             io.ShowError(result.Message);
@@ -106,12 +129,24 @@ public sealed class MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore 
 
     private void Play(Hero hero)
     {
-        SessionEnd end = region.Run(hero);
-        io.Clear();
-        if (end == SessionEnd.Completed)
+        while (true)
         {
+            SessionEnd end = region.Run(hero);
+            io.Clear();
+            if (end != SessionEnd.Completed)
+            {
+                return;
+            }
+
             io.ShowSuccess("Dziękujemy za grę!");
-            io.PressAnyKey();
+            if (io.Menu("Nowa gra+?", $"Tak – {hero.Name} rusza ponownie (start na poziomie {Hero.NewGamePlusStartLevel}, wrogowie +{30 * (hero.NewGamePlus + 1)}%)", "Nie, wróć do menu") == 2)
+            {
+                return;
+            }
+
+            hero = Hero.NewGamePlusFrom(hero);
+            io.Clear();
+            io.ShowSuccess($"Nowa gra+ (cykl {hero.NewGamePlus}): {hero.Name}, {hero.ClassName}, poziom {hero.Level}. Zachowujesz broń i talenty; wrogowie są silniejsi o {hero.EnemyScalePercent - 100}%.");
         }
     }
 

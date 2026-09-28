@@ -95,7 +95,7 @@ def target_region():
     lvl = state["level"]
     if lvl >= 20: wish = ["Piramida Chufu", "Oaza Siwa"]
     elif lvl >= 13: wish = ["Oaza Siwa", "Szlak Karawan"]
-    elif lvl >= 8: wish = ["Szlak Karawan", "Delta i las"]
+    elif lvl >= 9: wish = ["Szlak Karawan", "Delta i las"]
     elif lvl >= 4: wish = ["Delta i las", "Stare Miasto"]
     else: wish = ["Port Sokoła"]
     for w in wish:
@@ -114,9 +114,22 @@ def decide(text):
     if "Wybierz klasę" in last: return CLASS
     if "Wyruszyć?" in last or "Wejść?" in last:
         desperate = state["gold"] < 25 and state["potions"] == 0 and state["hp"] * 4 >= state["maxhp"]
-        return "1" if ("Wejść?" in last or state["hp"] * 2 >= state["maxhp"] or state["potions"] > 0 or desperate) else "2"
+        return "1" if ("Wejść?" in last or state["hp"] * 10 >= state["maxhp"] * 7 or state["potions"] > 0 or desperate) else "2"
     if "Niezapisany postęp" in last: return "2"
     if "Nadpisać istniejący zapis?" in last: return "2"
+    if "Zapisz w slocie:" in last: return "1"
+    if "Który zapis wczytać?" in last: return str(len(options_of(last, "Który zapis wczytać?")))
+    if "Co robisz z Graalem?" in last:
+        opts = options_of(last, "Co robisz z Graalem?")
+        for n, t in reversed(opts):
+            if "niedostępne" not in t: return str(n)
+        return "1"
+    if "Nowa gra+?" in last:
+        if os.environ.get("PLAYBOT_NGPLUS") and not state.get("ngplus_done"):
+            state["ngplus_done"] = True; state["saved"] = False; state["locked"].clear(); state["pending"].clear()
+            state["owned"].clear(); state["equipped"].clear(); state["went_temple"] = False
+            return "1"
+        return "2"
     if "Przyjąć zadanie?" in last: return "1"
     if "Twoja tura:" in last:
         opts = options_of(last, "Twoja tura:")
@@ -125,7 +138,7 @@ def decide(text):
         if "Broń się!" in last or "zbiera moc" in last:
             return pick(opts, "Obrona")
         alive = last.count(" HP\n") - 1
-        if state["hp"] * 100 < state["maxhp"] * 20 and state["potions"] == 0 and alive >= 2 and "Uciekaj" in last:
+        if state["hp"] * 100 < state["maxhp"] * 20 and state["potions"] == 0 and "Uciekaj" in last:
             return pick(opts, "Uciekaj")
         return "2" if state["level"] >= 8 else "1"
     if "Cel:" in last and "Twoja tura:" not in last.split("Cel:")[-1]:

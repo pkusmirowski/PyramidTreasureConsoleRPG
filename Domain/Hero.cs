@@ -103,6 +103,17 @@ public sealed class Hero
 
     public bool Completed { get; set; }
 
+    /// <summary>Statystyki wyprawy do podsumowania.</summary>
+    public HeroStatistics Stats { get; private set; } = new();
+
+    /// <summary>Który to cykl nowej gry+ (0 = pierwsza wyprawa). Wrogowie mają +30% statystyk na cykl.</summary>
+    public int NewGamePlus { get; private set; }
+
+    /// <summary>Wybrane zakończenie (po pokonaniu Ra).</summary>
+    public EndingKind? Ending { get; set; }
+
+    public int EnemyScalePercent => 100 + (30 * NewGamePlus);
+
     /// <summary>Dzień wyprawy (podróże i eksploracja go zwiększają).</summary>
     public int Day { get; set; } = 1;
 
@@ -126,6 +137,9 @@ public sealed class Hero
         reputation[faction] = Math.Clamp(GetReputation(faction) + delta, -100, 100);
         return reputation[faction];
     }
+
+    /// <summary>Ustawia reputację wprost (nowa gra+, testy).</summary>
+    public void SetReputation(Faction faction, int value) => reputation[faction] = Math.Clamp(value, -100, 100);
 
     public bool HasFlag(string flag) => flags.Contains(flag);
 
@@ -573,6 +587,7 @@ public sealed class Hero
         }
 
         inventory.Remove(potion);
+        Stats.PotionsDrunk++;
         int before = Hp;
         switch (potion.Effect)
         {
@@ -634,9 +649,70 @@ public sealed class Hero
         DebtDay = DebtDay,
         NightmareNights = NightmareNights,
         NextFightBuff = NextFightBuff is null ? null : (int)NextFightBuff,
+        Stats = Stats.ToSaveData(),
+        NewGamePlus = NewGamePlus,
+        Ending = Ending is null ? null : (int)Ending,
     };
 
     public static Hero Create(HeroClass heroClass, string name) => new(HeroClasses.Get(heroClass), name);
+
+    public const int NewGamePlusStartLevel = 5;
+
+    /// <summary>
+    /// Nowa gra+: ten sam bohater zaczyna od 5. poziomu, zachowuje broń i talenty, a wrogowie rosną o 30% na cykl.
+    /// Bonus zależy od wybranego zakończenia.
+    /// </summary>
+    public static Hero NewGamePlusFrom(Hero previous)
+    {
+        ArgumentNullException.ThrowIfNull(previous);
+        var hero = new Hero(previous.Definition, previous.Name)
+        {
+            NewGamePlus = previous.NewGamePlus + 1,
+        };
+        while (hero.Level < NewGamePlusStartLevel)
+        {
+            hero.AddExp(hero.ExpToNextLevel);
+        }
+
+        foreach (TalentId talent in previous.talents)
+        {
+            hero.talents.Add(talent);
+        }
+
+        if (previous.Weapon is Weapon weapon)
+        {
+            hero.gear.Add(weapon);
+            hero.Equip(weapon);
+        }
+
+        hero.Gold = 100;
+        switch (previous.Ending)
+        {
+            case EndingKind.TakeGrail:
+                hero.Vit += 2;
+                hero.Str += 2;
+                hero.Dex += 2;
+                hero.NightmareNights = 20;
+                hero.SetFlag("ngplus:grail");
+                break;
+            case EndingKind.GiveToBrotherhood:
+                hero.SetReputation(Faction.Brotherhood, 40);
+                hero.SetFlag("ngplus:brotherhood");
+                hero.SetFlag("neferet:wine");
+                break;
+            case EndingKind.Destroy:
+                hero.SetReputation(Faction.Town, 40);
+                hero.Gold += 300;
+                hero.SetFlag("ngplus:ash");
+                break;
+            default:
+                break;
+        }
+
+        hero.SetFlag("ngplus");
+        hero.hp = hero.MaxHp;
+        return hero;
+    }
 
     public static Hero FromSaveData(SaveData data)
     {
@@ -656,6 +732,9 @@ public sealed class Hero
         hero.Stage = Enum.IsDefined((StoryStage)data.Stage) ? (StoryStage)data.Stage : StoryStage.Start;
         hero.SpecialDrinkUsed = data.SpecialDrinkUsed;
         hero.Completed = data.Completed;
+        hero.Stats = HeroStatistics.FromSaveData(data.Stats);
+        hero.NewGamePlus = Math.Max(0, data.NewGamePlus);
+        hero.Ending = data.Ending is int ending && Enum.IsDefined((EndingKind)ending) ? (EndingKind)ending : null;
         hero.Hp = data.Hp <= 0 ? hero.MaxHp : data.Hp;
         foreach (int kind in data.Potions ?? [])
         {

@@ -20,7 +20,8 @@ public sealed class RegionScreen(
     QuestGiverScreen questGiver,
     QuestLogScreen questLog,
     MapScreen map,
-    TalentScreen talents)
+    TalentScreen talents,
+    EndingScreen ending)
 {
     private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
     private readonly IRandomSource rng = rng ?? throw new ArgumentNullException(nameof(rng));
@@ -34,6 +35,7 @@ public sealed class RegionScreen(
     private readonly QuestLogScreen questLog = questLog ?? throw new ArgumentNullException(nameof(questLog));
     private readonly MapScreen map = map ?? throw new ArgumentNullException(nameof(map));
     private readonly TalentScreen talents = talents ?? throw new ArgumentNullException(nameof(talents));
+    private readonly EndingScreen ending = ending ?? throw new ArgumentNullException(nameof(ending));
 
     public SessionEnd Run(Hero hero)
     {
@@ -203,6 +205,15 @@ public sealed class RegionScreen(
         }
 
         io.Clear();
+        if (saves.Save(hero.ToSaveData(), ISaveStore.AutoSlot, out string autosave))
+        {
+            io.ShowInfo($"{autosave} Jeśli zginiesz, wczytasz go z menu głównego.");
+        }
+        else
+        {
+            io.ShowError(autosave);
+        }
+
         io.Narrate(Dialogues.PyramidHistory);
         if (combat.Run(hero, Encounters.PyramidGuards()) == CombatStatus.Defeat)
         {
@@ -216,10 +227,8 @@ public sealed class RegionScreen(
             return Defeat();
         }
 
-        hero.Completed = true;
-        io.Narrate(Dialogues.Ending);
-        io.ShowSuccess($"Ukończyłeś grę jako {hero.Name}, {hero.ClassName} na poziomie {hero.Level}, w {hero.Day} dni, z {hero.Gold} sztukami złota!");
-        io.PressAnyKey();
+        io.Clear();
+        ending.Run(hero);
         return SessionEnd.Completed;
     }
 
@@ -233,14 +242,27 @@ public sealed class RegionScreen(
 
     private void SaveGame(Hero hero)
     {
-        if (saves.Exists() && io.Menu("Nadpisać istniejący zapis?", "Nie", "Tak") == 1)
+        string[] labels = Enumerable.Range(1, ISaveStore.SlotCount)
+            .Select(slot => saves.Peek(slot) is SaveInfo info
+                ? $"{ISaveStore.SlotName(slot)}: {info.Name}, poziom {info.Level}, {info.SavedAt:yyyy-MM-dd HH:mm}"
+                : $"{ISaveStore.SlotName(slot)}: pusty")
+            .Append("Wróć")
+            .ToArray();
+        int slot = io.Menu("Zapisz w slocie:", labels);
+        if (slot > ISaveStore.SlotCount)
+        {
+            io.Clear();
+            return;
+        }
+
+        if (saves.Exists(slot) && io.Menu("Nadpisać istniejący zapis?", "Nie", "Tak") == 1)
         {
             io.Clear();
             return;
         }
 
         io.Clear();
-        if (saves.Save(hero.ToSaveData(), out string message))
+        if (saves.Save(hero.ToSaveData(), slot, out string message))
         {
             io.ShowSuccess(message);
         }

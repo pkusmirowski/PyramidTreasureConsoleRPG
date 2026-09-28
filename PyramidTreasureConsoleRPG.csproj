@@ -5,7 +5,7 @@
     <RootNamespace>PyramidTreasureConsoleRPG</RootNamespace>
     <AssemblyName>PyramidTreasureConsoleRPG</AssemblyName>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**;tools/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>

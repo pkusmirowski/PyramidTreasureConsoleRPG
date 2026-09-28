@@ -193,7 +193,15 @@ złożoność, i systemy, które ją zbudują, są poniżej. Założenia: wdraż
 
 ---
 
-## Milestone 5 – Zakończenia, statystyki, sloty, nowa gra+
+## Milestone 5 – Zakończenia, statystyki, sloty, nowa gra+ (WDROŻONE)
+
+> Stan: zrobione. Trzy zakończenia w `EndingCatalog` z regułami w `EndingEngine` (Graal dla siebie zawsze;
+> Bractwo przy reputacji ≥ 30 albo obietnicy danej Neferet; zniszczenie z mapą koczowników), `EndingScreen`
+> z podsumowaniem wyprawy (`HeroStatistics`: walki, zabici, bossowie, złoto, kasyno, zdarzenia, mikstury, wybory
+> mroczne i jasne liczone z wagi reputacyjnej efektów). Trzy sloty zapisu plus autozapis przed wejściem do piramidy
+> (`ISaveStore` ze slotami; slot 1 to stary plik `DataSave.json`, więc dotychczasowe zapisy działają). Nowa gra+:
+> ten sam bohater od 5. poziomu z bronią i talentami, wrogowie +30 % na cykl (`Enemy.Scale` w `CombatEngine`),
+> bonus zależny od zakończenia. Zapis v6. Osiągnięć nie wdrożono (opcjonalne). 128 testów.
 
 - **Trzy zakończenia** po Ra (`EndingScreen`): zabrać Graal (moc: NG+ z bonusem, klątwa: koszmary na stałe),
   oddać Bractwu (jeśli `Brotherhood ≥ 30` lub wątek Neferet), zniszczyć (jeśli flaga „mapa koczowników”).

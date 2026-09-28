@@ -76,6 +76,7 @@ public static class EventEngine
         }
 
         EventChoice choice = ev.Choices[choiceIndex];
+        hero.Stats.EventsResolved++;
         if (!Availability(hero, choice).Available)
         {
             throw new InvalidOperationException("Ta opcja nie jest dostępna.");
@@ -123,6 +124,7 @@ public static class EventEngine
         ArgumentNullException.ThrowIfNull(effects);
         ArgumentNullException.ThrowIfNull(notes);
         EnemyDefinition[]? fight = null;
+        int moral = 0;
         foreach (EventEffect effect in effects)
         {
             string? note = Apply(hero, effect, ref fight);
@@ -130,8 +132,14 @@ public static class EventEngine
             {
                 notes.Add(note);
             }
+
+            if (effect is ReputationEffect rep)
+            {
+                moral += HeroStatistics.MoralWeight(rep.Faction, rep.Delta);
+            }
         }
 
+        hero.Stats.RecordChoice(moral);
         return fight;
     }
 

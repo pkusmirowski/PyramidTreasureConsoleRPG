@@ -37,7 +37,10 @@ Zapis gry i ustawienia trafiają do katalogu `GreatPyramidTreasureRPG_DataSave` 
 - Tawerna: bar (napoje leczą, jednorazowy miód „Grunwald” wzmacnia na stałe), kasyno (ruletka, jednoręki bandyta, blackjack, kości, lichwiarz) i pokoje na górze.
 - Warstwa 18+ z konsekwencjami: whisky i lotos wzmacniają na jedną walkę, ale lotos uzależnia (głód po dwóch dniach bez dawki: −15 % obrażeń, −10 trafienia, mija po tygodniu albo po odtrutce). Lichwiarz pożycza do 500 g na 10 % dziennie; po pięciu dniach zwłoki w porcie i Starym Mieście czekają egzekutorzy z Łamaczem. Po walce z ludźmi jeniec czasem żyje: dobić, puścić albo przesłuchać (test siły, reputacja, koszmary przez trzy noce). Na górze tawerny trzy postacie z własnymi wątkami (Zoja, Ptaszek, Neferet); sceny intymne dzieją się za zamkniętymi drzwiami, ale mają skutki: kradzież, plotka, amulet, wpływ na finał. Przekleństwa włącza się w ustawieniach.
 - Pule wrogów w regionie odblokowują się z poziomem: na zalecanym poziomie regionu (mapa pokazuje „poziom N+”) trafia się najłatwiejsza grupa, każde dwa poziomy wyżej dochodzi kolejna.
-- Na 20. poziomie, po zadaniach barmana, karawana zabiera bohatera pod piramidę: dwaj Anubisi, a potem bóg Ra.
+- Na 20. poziomie, po zadaniach barmana, karawana zabiera bohatera pod piramidę: dwaj Anubisi, a potem bóg Ra. Przed wejściem gra robi autozapis.
+- Trzy zakończenia: zabrać Graal (moc i klątwa), oddać go Bractwu (reputacja Bractwa albo słowo dane Neferet) albo zniszczyć w komnacie z mapy koczowników. Po napisach podsumowanie wyprawy: walki, zabici, złoto, kasyno, wybory mroczne i jasne.
+- Nowa gra+: ten sam bohater rusza ponownie od 5. poziomu z bronią i talentami, wrogowie są o 30 % silniejsi na każdy cykl, a bonus na start zależy od wybranego zakończenia.
+- Trzy sloty zapisu; zapis z poprzednich wersji gry wczytuje się jako slot 1.
 - W narracji dowolny klawisz pomija pauzę, `Esc` pomija cały tekst. Prędkość tekstu i muzykę ustawia się w menu głównym.
 
 ## Struktura kodu
@@ -45,12 +48,12 @@ Zapis gry i ustawienia trafiają do katalogu `GreatPyramidTreasureRPG_DataSave` 
 | Katalog | Zawartość |
 |---|---|
 | `Domain/` | Modele i czyste reguły: `Hero`, definicje klas (`HeroClasses`), katalog wrogów z łupami (`EnemyCatalog`), regiony (`World/RegionCatalog`), zdarzenia (`Events/EventCatalog`), zadania (`Quests/QuestCatalog`), przedmioty (`Items/ItemCatalog`), talenty (`Talents/TalentCatalog`), postacie z dialogami (`Npc/NpcCatalog`), mikstury i używki, fabuła, teksty, losowość |
-| `Engine/` | Logika bez UI: `CombatEngine` (walka jako zdarzenia), `TravelEngine`, `EventEngine`, `QuestEngine`, `CasinoEngine`, `DialogueEngine`, `DayService` (dług, nałóg), `DebtService`, `InterrogationService`, serwisy baru, sklepu i noclegu |
-| `Ui/` | Ekrany konsolowe rozmawiające tylko z `IGameIO` (region, mapa, zdarzenia, zleceniodawcy, dziennik, walka, tawerna, kasyno, pokoje i postacie na górze, sklep, sakwa); dwie implementacje: `SpectreGameIO` (domyślna) i `ConsoleGameIO` (`--plain`) |
-| `Infrastructure/` | Zapis gry i ustawień (JSON z generatorem źródeł), odtwarzacz muzyki (NAudio) |
+| `Engine/` | Logika bez UI: `CombatEngine` (walka jako zdarzenia), `TravelEngine`, `EventEngine`, `QuestEngine`, `CasinoEngine`, `DialogueEngine`, `DayService` (dług, nałóg), `DebtService`, `InterrogationService`, `EndingEngine`, serwisy baru, sklepu i noclegu |
+| `Ui/` | Ekrany konsolowe rozmawiające tylko z `IGameIO` (region, mapa, zdarzenia, zleceniodawcy, dziennik, walka, tawerna, kasyno, pokoje i postacie na górze, sklep, sakwa, zakończenie z podsumowaniem); dwie implementacje: `SpectreGameIO` (domyślna) i `ConsoleGameIO` (`--plain`) |
+| `Infrastructure/` | Zapis gry w trzech slotach plus autozapis i ustawienia (JSON z generatorem źródeł), odtwarzacz muzyki (NAudio) |
 | `Program.cs` | Rejestracja zależności (Microsoft.Extensions.DependencyInjection) i start gry |
 | `tests/` | Testy xUnit: wzory walki, awanse, silnik walki i kasyna, zapis/odczyt, ekrany z dublerem konsoli, reguły architektury |
-| `tools/` | `playbot.py` – bot grający przez potok od startu do napisu końcowego (smoke test w CI) |
+| `tools/` | `playbot.py` – bot grający przez potok od startu do napisu końcowego (smoke test w CI); `BalanceSim/` – symulacja balansu walk na prawdziwym silniku |
 | `docs/` | Analiza i code review, plan rozwoju |
 
 ## Testy
@@ -64,6 +67,12 @@ Bot grający całą grę (wymaga Pythona 3):
 ```bash
 dotnet build -c Release
 python3 tools/playbot.py bin/Release/net9.0/PyramidTreasureConsoleRPG.dll 1
+```
+
+Symulacja balansu na prawdziwym silniku walki (szansa wygranej i utrata HP dla każdej klasy, regionu i puli wrogów; drugi argument to cykl nowej gry+):
+
+```bash
+dotnet run --project tools/BalanceSim -c Release -- 200
 ```
 
 CI (GitHub Actions) sprawdza formatowanie, buduje projekt z ostrzeżeniami jako błędami, uruchamia testy i przechodzi grę botem.

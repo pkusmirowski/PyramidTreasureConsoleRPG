@@ -9,14 +9,38 @@ public sealed record SaveLoadResult(SaveData? Data, string Message);
 /// <summary>Magazyn zapisu gry. Zwraca surowe dane; bohatera odtwarza Hero.FromSaveData.</summary>
 public interface ISaveStore
 {
-    bool Exists();
+    /// <summary>Slot autozapisu (przed piramidą).</summary>
+    const int AutoSlot = 0;
 
-    SaveInfo? Peek();
+    /// <summary>Liczba ręcznych slotów (1..SlotCount).</summary>
+    const int SlotCount = 3;
 
-    SaveLoadResult Load();
+    bool Exists(int slot = 1);
+
+    SaveInfo? Peek(int slot = 1);
+
+    SaveLoadResult Load(int slot = 1);
 
     /// <summary>Zwraca true przy powodzeniu; komunikat opisuje wynik (np. błąd dysku).</summary>
-    bool Save(SaveData data, out string message);
+    bool Save(SaveData data, int slot, out string message);
+
+    bool Save(SaveData data, out string message) => Save(data, 1, out message);
+
+    /// <summary>Czy jakikolwiek slot (łącznie z autozapisem) ma zapis.</summary>
+    bool AnyExists()
+    {
+        for (int slot = AutoSlot; slot <= SlotCount; slot++)
+        {
+            if (Exists(slot))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    static string SlotName(int slot) => slot == AutoSlot ? "Autozapis" : $"Slot {slot}";
 }
 
 public sealed class JsonFileSaveStore : ISaveStore
@@ -32,19 +56,34 @@ public sealed class JsonFileSaveStore : ISaveStore
         this.clock = clock ?? TimeProvider.System;
     }
 
-    public string FilePath => Path.Combine(folder, FileName);
+    /// <summary>Ścieżka slotu 1 – ta sama co w starszych wersjach gry, żeby stare zapisy nadal działały.</summary>
+    public string FilePath => FilePathFor(1);
 
-    public bool Exists() => File.Exists(FilePath);
+    public string FilePathFor(int slot)
+    {
+        ValidateSlot(slot);
+        string name = slot switch
+        {
+            ISaveStore.AutoSlot => "DataSaveAuto.json",
+            1 => FileName,
+            _ => $"DataSave{slot}.json",
+        };
+        return Path.Combine(folder, name);
+    }
 
-    public bool Save(SaveData data, out string message)
+    public bool Exists(int slot = 1) => File.Exists(FilePathFor(slot));
+
+    public bool Save(SaveData data, out string message) => Save(data, 1, out message);
+
+    public bool Save(SaveData data, int slot, out string message)
     {
         ArgumentNullException.ThrowIfNull(data);
         try
         {
             Directory.CreateDirectory(folder);
             data.SavedAt = clock.GetLocalNow().DateTime;
-            File.WriteAllText(FilePath, JsonSerializer.Serialize(data, GameJsonContext.Default.SaveData));
-            message = "Gra została zapisana!";
+            File.WriteAllText(FilePathFor(slot), JsonSerializer.Serialize(data, GameJsonContext.Default.SaveData));
+            message = slot == ISaveStore.AutoSlot ? "Autozapis wykonany." : $"Gra została zapisana ({ISaveStore.SlotName(slot)})!";
             return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -54,9 +93,9 @@ public sealed class JsonFileSaveStore : ISaveStore
         }
     }
 
-    public SaveInfo? Peek()
+    public SaveInfo? Peek(int slot = 1)
     {
-        SaveData? data = Load().Data;
+        SaveData? data = Load(slot).Data;
         if (data is null || !Enum.IsDefined((HeroClass)data.Class))
         {
             return null;
@@ -65,16 +104,16 @@ public sealed class JsonFileSaveStore : ISaveStore
         return new SaveInfo(data.Name, (HeroClass)data.Class, data.Level, data.SavedAt);
     }
 
-    public SaveLoadResult Load()
+    public SaveLoadResult Load(int slot = 1)
     {
-        if (!Exists())
+        if (!Exists(slot))
         {
             return new SaveLoadResult(null, "Brak zapisanej gry.");
         }
 
         try
         {
-            SaveData? data = JsonSerializer.Deserialize(File.ReadAllText(FilePath), GameJsonContext.Default.SaveData);
+            SaveData? data = JsonSerializer.Deserialize(File.ReadAllText(FilePathFor(slot)), GameJsonContext.Default.SaveData);
             if (data is null)
             {
                 return new SaveLoadResult(null, "Plik zapisu jest pusty.");
@@ -90,6 +129,14 @@ public sealed class JsonFileSaveStore : ISaveStore
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
             return new SaveLoadResult(null, $"Nie udało się odczytać zapisu: {ex.Message}");
+        }
+    }
+
+    private static void ValidateSlot(int slot)
+    {
+        if (slot < ISaveStore.AutoSlot || slot > ISaveStore.SlotCount)
+        {
+            throw new ArgumentOutOfRangeException(nameof(slot), slot, "Nieznany slot zapisu.");
         }
     }
 }

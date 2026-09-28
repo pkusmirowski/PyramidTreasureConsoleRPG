@@ -68,8 +68,14 @@ public sealed class CombatEngine
             throw new ArgumentException("Walka wymaga przynajmniej jednego wroga.", nameof(enemies));
         }
 
+        foreach (Enemy enemy in this.enemies)
+        {
+            enemy.Scale(Hero.EnemyScalePercent);
+        }
+
         Hero.ClearCombatState();
         Hero.ApplyNextFightBuff();
+        Hero.Stats.Fights++;
     }
 
     public Hero Hero { get; }
@@ -421,6 +427,13 @@ public sealed class CombatEngine
         killed.Add(enemy.Definition);
         int gold = enemy.Gold * (100 + Hero.GoldBonusPercent) / 100;
         Hero.Gold += gold;
+        Hero.Stats.Kills++;
+        Hero.Stats.GoldEarned += gold;
+        if (enemy.IsBoss)
+        {
+            Hero.Stats.BossKills++;
+        }
+
         int before = Hero.Level;
         int gained = enemy.Exp > 0 ? Hero.AddExp(enemy.Exp) : 0;
         events.Add(new EnemyDefeatedEvent(enemy, gold, enemy.Exp, gained, before + gained));
