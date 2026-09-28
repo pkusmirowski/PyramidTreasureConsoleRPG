@@ -229,6 +229,8 @@ def decide(text):
         return pick(opts, "Wyjdź")
     if "Witaj w tawernie" in last:
         opts = options_of(last, "Witaj w tawernie")
+        if state.get("want_loan") or state.get("want_repay"):
+            return pick(opts, "kasyna")
         if state["want_bar"]:
             state["want_bar"] = False
             return pick(opts, "Podejdź do baru")
@@ -254,6 +256,19 @@ def decide(text):
                         return str(n)
         return str(len(opts))
     if "Co podać?" in last: return str(len(options_of(last, "Co podać?")))
+    if "W co grasz?" in last:
+        opts = options_of(last, "W co grasz?")
+        if state.pop("want_loan", False) or state.pop("want_repay", False):
+            return pick(opts, "Lichwiarz")
+        return str(len(opts))
+    if "Ile pożyczasz" in last:
+        state["debt"] = 150; state["gold"] += 150
+        return "150"
+    if "Ile spłacasz" in last:
+        m = re.search(r"Ile spłacasz \(0-(\d+)\)", last)
+        amount = int(m.group(1)) if m else 0
+        state["gold"] -= amount; state["debt"] = 0
+        return str(amount)
     if "Grasz dalej?" in last: return "2"
     if "Ile stawiasz?" in last: return "0"
     if "Co chcesz zrobić?" in last:
@@ -289,7 +304,13 @@ def decide(text):
                     state["want_bar"] = True
                     return pick(opts, "Tawerna")
                 return pick(opts, GIVER_PLACE[giver])
-        # 2. leczenie
+        # 2. leczenie (bieda: lichwiarz w kasynie)
+        if state["hp"] * 2 < state["maxhp"] and state["gold"] < 10 and state["potions"] == 0 and "Tawerna" in last and not state.get("debt"):
+            state["want_loan"] = True
+            return pick(opts, "Tawerna")
+        if state.get("debt") and state["gold"] >= state["debt"] + 200 and "Tawerna" in last:
+            state["want_repay"] = True
+            return pick(opts, "Tawerna")
         if state["hp"] * 2 < state["maxhp"]:
             if "Tawerna" in last and state["gold"] >= 10: return pick(opts, "Tawerna")
             if state["gold"] < 25 and state["potions"] == 0 and state["hp"] * 4 >= state["maxhp"]:
