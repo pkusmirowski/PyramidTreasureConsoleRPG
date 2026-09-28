@@ -73,4 +73,58 @@ public class ScreenTests
         Assert.Equal(CombatStatus.Victory, status);
         Assert.Contains("Celnik", io.Output);
     }
+
+    [Fact]
+    public void ShopScreen_SellsGearFromBag()
+    {
+        Hero hero = Hero.Create(HeroClass.Warrior, "Test");
+        Item axe = ItemCatalog.Get(ItemId.MercenaryAxe);
+        hero.AddGear(axe);
+        int gold = hero.Gold;
+        // 3: sprzedaj, 1: topór, (torba pusta -> powrót), 4: wyjdź
+        var io = new ScriptedGameIO("3", "1", "4");
+        new ShopScreen(io, new SeededRandomSource(1), new GameSettings()).Run(hero);
+
+        Assert.Empty(hero.Gear);
+        Assert.Equal(gold + axe.SellPrice, hero.Gold);
+        Assert.Contains(io.Output, line => line.StartsWith("Sprzedano: Topór najemnika", StringComparison.Ordinal));
+        Assert.Contains(io.Output, line => line.Contains("Torba jest pusta", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void InventoryScreen_DrinksWhiskyAtFullHealth_AndLotusAddicts()
+    {
+        Hero hero = Hero.Create(HeroClass.Assassin, "Test");
+        hero.AddPotion(Potion.Small);
+        hero.AddPotion(Potion.Whisky);
+        hero.AddPotion(Potion.Lotus);
+        // Przy pełnym HP lista to tylko używki: 1 whisky, 2 lotos. 1,1: whisky; 1,1: lotos (już pierwszy); 3: wyjdź
+        var io = new ScriptedGameIO("1", "1", "1", "1", "3");
+        new InventoryScreen(io).Run(hero);
+
+        Assert.Contains(io.Output, line => line.StartsWith("Whisky pali", StringComparison.Ordinal));
+        Assert.Contains(io.Output, line => line.StartsWith("Dym lotosu", StringComparison.Ordinal));
+        Assert.Equal(PotionKind.Lotus, hero.NextFightBuff);
+        Assert.Equal(1, hero.Addiction);
+        Assert.Equal(1, hero.CountPotions(PotionKind.Small));
+        Assert.Equal(0, hero.CountPotions(PotionKind.Whisky));
+    }
+
+    [Fact]
+    public void EndingScreen_BrotherhoodAndAshEndings()
+    {
+        Hero vowed = Hero.Create(HeroClass.Archer, "Test");
+        vowed.SetFlag("neferet:vow");
+        var io = new ScriptedGameIO("2");
+        Assert.Equal(EndingKind.GiveToBrotherhood, new EndingScreen(io).Run(vowed));
+        Assert.Contains(io.Output, line => line.Contains("OFIARA BRACTWA", StringComparison.Ordinal));
+        Assert.True(vowed.HasFlag("ending:GiveToBrotherhood"));
+
+        Hero mapped = Hero.Create(HeroClass.Warrior, "Test");
+        mapped.SetFlag("map:nomads");
+        var io2 = new ScriptedGameIO("3");
+        Assert.Equal(EndingKind.Destroy, new EndingScreen(io2).Run(mapped));
+        Assert.Contains(io2.Output, line => line.Contains("POPIÓŁ POD TRONEM", StringComparison.Ordinal));
+        Assert.Contains(io2.Output, line => line.Contains("Podsumowanie wyprawy: Popiół pod tronem", StringComparison.Ordinal));
+    }
 }
