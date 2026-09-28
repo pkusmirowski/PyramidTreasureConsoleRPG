@@ -331,7 +331,11 @@ def decide(text):
         if "Tawerna" in last and state["gold"] >= 150 and state["menus"] - state.get("last_npc_trip", -999) > 60:
             state["last_npc_trip"] = state["menus"]; state["npc_trip"] = True
             return pick(opts, "Tawerna")
-        # 3. zakupy
+        # 3. zakupy (przed drogą zawsze choć jedna mikstura)
+        if "Sklep" in last and state["potions"] == 0 and state["gold"] >= 45 and not state.get("potion_stop"):
+            state["potion_stop"] = True; state["shop_mode"] = "gear"
+            return pick(opts, "Sklep")
+        if state["potions"] > 0: state["potion_stop"] = False
         if "Sklep" in last and (state["gold"] >= 130 and state["potions"] < 4 or state["gold"] >= 200 and not state.get("shopped_at") == (region, state["gold"] // 200)):
             state["shopped_at"] = (region, state["gold"] // 200)
             return pick(opts, "Sklep")

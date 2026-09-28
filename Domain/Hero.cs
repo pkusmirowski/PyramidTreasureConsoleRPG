@@ -397,8 +397,8 @@ public sealed class Hero
 
     public IReadOnlyList<AttackOption> GetAttackOptions() => new[]
     {
-        new AttackOption(AttackKind.Normal, Definition.NormalAttackName, $"{MinDmg}-{MaxDmg} obrażeń, trafienie {HitChance + 20:0}%, krytyk {CritChance:0}%"),
-        new AttackOption(AttackKind.Strong, Definition.StrongAttackName, $"{MinDmg * 3 / 2}-{MaxDmg * 3 / 2} obrażeń, trafienie {HitChance:0}%, krytyk {Math.Min(75, CritChance * 2):0}%"),
+        new AttackOption(AttackKind.Normal, Definition.NormalAttackName, $"{MinDmg}-{MaxDmg} obrażeń, trafienie {CombatMath.ClampChance(HitChance + 20):0}%, krytyk {CritChance:0}%"),
+        new AttackOption(AttackKind.Strong, Definition.StrongAttackName, $"{MinDmg * 3 / 2}-{MaxDmg * 3 / 2} obrażeń, trafienie {CombatMath.ClampChance(HitChance):0}%, krytyk {Math.Min(75, CritChance * 2):0}%"),
         new AttackOption(AttackKind.Special, Definition.SpecialAttackName, SpecialAttackDescription()),
     };
 
