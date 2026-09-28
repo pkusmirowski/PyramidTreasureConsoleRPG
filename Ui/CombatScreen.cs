@@ -159,7 +159,7 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
                 case EnemyAttackEvent attack:
                     if (attack.Result.Hit)
                     {
-                        io.ShowError($"{attack.Enemy.Name} atakuje! Otrzymujesz {attack.Result.Damage} obrażeń. Masz {engine.Hero.Hp}/{engine.Hero.MaxHp} HP.");
+                        io.ShowError($"{attack.Enemy.Name} atakuje! Otrzymujesz {attack.Result.Damage} obrażeń. Masz {attack.HeroHp}/{engine.Hero.MaxHp} HP.");
                     }
                     else
                     {
@@ -169,7 +169,7 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
                     io.Pause(500);
                     break;
                 case PotionDrunkEvent potion:
-                    io.ShowSuccess(InventoryScreen.DrinkMessage(engine.Hero, potion.Kind, potion.Healed));
+                    io.ShowSuccess(InventoryScreen.DrinkMessage(engine.Hero, potion.Kind, potion.Healed, potion.HeroHp));
                     break;
                 case FleeAttemptEvent flee:
                     if (flee.Success)

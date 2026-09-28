@@ -34,7 +34,7 @@ public sealed class InventoryScreen(IGameIO io)
         }
     }
 
-    public static string DrinkMessage(Hero hero, PotionKind kind, int healed)
+    public static string DrinkMessage(Hero hero, PotionKind kind, int healed, int? hpAfter = null)
     {
         ArgumentNullException.ThrowIfNull(hero);
         return Potion.Create(kind).Effect switch
@@ -42,7 +42,7 @@ public sealed class InventoryScreen(IGameIO io)
             PotionUse.Whisky => "Whisky pali w gardle. W następnej walce ręka będzie pewniejsza, ale nogi wolniejsze.",
             PotionUse.Lotus => $"Dym lotosu. Świat mięknie, ból znika. Następna walka będzie łatwa. Dawek: {hero.Addiction}.",
             PotionUse.Antidote => "Gorycz odtrutki wypala truciznę i głód.",
-            _ => $"Wypiłeś miksturę i odzyskałeś {healed} HP. Masz teraz {hero.Hp}/{hero.MaxHp} HP.",
+            _ => $"Wypiłeś miksturę i odzyskałeś {healed} HP. Masz teraz {hpAfter ?? hero.Hp}/{hero.MaxHp} HP.",
         };
     }
 

@@ -107,8 +107,9 @@ def decide(text):
     parse(text)
     last = text
     if "Czy masz ukończone 18 lat?" in last: return "1"
+    if "Co robisz z Graalem?" in last: state["finished"] = True
     if "Menu główne" in last:
-        if "Dziękujemy za grę" in text or state["deaths"] > 0: return "4"
+        if state.get("finished") or state["deaths"] > 0: return "4"
         return "1"
     if "Podaj swoje imię" in last: return "Tester"
     if "Wybierz klasę" in last: return CLASS
@@ -126,7 +127,7 @@ def decide(text):
         return "1"
     if "Nowa gra+?" in last:
         if os.environ.get("PLAYBOT_NGPLUS") and not state.get("ngplus_done"):
-            state["ngplus_done"] = True; state["saved"] = False; state["locked"].clear(); state["pending"].clear()
+            state["ngplus_done"] = True; state["finished"] = False; state["saved"] = False; state["locked"].clear(); state["pending"].clear()
             state["owned"].clear(); state["equipped"].clear(); state["went_temple"] = False
             return "1"
         return "2"
@@ -149,9 +150,9 @@ def decide(text):
             if m and (best is None or int(m.group(1)) < best[0]): best = (int(m.group(1)), n)
         return str(best[1]) if best else "1"
     if "Którą miksturę wypić?" in last:
-        for n, t in options_of(last, "Którą miksturę wypić?"):
+        for n, t in reversed(options_of(last, "Którą miksturę wypić?")):
             m = re.search(r"masz: (\d+)", t)
-            if m and int(m.group(1)) > 0: return str(n)
+            if m and int(m.group(1)) > 0 and "lecz" in t: return str(n)
         return str(len(options_of(last, "Którą miksturę wypić?")))
     if "Co robisz?" in last and "Co chcesz zrobić?" not in last:
         opts = options_of(last, "Co robisz?")

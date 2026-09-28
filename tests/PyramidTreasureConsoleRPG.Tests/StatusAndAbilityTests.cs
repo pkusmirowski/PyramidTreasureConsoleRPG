@@ -141,4 +141,36 @@ public class StatusAndAbilityTests
         Assert.Equal(100 + (monk.MaxHp / 10), monk.Hp);
         Assert.True(hero.HitChance < CombatMath.ClampChance(95) || hero.Statuses.Has(StatusKind.Fear));
     }
+
+    [Fact]
+    public void ShieldBash_CannotStunTwiceInARow()
+    {
+        Hero hero = Hero.Create(HeroClass.Warrior, "Test");
+        while (hero.Level < 12)
+        {
+            hero.AddExp(hero.ExpToNextLevel);
+        }
+
+        // Trzech templariuszy, kostka zawsze 0: każdy blok tarczą (20%) wchodzi, każdy cios trafia.
+        var engine = new CombatEngine(hero, [EnemyCatalog.Templar.Spawn(), EnemyCatalog.Templar.Spawn(), EnemyCatalog.Templar.Spawn()], new ScriptedRandomSource(Enumerable.Repeat(0, 400).ToArray()));
+        engine.Begin();
+        for (int turn = 0; turn < 3 && engine.Status == CombatStatus.InProgress; turn++)
+        {
+            IReadOnlyList<CombatEvent> events = engine.HeroGuard();
+            int stunsLost = events.Count(e => e is StunnedEvent { OnHero: true });
+            Assert.True(stunsLost <= 1, "bohater nie może stracić dwóch tur z rzędu przez ogłuszenie");
+        }
+    }
+
+    [Fact]
+    public void EnemyAttackEvent_CarriesHpAfterEachHit()
+    {
+        Hero hero = Hero.Create(HeroClass.Warrior, "Test");
+        var engine = new CombatEngine(hero, [EnemyCatalog.Thief.Spawn(), EnemyCatalog.Thief.Spawn()], new ScriptedRandomSource(99, 99, 99, 99, 99, 99, 99, 99));
+        IReadOnlyList<CombatEvent> events = engine.HeroGuard();
+        var attacks = events.OfType<EnemyAttackEvent>().Where(a => a.Result.Hit).ToList();
+        Assert.True(attacks.Count >= 2);
+        Assert.True(attacks[0].HeroHp > attacks[^1].HeroHp);
+        Assert.Equal(hero.Hp, attacks[^1].HeroHp);
+    }
 }

@@ -15,9 +15,10 @@ public sealed record FightStartedEvent(IReadOnlyList<Enemy> Enemies, bool HeroAc
 
 public sealed record StrikeEvent(Enemy Enemy, Strike Strike) : CombatEvent;
 
-public sealed record EnemyAttackEvent(Enemy Enemy, EnemyAttackResult Result) : CombatEvent;
+/// <summary>Atak wroga; HeroHp to zdrowie bohatera tuż po tym ciosie (ekran renderuje zdarzenia po całej turze).</summary>
+public sealed record EnemyAttackEvent(Enemy Enemy, EnemyAttackResult Result, int HeroHp) : CombatEvent;
 
-public sealed record PotionDrunkEvent(PotionKind Kind, int Healed) : CombatEvent;
+public sealed record PotionDrunkEvent(PotionKind Kind, int Healed, int HeroHp) : CombatEvent;
 
 public sealed record FleeAttemptEvent(bool Success) : CombatEvent;
 
@@ -79,6 +80,9 @@ public sealed class CombatEngine
     }
 
     public Hero Hero { get; }
+
+    /// <summary>Po straconej turze bohater nie da się ogłuszyć ponownie, dopóki sam nie zadziała (bez pętli ogłuszeń).</summary>
+    private bool heroStunImmune;
 
     /// <summary>Wszyscy wrogowie, także pokonani i zbiegli.</summary>
     public IReadOnlyList<Enemy> Enemies => enemies;
@@ -162,7 +166,7 @@ public sealed class CombatEngine
     {
         EnsureInProgress();
         int? healed = Hero.DrinkPotion(kind) ?? throw new InvalidOperationException("Bohater nie ma takiej mikstury.");
-        List<CombatEvent> events = [new PotionDrunkEvent(kind, healed.Value)];
+        List<CombatEvent> events = [new PotionDrunkEvent(kind, healed.Value, Hero.Hp)];
         FinishHeroTurn(events);
         return events;
     }
@@ -205,6 +209,7 @@ public sealed class CombatEngine
     /// <summary>Po akcji bohatera: zwycięstwo albo tury wrogów, a potem początek kolejnej tury bohatera.</summary>
     private void FinishHeroTurn(List<CombatEvent> events)
     {
+        heroStunImmune = false;
         if (CheckVictory(events))
         {
             return;
@@ -254,6 +259,7 @@ public sealed class CombatEngine
         if (stunned)
         {
             events.Add(new StunnedEvent(Hero.Name, true));
+            heroStunImmune = true;
             EnemiesTurn(events);
             if (Status == CombatStatus.InProgress && !CheckVictory(events))
             {
@@ -308,7 +314,7 @@ public sealed class CombatEngine
 
         double multiplier = AttackMultiplier(enemy, events);
         EnemyAttackResult result = enemy.Attack(Hero, rng, multiplier);
-        events.Add(new EnemyAttackEvent(enemy, result));
+        events.Add(new EnemyAttackEvent(enemy, result, Hero.Hp));
         if (result.Hit)
         {
             OnEnemyHit(enemy, events);
@@ -402,7 +408,7 @@ public sealed class CombatEngine
 
                 break;
             case EnemyAbility.ShieldBash when rng.Chance(20):
-                if (Hero.Statuses.Add(StatusKind.Stun, 1))
+                if (!heroStunImmune && Hero.Statuses.Add(StatusKind.Stun, 1))
                 {
                     events.Add(new StatusAppliedEvent(Hero.Name, true, StatusKind.Stun, 1));
                 }
