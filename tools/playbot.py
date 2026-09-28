@@ -190,7 +190,7 @@ def decide(text):
         state["last_target"] = target
         choice = pick(opts, target, avoid=("tu jesteś",))
         label = [t for n, t in opts if str(n) == choice][0] if choice else ""
-        if choice and "–" not in label.split(")")[-1]:
+        if choice and " – " not in label.split(")", 1)[-1]:
             return choice
         if "brak złota" not in label:
             state["locked"].add(target)
