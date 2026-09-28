@@ -296,7 +296,7 @@ def decide(text):
         state["gold"] -= amount; state["debt"] = 0
         return str(amount)
     if "Grasz dalej?" in last:
-        state["tour_bet"] = False
+        state["tour_bet"] = bool(state.get("tour_games"))
         return "2"
     if "Ile stawiasz?" in last: return "1" if TOUR and state.get("tour_bet") else "0"
     if "Co chcesz zrobić?" in last:
