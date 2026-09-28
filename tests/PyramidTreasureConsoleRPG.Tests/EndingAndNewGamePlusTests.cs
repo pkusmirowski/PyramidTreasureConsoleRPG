@@ -203,7 +203,7 @@ public sealed class EndingAndNewGamePlusTests : IDisposable
         plus.Stats.Kills = 1;
 
         SaveData data = plus.ToSaveData();
-        Assert.Equal(6, SaveData.CurrentVersion);
+        Assert.True(SaveData.CurrentVersion >= 6);
         Assert.Equal(SaveData.CurrentVersion, data.Version);
         Hero loaded = Hero.FromSaveData(data);
         Assert.Equal(1, loaded.NewGamePlus);

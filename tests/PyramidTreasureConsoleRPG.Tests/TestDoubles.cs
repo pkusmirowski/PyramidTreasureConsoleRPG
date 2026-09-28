@@ -38,6 +38,16 @@ public sealed class ScriptedGameIO : IGameIO
 
     public int NarrationDelayMs { get; set; }
 
+    public bool ArtEnabled { get; set; } = true;
+
+    public List<string> ArtShown { get; } = new();
+
+    public void ShowArt(AsciiArt art)
+    {
+        ArtShown.Add(art.Name);
+        Output.Add($"[art: {art.Name}]");
+    }
+
     public string AllOutput => string.Join("\n", Output);
 
     public void Clear()

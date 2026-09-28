@@ -18,6 +18,9 @@ public sealed class GameSettings
     /// <summary>Ostrzejszy język w dialogach.</summary>
     public bool ProfanityEnabled { get; set; } = true;
 
+    /// <summary>Rysunki ASCII w konsoli.</summary>
+    public bool ArtEnabled { get; set; } = true;
+
     [JsonIgnore]
     public int NarrationDelayMs => TextSpeed switch
     {

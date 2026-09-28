@@ -435,7 +435,7 @@ public sealed class CombatEngine
         }
 
         killed.Add(enemy.Definition);
-        int gold = enemy.Gold * (100 + Hero.GoldBonusPercent) / 100;
+        int gold = enemy.Gold * (100 + Hero.GoldBonusPercent) / 100 * Hero.RewardPercent / 100;
         Hero.Gold += gold;
         Hero.Stats.Kills++;
         Hero.Stats.GoldEarned += gold;
@@ -445,8 +445,9 @@ public sealed class CombatEngine
         }
 
         int before = Hero.Level;
-        int gained = enemy.Exp > 0 ? Hero.AddExp(enemy.Exp) : 0;
-        events.Add(new EnemyDefeatedEvent(enemy, gold, enemy.Exp, gained, before + gained));
+        int exp = enemy.Exp * Hero.RewardPercent / 100;
+        int gained = exp > 0 ? Hero.AddExp(exp) : 0;
+        events.Add(new EnemyDefeatedEvent(enemy, gold, exp, gained, before + gained));
         foreach (LootEntry entry in enemy.Definition.LootTable)
         {
             if (!rng.Chance(entry.ChancePercent))

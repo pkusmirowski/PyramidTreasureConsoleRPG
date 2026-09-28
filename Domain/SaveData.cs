@@ -4,7 +4,7 @@ namespace PyramidTreasureConsoleRPG.Domain;
 /// Kolekcje są opcjonalne, żeby starsze zapisy (bez tych pól) dało się wczytać.</summary>
 public sealed class SaveData
 {
-    public const int CurrentVersion = 6;
+    public const int CurrentVersion = 7;
 
     /// <summary>Najstarsza wersja, którą umiemy wczytać (z migracją).</summary>
     public const int OldestSupportedVersion = 2;
@@ -76,6 +76,9 @@ public sealed class SaveData
     public int NewGamePlus { get; init; }
 
     public int? Ending { get; init; }
+
+    /// <summary>0 = brak w zapisie (starsze wersje) = normalny.</summary>
+    public int Difficulty { get; init; }
 
     /// <summary>Ustawiane przez magazyn zapisu w chwili zapisu.</summary>
     public DateTime SavedAt { get; set; }

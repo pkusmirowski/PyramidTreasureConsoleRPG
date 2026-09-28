@@ -19,6 +19,24 @@ public sealed class SpectreGameIO : IGameIO
 
     public int NarrationDelayMs { get; set; } = 1500;
 
+    public bool ArtEnabled { get; set; } = true;
+
+    public void ShowArt(AsciiArt art)
+    {
+        ArgumentNullException.ThrowIfNull(art);
+        if (!ArtEnabled)
+        {
+            return;
+        }
+
+        foreach (ArtLine line in art.Lines)
+        {
+            AnsiConsole.MarkupLine($"[{ToMarkup(line.Color)}]{Markup.Escape(line.Text)}[/]");
+        }
+
+        AnsiConsole.WriteLine();
+    }
+
     public void Clear() => AnsiConsole.Clear();
 
     public void WriteLine(string text = "") => AnsiConsole.WriteLine(text);

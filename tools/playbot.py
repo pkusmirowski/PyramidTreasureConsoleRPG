@@ -113,6 +113,7 @@ def decide(text):
         return "1"
     if "Podaj swoje imię" in last: return "Tester"
     if "Wybierz klasę" in last: return CLASS
+    if "Poziom trudności:" in last: return os.environ.get("PLAYBOT_DIFFICULTY", "2")
     if "Wyruszyć?" in last or "Wejść?" in last:
         desperate = state["gold"] < 25 and state["potions"] == 0 and state["hp"] * 4 >= state["maxhp"]
         return "1" if ("Wejść?" in last or state["hp"] * 10 >= state["maxhp"] * 7 or state["potions"] > 0 or desperate) else "2"

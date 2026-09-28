@@ -10,6 +10,24 @@ public sealed class ConsoleGameIO : IGameIO
 
     public int NarrationDelayMs { get; set; } = 1500;
 
+    public bool ArtEnabled { get; set; } = true;
+
+    public void ShowArt(AsciiArt art)
+    {
+        ArgumentNullException.ThrowIfNull(art);
+        if (!ArtEnabled)
+        {
+            return;
+        }
+
+        foreach (ArtLine line in art.Lines)
+        {
+            WriteLine(line.Text, line.Color);
+        }
+
+        WriteLine();
+    }
+
     public void Clear() => ConsolePrompts.TryClear();
 
     public void WriteLine(string text = "") => Console.WriteLine(text);

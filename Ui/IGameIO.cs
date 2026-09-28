@@ -9,6 +9,12 @@ public interface IGameIO
     /// <summary>Czas pauzy po każdej linii narracji (ms). 0 = brak pauz.</summary>
     int NarrationDelayMs { get; set; }
 
+    /// <summary>Czy pokazywać rysunki ASCII (ustawienie gracza).</summary>
+    bool ArtEnabled { get; set; }
+
+    /// <summary>Rysunek ASCII w kolorach; nic nie robi, gdy grafika jest wyłączona.</summary>
+    void ShowArt(AsciiArt art);
+
     void Clear();
 
     void WriteLine(string text = "");

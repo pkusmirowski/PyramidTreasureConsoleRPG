@@ -11,6 +11,7 @@ public sealed class TavernScreen(IGameIO io, BarScreen bar, CasinoScreen casino,
     public CombatStatus? Run(Hero hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
+        io.ShowArt(ArtCatalog.Tavern);
         while (true)
         {
             io.Header("Tawerna \"Pod Sokołem\"");

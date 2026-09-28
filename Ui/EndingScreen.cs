@@ -8,6 +8,7 @@ public sealed class EndingScreen(IGameIO io)
     public EndingKind Run(Hero hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
+        io.ShowArt(ArtCatalog.Grail);
         io.Narrate(Dialogues.Ending);
         io.WriteLine();
 

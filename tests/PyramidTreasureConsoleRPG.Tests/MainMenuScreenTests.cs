@@ -112,12 +112,14 @@ public sealed class MainMenuScreenTests : IDisposable
         var saves = new JsonFileSaveStore(folder);
         var settings = new GameSettings { AgeConfirmed = true, ProfanityEnabled = true };
         var store = new FakeSettingsStore();
-        // 3: ustawienia, 4: wulgaryzmy, 3: prędkość tekstu, 5: wróć, 4: wyjdź
-        var io = new ScriptedGameIO("3", "4", "3", "5", "4");
+        // 3: ustawienia, 4: wulgaryzmy, 3: prędkość tekstu, 5: rysunki, 6: wróć, 4: wyjdź
+        var io = new ScriptedGameIO("3", "4", "3", "5", "6", "4");
         Build(io, saves, settings, store).Run();
 
         Assert.False(settings.ProfanityEnabled);
         Assert.Equal(3, settings.TextSpeed);
+        Assert.False(settings.ArtEnabled);
+        Assert.False(io.ArtEnabled);
         Assert.Same(settings, store.Saved);
         Assert.Contains(io.Output, line => line.Contains("Wulgarny język w dialogach: wyłączony", StringComparison.Ordinal));
     }
@@ -133,5 +135,20 @@ public sealed class MainMenuScreenTests : IDisposable
         Assert.False(settings.AgeConfirmed);
         Assert.Null(store.Saved);
         Assert.DoesNotContain("Menu główne", io.MenusShown);
+    }
+
+    [Fact]
+    public void NewGame_AsksForClassAndDifficulty_ShowsArt()
+    {
+        var settings = new GameSettings { AgeConfirmed = true };
+        // 1: nowa gra, imię, 2: łucznik, 3: trudny, 10: wróć do menu, 2: tak, 4: wyjdź
+        var io = new ScriptedGameIO("1", "Ela", "2", "3", "10", "2", "4");
+        Build(io, new JsonFileSaveStore(folder), settings, new FakeSettingsStore()).Run();
+
+        Assert.Contains("Poziom trudności:", io.MenusShown);
+        Assert.Contains(io.Output, line => line.Contains("Ela, Łucznik (poziom trudności: Trudny)", StringComparison.Ordinal));
+        Assert.Contains("Tytuł", io.ArtShown);
+        Assert.Contains("Łucznik", io.ArtShown);
+        Assert.Contains("Port Sokoła", io.ArtShown);
     }
 }

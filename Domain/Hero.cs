@@ -112,7 +112,16 @@ public sealed class Hero
     /// <summary>Wybrane zakończenie (po pokonaniu Ra).</summary>
     public EndingKind? Ending { get; set; }
 
-    public int EnemyScalePercent => 100 + (30 * NewGamePlus);
+    /// <summary>Poziom trudności wybrany przy tworzeniu bohatera (nowa gra+ go zachowuje).</summary>
+    public Difficulty Difficulty { get; private set; } = Difficulty.Normal;
+
+    public DifficultyDefinition DifficultyDefinition => DifficultyCatalog.Get(Difficulty);
+
+    /// <summary>Mnożnik statystyk wrogów: trudność razy cykl nowej gry+ (+30% na cykl).</summary>
+    public int EnemyScalePercent => DifficultyDefinition.EnemyPercent * (100 + (30 * NewGamePlus)) / 100;
+
+    /// <summary>Mnożnik złota i doświadczenia z walk (trudność).</summary>
+    public int RewardPercent => DifficultyDefinition.RewardPercent;
 
     /// <summary>Dzień wyprawy (podróże i eksploracja go zwiększają).</summary>
     public int Day { get; set; } = 1;
@@ -652,9 +661,11 @@ public sealed class Hero
         Stats = Stats.ToSaveData(),
         NewGamePlus = NewGamePlus,
         Ending = Ending is null ? null : (int)Ending,
+        Difficulty = (int)Difficulty,
     };
 
-    public static Hero Create(HeroClass heroClass, string name) => new(HeroClasses.Get(heroClass), name);
+    public static Hero Create(HeroClass heroClass, string name, Difficulty difficulty = Difficulty.Normal) =>
+        new(HeroClasses.Get(heroClass), name) { Difficulty = Enum.IsDefined(difficulty) ? difficulty : Difficulty.Normal };
 
     public const int NewGamePlusStartLevel = 5;
 
@@ -668,6 +679,7 @@ public sealed class Hero
         var hero = new Hero(previous.Definition, previous.Name)
         {
             NewGamePlus = previous.NewGamePlus + 1,
+            Difficulty = previous.Difficulty,
         };
         while (hero.Level < NewGamePlusStartLevel)
         {
@@ -722,7 +734,7 @@ public sealed class Hero
             throw new InvalidDataException($"Nieznana klasa postaci: {data.Class}.");
         }
 
-        Hero hero = Create((HeroClass)data.Class, string.IsNullOrWhiteSpace(data.Name) ? "Bezimienny" : data.Name);
+        Hero hero = Create((HeroClass)data.Class, string.IsNullOrWhiteSpace(data.Name) ? "Bezimienny" : data.Name, data.Difficulty == 0 ? Difficulty.Normal : (Difficulty)data.Difficulty);
         hero.Level = Math.Clamp(data.Level, 1, CombatMath.MaxLevel);
         hero.Vit = Math.Max(1, data.Vit);
         hero.Str = Math.Max(0, data.Str);

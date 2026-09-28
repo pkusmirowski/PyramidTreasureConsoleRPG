@@ -117,6 +117,7 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
             switch (e)
             {
                 case FightStartedEvent started:
+                    io.ShowArt(ArtCatalog.ForEnemy(started.Enemies.OrderByDescending(x => x.IsBoss).ThenByDescending(x => x.MaxHp).First().Definition));
                     io.WriteLine("Przeciwnicy: " + string.Join(", ", started.Enemies.Select(x => $"{x.Name} ({x.Hp} HP, {x.MinDmg}-{x.MaxDmg} obr.)")), ConsoleColor.Magenta);
                     io.WriteLine(started.HeroActsFirst ? "Jesteś szybszy – atakujesz pierwszy." : "Wrogowie są szybsi i atakują pierwsi!", ConsoleColor.DarkGray);
                     io.Pause(1200);

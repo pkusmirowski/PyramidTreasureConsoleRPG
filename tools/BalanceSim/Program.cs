@@ -2,9 +2,10 @@ using System.Globalization;
 
 // Symulacja balansu na prawdziwym CombatEngine: dla każdej klasy, regionu i puli wrogów
 // liczy szansę wygranej i średnią utratę HP na poziomach, na których gracz zwykle tam trafia.
-// Uruchomienie: dotnet run --project tools/BalanceSim -- [liczba prób] [cykl nowej gry+]
+// Uruchomienie: dotnet run --project tools/BalanceSim -- [liczba prób] [cykl nowej gry+] [trudność 1-3]
 int trials = args.Length > 0 ? int.Parse(args[0], CultureInfo.InvariantCulture) : 200;
 int newGamePlus = args.Length > 1 ? int.Parse(args[1], CultureInfo.InvariantCulture) : 0;
+Difficulty difficulty = args.Length > 2 ? (Difficulty)int.Parse(args[2], CultureInfo.InvariantCulture) : Difficulty.Normal;
 Console.WriteLine("klasa    lvl region         grupa                              | wygrane  strata  tury");
 foreach (HeroClass cls in Enum.GetValues<HeroClass>())
 {
@@ -21,7 +22,7 @@ foreach (HeroClass cls in Enum.GetValues<HeroClass>())
                 int turns = 0;
                 for (int t = 0; t < trials; t++)
                 {
-                    Hero hero = MakeHero(cls, level, newGamePlus);
+                    Hero hero = MakeHero(cls, level, newGamePlus, difficulty);
                     var engine = new CombatEngine(hero, group.Select(d => d.Spawn()), new SeededRandomSource(t + 1));
                     engine.Begin();
                     int startHp = hero.Hp;
@@ -64,9 +65,9 @@ static int[] LevelsFor(RegionDefinition region)
     return [start, Math.Min(20, start + 2), Math.Min(20, start + 5)];
 }
 
-static Hero MakeHero(HeroClass cls, int level, int newGamePlus)
+static Hero MakeHero(HeroClass cls, int level, int newGamePlus, Difficulty difficulty)
 {
-    Hero hero = Hero.Create(cls, "Sim");
+    Hero hero = Hero.Create(cls, "Sim", difficulty);
     for (int cycle = 0; cycle < newGamePlus; cycle++)
     {
         hero = Hero.NewGamePlusFrom(hero);

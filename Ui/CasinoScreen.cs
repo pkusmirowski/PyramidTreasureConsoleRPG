@@ -9,6 +9,7 @@ public sealed class CasinoScreen(IGameIO io, IRandomSource rng)
     public void Run(Hero hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
+        io.ShowArt(ArtCatalog.Casino);
         while (true)
         {
             io.Header("Kasyno");

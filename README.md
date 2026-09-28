@@ -25,6 +25,8 @@ Zapis gry i ustawienia trafiają do katalogu `GreatPyramidTreasureRPG_DataSave` 
 
 ## Rozgrywka
 
+- Trzy poziomy trudności wybierane przy tworzeniu bohatera: **Łatwy** (wrogowie −20 %, nagrody +25 %), **Normalny**, **Trudny** (wrogowie +25 %, nagrody −15 %). Nowa gra+ zachowuje wybrany poziom i dokłada swoje +30 % na cykl.
+- Kolorowe rysunki ASCII w konsoli: tytuł, portret klasy, każdy region po przybyciu, przeciwnik na początku walki (bossowie mają własne), tawerna, kasyno, śmierć i Graal. Wyłącza się je w ustawieniach.
 - Trzy klasy: **Wojownik** (dużo zdrowia, ciężkie ciosy, pancerz z poziomu), **Łucznik** (obrażenia ze zręczności, najlepsze uniki), **Asasyn** (najcelniejszy, najczęstsze krytyki). Każda ma trzy ataki, w tym jeden specjalny.
 - Świat to sześć regionów (Port Sokoła, Stare Miasto, Delta i las, Szlak Karawan, Oaza Siwa, Piramida Chufu). Podróż kosztuje dni i złoto, a po drodze zdarzają się walki i zdarzenia z wyborami.
 - Fabułę prowadzą zadania: główną linię daje barman w porcie, poboczne kapitan portu, przemytnik ze Starego Miasta i kapłanka z oazy. Zadania odblokowują kolejne regiony.
@@ -54,7 +56,7 @@ Zapis gry i ustawienia trafiają do katalogu `GreatPyramidTreasureRPG_DataSave` 
 | `Program.cs` | Rejestracja zależności (Microsoft.Extensions.DependencyInjection) i start gry |
 | `tests/` | Testy xUnit: wzory walki, awanse, silnik walki i kasyna, zapis/odczyt, ekrany z dublerem konsoli, reguły architektury |
 | `tools/` | `playbot.py` – bot grający przez potok od startu do napisu końcowego (smoke test w CI); `BalanceSim/` – symulacja balansu walk na prawdziwym silniku |
-| `docs/` | Analiza i code review, plan rozwoju |
+| `docs/` | Analiza i code review, plan rozwoju, checklista testu ręcznego na Windows |
 
 ## Testy
 

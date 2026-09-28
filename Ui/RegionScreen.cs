@@ -40,9 +40,16 @@ public sealed class RegionScreen(
     public SessionEnd Run(Hero hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
+        RegionId? shown = null;
         while (true)
         {
             RegionDefinition region = RegionCatalog.Get(hero.CurrentRegion);
+            if (shown != region.Id)
+            {
+                io.ShowArt(ArtCatalog.ForRegion(region.Id));
+                shown = region.Id;
+            }
+
             io.Header($"{region.Name}, dzień {hero.Day} – {hero.Name}, {hero.ClassName} {hero.Level} lvl, {hero.Hp}/{hero.MaxHp} HP, {hero.Gold} złota");
             var options = BuildMenu(hero, region);
             int choice = io.Menu("Co chcesz zrobić?", options.Select(o => o.Label).ToArray());
@@ -234,6 +241,7 @@ public sealed class RegionScreen(
 
     public SessionEnd Defeat()
     {
+        io.ShowArt(ArtCatalog.Death);
         io.ShowError("\nZostałeś pokonany. Twoja wyprawa kończy się w piachu, a Graal pozostaje legendą.");
         io.ShowInfo("Możesz wczytać ostatni zapis z menu głównego.");
         io.PressAnyKey();

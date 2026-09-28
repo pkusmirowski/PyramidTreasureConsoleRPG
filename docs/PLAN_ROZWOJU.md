@@ -214,6 +214,16 @@ złożoność, i systemy, które ją zbudują, są poniżej. Założenia: wdraż
 
 ---
 
+## Po mapie drogowej (WDROŻONE)
+
+- **Poziomy trudności** (`Domain/Difficulty.cs`, `Hero.Difficulty`): łatwy / normalny / trudny wybierany po klasie;
+  mnożnik statystyk wrogów i nagród, zapis v7, zachowany w nowej grze+.
+- **Grafika ASCII** (`Domain/Art.cs`, `IGameIO.ShowArt`): tytuł, klasy, regiony, portrety wrogów, tawerna, kasyno,
+  śmierć, Graal; kolory per linia w obu implementacjach konsoli; przełącznik w ustawieniach.
+- **Audyt grywalności**: testy ekranów kasyna, lichwiarza, sprzedaży, używek, zakończeń i menu głównego
+  (`CasinoScreenTests`, `MainMenuScreenTests`), smoke wszystkich klas w CI, checklista testu ręcznego
+  (`docs/CHECKLISTA_TESTU.md`).
+
 ## Kolejność i szacunek
 
 | Milestone | Zakres | Rozmiar | Kluczowe pliki |

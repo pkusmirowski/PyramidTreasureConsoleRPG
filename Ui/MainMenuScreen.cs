@@ -17,9 +17,12 @@ public sealed class MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore 
             return;
         }
 
+        io.ArtEnabled = settings.ArtEnabled;
+        io.NarrationDelayMs = settings.NarrationDelayMs;
         while (true)
         {
             io.Clear();
+            io.ShowArt(ArtCatalog.Title);
             io.WriteLine("PYRAMID TREASURE – konsolowe RPG", ConsoleColor.Cyan);
             string load = saves.AnyExists() ? "Wczytaj grę" : "Wczytaj grę (brak zapisu)";
             switch (io.Menu("Menu główne", "Nowa gra", load, "Ustawienia", "Wyjdź z gry"))
@@ -70,8 +73,11 @@ public sealed class MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore 
         io.Clear();
         int choice = io.Menu("Wybierz klasę:", HeroClasses.All.Select(c => $"{c.Name} – {c.Description}").ToArray());
         io.Clear();
-        Hero hero = Hero.Create(HeroClasses.All[choice - 1].Kind, name);
-        io.ShowSuccess($"{hero.Name}, {hero.ClassName}, rusza na wyprawę po Graala. Zacznij od rozmowy z barmanem w tawernie.");
+        int level = io.Menu("Poziom trudności:", DifficultyCatalog.All.Select(d => $"{d.Name} – {d.Description}").ToArray());
+        io.Clear();
+        Hero hero = Hero.Create(HeroClasses.All[choice - 1].Kind, name, DifficultyCatalog.All[level - 1].Kind);
+        io.ShowArt(ArtCatalog.ForClass(hero.HeroClass));
+        io.ShowSuccess($"{hero.Name}, {hero.ClassName} (poziom trudności: {hero.DifficultyDefinition.Name}), rusza na wyprawę po Graala. Zacznij od rozmowy z barmanem w tawernie.");
         return hero;
     }
 
@@ -162,6 +168,7 @@ public sealed class MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore 
                 $"Głośność muzyki: {settings.MusicVolume}%",
                 $"Prędkość tekstu: {GameSettings.TextSpeedName(settings.TextSpeed)}",
                 $"Wulgarny język w dialogach: {(settings.ProfanityEnabled ? "włączony" : "wyłączony")}",
+                $"Rysunki ASCII: {(settings.ArtEnabled ? "włączone" : "wyłączone")}",
                 "Wróć"))
             {
                 case 1:
@@ -178,6 +185,10 @@ public sealed class MainMenuScreen(IGameIO io, ISaveStore saves, ISettingsStore 
                     break;
                 case 4:
                     settings.ProfanityEnabled = !settings.ProfanityEnabled;
+                    break;
+                case 5:
+                    settings.ArtEnabled = !settings.ArtEnabled;
+                    io.ArtEnabled = settings.ArtEnabled;
                     break;
                 default:
                     SaveSettings();

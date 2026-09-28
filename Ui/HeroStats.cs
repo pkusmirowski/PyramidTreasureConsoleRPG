@@ -23,6 +23,7 @@ internal static class HeroStats
         ("Reputacja", string.Join(", ", Enum.GetValues<Faction>().Select(f => $"{RegionCatalog.FactionName(f)} {hero.GetReputation(f):+0;-0;0} ({Story.ReputationName(hero.GetReputation(f))})"))),
         ("Nałóg / dług", $"lotos {hero.Addiction} dawek{(hero.Craving ? " (głód!)" : "")} / {(hero.Debt > 0 ? $"{hero.Debt} g" : "brak")}"),
         ("Zadania", $"{hero.Quests.Count(q => q.Value.Status == QuestStatus.Active)} aktywne, {hero.Quests.Count(q => q.Value.Status == QuestStatus.Completed)} ukończone"),
+        ("Trudność", $"{hero.DifficultyDefinition.Name} (wrogowie {hero.EnemyScalePercent}%, nagrody {hero.RewardPercent}%)"),
         ("Wyprawa", $"{(hero.NewGamePlus > 0 ? $"nowa gra+ (cykl {hero.NewGamePlus}, wrogowie +{hero.EnemyScalePercent - 100}%), " : "")}{hero.Stats.Fights} walk, {hero.Stats.Kills} zabitych, {hero.Stats.DarkChoices} mrocznych i {hero.Stats.LightChoices} jasnych wyborów"),
     };
 
@@ -35,7 +36,7 @@ internal static class HeroStats
             : "pragmatycznie";
         return new[]
         {
-            ("Bohater", $"{hero.Name}, {hero.ClassName}, poziom {hero.Level}{(hero.NewGamePlus > 0 ? $", nowa gra+ {hero.NewGamePlus}" : "")}"),
+            ("Bohater", $"{hero.Name}, {hero.ClassName}, poziom {hero.Level}, trudność {hero.DifficultyDefinition.Name.ToLowerInvariant()}{(hero.NewGamePlus > 0 ? $", nowa gra+ {hero.NewGamePlus}" : "")}"),
             ("Dni w drodze", hero.Day.ToString(System.Globalization.CultureInfo.InvariantCulture)),
             ("Walki / zabici / bossowie", $"{s.Fights} / {s.Kills} / {s.BossKills}"),
             ("Złoto z łupów / na koniec", $"{s.GoldEarned} / {hero.Gold}"),
