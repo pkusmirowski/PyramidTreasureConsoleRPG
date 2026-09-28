@@ -92,18 +92,18 @@ public sealed class ConsoleGameIO : IGameIO
         ConsolePrompts.WaitForAnyKey();
     }
 
-    public void ShowCombatStatus(Hero hero, Enemy enemy)
+    public void ShowCombatStatus(Hero hero, IReadOnlyList<Enemy> enemies)
     {
         ArgumentNullException.ThrowIfNull(hero);
-        ArgumentNullException.ThrowIfNull(enemy);
+        ArgumentNullException.ThrowIfNull(enemies);
         WriteLine();
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.Write($"{hero.Name}: {hero.Hp}/{hero.MaxHp} HP");
-        Console.ForegroundColor = ConsoleColor.DarkGray;
-        Console.Write("   vs   ");
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine($"{enemy.Name}: {enemy.Hp}/{enemy.MaxHp} HP");
-        Console.ResetColor();
+        string heroStatus = hero.Statuses.All.Count > 0 ? $" [{hero.Statuses.Describe()}]" : string.Empty;
+        WriteLine($"{hero.Name}: {hero.Hp}/{hero.MaxHp} HP{heroStatus}", ConsoleColor.Green);
+        foreach (Enemy enemy in enemies)
+        {
+            string status = enemy.Statuses.All.Count > 0 ? $" [{enemy.Statuses.Describe()}]" : string.Empty;
+            WriteLine($"  {enemy.Name}: {enemy.Hp}/{enemy.MaxHp} HP{status}", ConsoleColor.Red);
+        }
     }
 
     public void ShowStats(Hero hero)

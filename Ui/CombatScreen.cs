@@ -1,6 +1,6 @@
 namespace PyramidTreasureConsoleRPG.Ui;
 
-/// <summary>Ekran walki: czyta decyzje gracza, renderuje zdarzenia z silnika.</summary>
+/// <summary>Ekran walki grupowej: cel, atak, obrona, mikstura, ucieczka; renderuje zdarzenia z silnika.</summary>
 public sealed class CombatScreen(IGameIO io, IRandomSource rng)
 {
     private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
@@ -36,7 +36,7 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
             io.WriteLine("Masz nowy talent do wyboru – zajrzyj do menu regionu.", ConsoleColor.Magenta);
         }
 
-        if (engine.Status != CombatStatus.InProgress && engine.Killed.Count > 0)
+        if (engine.Killed.Count > 0)
         {
             io.PressAnyKey();
         }
@@ -49,19 +49,32 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
         Hero hero = engine.Hero;
         while (true)
         {
-            io.ShowCombatStatus(hero, engine.CurrentEnemy);
+            io.ShowCombatStatus(hero, engine.Alive);
             IReadOnlyList<AttackOption> attacks = hero.GetAttackOptions();
             var options = attacks.Select(a => $"{a.Name} ({a.Description})").ToList();
+            options.Add("Obrona (połowa obrażeń, następny cios krytyczny)");
             options.Add($"Wypij miksturę (masz: {hero.Inventory.Count})");
-            options.Add(engine.CanFlee ? $"Uciekaj (szansa {hero.FleeChance}%)" : "Ucieczka niemożliwa – to boss");
+            options.Add(engine.CanFlee ? $"Uciekaj (szansa {hero.FleeChance}%)" : "Ucieczka niemożliwa – boss");
             int choice = io.Menu("Twoja tura:", [.. options]);
 
             if (choice <= attacks.Count)
             {
-                return engine.HeroAttack(attacks[choice - 1].Kind);
+                Enemy? target = ChooseTarget(engine);
+                if (target is null)
+                {
+                    io.Clear();
+                    continue;
+                }
+
+                return engine.HeroAttack(attacks[choice - 1].Kind, target);
             }
 
             if (choice == attacks.Count + 1)
+            {
+                return engine.HeroGuard();
+            }
+
+            if (choice == attacks.Count + 2)
             {
                 PotionKind? kind = InventoryScreen.ChoosePotion(io, hero);
                 if (kind.HasValue)
@@ -84,6 +97,19 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
         }
     }
 
+    private Enemy? ChooseTarget(CombatEngine engine)
+    {
+        IReadOnlyList<Enemy> alive = engine.Alive;
+        if (alive.Count == 1)
+        {
+            return alive[0];
+        }
+
+        var labels = alive.Select(e => $"{e.Name} – {e.Hp}/{e.MaxHp} HP" + (e.Statuses.All.Count > 0 ? $" [{e.Statuses.Describe()}]" : "")).Append("Wróć").ToArray();
+        int choice = io.Menu("Cel:", labels);
+        return choice > alive.Count ? null : alive[choice - 1];
+    }
+
     private void Render(IReadOnlyList<CombatEvent> events, CombatEngine engine)
     {
         foreach (CombatEvent e in events)
@@ -91,12 +117,44 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
             switch (e)
             {
                 case FightStartedEvent started:
-                    io.WriteLine($"Spotkałeś przeciwnika: {started.Enemy.Name} ({started.Enemy.Hp} HP, {started.Enemy.MinDmg}-{started.Enemy.MaxDmg} obrażeń). Przygotuj się do walki!", ConsoleColor.Magenta);
-                    io.WriteLine(started.HeroActsFirst ? "Jesteś szybszy – atakujesz pierwszy." : $"{started.Enemy.Name} jest szybszy i atakuje pierwszy!", ConsoleColor.DarkGray);
+                    io.WriteLine("Przeciwnicy: " + string.Join(", ", started.Enemies.Select(x => $"{x.Name} ({x.Hp} HP, {x.MinDmg}-{x.MaxDmg} obr.)")), ConsoleColor.Magenta);
+                    io.WriteLine(started.HeroActsFirst ? "Jesteś szybszy – atakujesz pierwszy." : "Wrogowie są szybsi i atakują pierwsi!", ConsoleColor.DarkGray);
                     io.Pause(1200);
                     break;
                 case StrikeEvent strike:
                     RenderStrike(strike);
+                    break;
+                case StatusAppliedEvent applied:
+                    io.WriteLine(applied.OnHero ? $"Dostajesz status: {StatusEffect.Name(applied.Kind)} ({applied.Turns} tur)." : $"{applied.TargetName}: {StatusEffect.Name(applied.Kind)} ({applied.Turns} tur).", ConsoleColor.DarkMagenta);
+                    break;
+                case StatusTickEvent tick:
+                    if (tick.Damage > 0)
+                    {
+                        io.WriteLine(tick.OnHero ? $"{StatusEffect.Name(tick.Kind)}: tracisz {tick.Damage} HP." : $"{tick.TargetName}: {StatusEffect.Name(tick.Kind)} zadaje {tick.Damage}.", ConsoleColor.DarkMagenta);
+                    }
+                    else if (tick.Expired && tick.Kind != StatusKind.Guard)
+                    {
+                        io.WriteLine($"{(tick.OnHero ? "Twój status" : tick.TargetName + ":")} {StatusEffect.Name(tick.Kind)} mija.", ConsoleColor.DarkGray);
+                    }
+
+                    break;
+                case StunnedEvent stunned:
+                    io.WriteLine(stunned.OnHero ? "Jesteś ogłuszony – tracisz turę!" : $"{stunned.TargetName} jest ogłuszony i traci turę.", ConsoleColor.DarkMagenta);
+                    break;
+                case GuardEvent:
+                    io.ShowInfo("Zasłaniasz się. Następny cios przeciwnika zada połowę obrażeń, a twój będzie krytyczny.");
+                    break;
+                case EnemyAbilityEvent ability:
+                    io.WriteLine(ability.Text, ConsoleColor.Magenta);
+                    break;
+                case EnemyFledEvent fled:
+                    io.ShowInfo($"{fled.Enemy.Name} rzuca się do ucieczki i znika w tłumie. Łup przepada.");
+                    break;
+                case SummonEvent summon:
+                    io.WriteLine($"{summon.Summoner.Name} wzywa: {string.Join(", ", summon.Summoned.Select(s => s.Name))}!", ConsoleColor.Magenta);
+                    break;
+                case ResurrectEvent resurrect:
+                    io.WriteLine($"{resurrect.Enemy.Name} rozsypuje się w pył... i zbiera z powrotem! Wstaje z {resurrect.Enemy.Hp} HP.", ConsoleColor.Magenta);
                     break;
                 case EnemyAttackEvent attack:
                     if (attack.Result.Hit)
@@ -108,7 +166,7 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
                         io.ShowInfo($"{attack.Enemy.Name} atakuje – unikasz ciosu!");
                     }
 
-                    io.Pause(600);
+                    io.Pause(500);
                     break;
                 case PotionDrunkEvent potion:
                     io.ShowSuccess($"Wypiłeś miksturę i odzyskałeś {potion.Healed} HP. Masz teraz {engine.Hero.Hp}/{engine.Hero.MaxHp} HP.");
@@ -116,11 +174,11 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
                 case FleeAttemptEvent flee:
                     if (flee.Success)
                     {
-                        io.ShowInfo("Udało ci się uciec! Wracasz do miasta bez łupów.");
+                        io.ShowInfo("Udało ci się uciec! Wracasz bez łupów.");
                     }
                     else
                     {
-                        io.ShowError($"{flee.Enemy.Name} odcina ci drogę ucieczki! Tracisz turę.");
+                        io.ShowError("Odcinają ci drogę ucieczki! Tracisz turę.");
                     }
 
                     break;
@@ -142,7 +200,7 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
                     io.ShowError("Padasz na ziemię. Ciemność.");
                     break;
                 case VictoryEvent:
-                    io.ShowSuccess("Wszyscy przeciwnicy pokonani. Wracasz do miasta.");
+                    io.ShowSuccess("Pole walki jest twoje.");
                     break;
             }
         }
@@ -153,20 +211,20 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
         Strike strike = e.Strike;
         if (!strike.Hit)
         {
-            io.ShowInfo($"{strike.Label}: pudło!");
+            io.ShowInfo($"{strike.Label} ({e.Enemy.Name}): pudło!");
             return;
         }
 
         if (strike.Critical)
         {
-            io.WriteLine($"{strike.Label}: {Dialogues.CritDescription(rng)} ({strike.Damage} obrażeń)", ConsoleColor.Blue);
+            io.WriteLine($"{strike.Label} ({e.Enemy.Name}): {Dialogues.CritDescription(rng)} ({strike.Damage} obrażeń)", ConsoleColor.Blue);
         }
         else
         {
-            io.ShowSuccess($"{strike.Label}: trafienie za {strike.Damage} obrażeń.");
+            io.ShowSuccess($"{strike.Label} ({e.Enemy.Name}): trafienie za {strike.Damage} obrażeń.");
         }
 
-        io.WriteLine(e.Enemy.IsAlive ? $"Przeciwnikowi zostało {e.Enemy.Hp} HP." : Dialogues.KillDescription(e.Enemy, rng), e.Enemy.IsAlive ? ConsoleColor.Gray : ConsoleColor.DarkRed);
+        io.WriteLine(e.Enemy.IsAlive ? $"{e.Enemy.Name}: zostało {e.Enemy.Hp} HP." : Dialogues.KillDescription(e.Enemy, rng), e.Enemy.IsAlive ? ConsoleColor.Gray : ConsoleColor.DarkRed);
     }
 
     private void RenderReward(EnemyDefeatedEvent e, Hero hero)

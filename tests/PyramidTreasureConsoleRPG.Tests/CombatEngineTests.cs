@@ -49,13 +49,18 @@ public class CombatEngineTests
             int turns = 0;
             while (engine.Status == CombatStatus.InProgress)
             {
-                if (hero.Hp < hero.MaxHp / 3 && hero.CountPotions(PotionKind.Large) > 0)
+                // Rozsądny gracz: obrona przed zapowiedzianym ciosem, mikstura przy niskim HP, najsłabszy cel pierwszy.
+                if (engine.Alive.Any(e => e.Charging))
+                {
+                    engine.HeroGuard();
+                }
+                else if (hero.Hp < hero.MaxHp / 3 && hero.CountPotions(PotionKind.Large) > 0)
                 {
                     engine.HeroDrinkPotion(PotionKind.Large);
                 }
                 else
                 {
-                    engine.HeroAttack(AttackKind.Strong);
+                    engine.HeroAttack(AttackKind.Strong, engine.Alive.OrderBy(e => e.Hp).First());
                 }
 
                 Assert.True(++turns < 500, "Walka z Ra nie kończy się.");
@@ -129,19 +134,20 @@ public class CombatEngineTests
     {
         Hero hero = MaxLevelHero(HeroClass.Warrior);
         int gold = hero.Gold;
-        var engine = new CombatEngine(hero, new[] { EnemyCatalog.Thief.Spawn(), EnemyCatalog.Thief.Spawn() }, new SeededRandomSource(5));
+        // dziki nie kradną i nie uciekają, więc nagroda jest przewidywalna
+        var engine = new CombatEngine(hero, [EnemyCatalog.WildBoar.Spawn(), EnemyCatalog.WildBoar.Spawn()], new SeededRandomSource(5));
         engine.Begin();
         var all = new List<CombatEvent>();
         while (engine.Status == CombatStatus.InProgress)
         {
-            all.AddRange(engine.HeroAttack(AttackKind.Normal));
+            all.AddRange(engine.HeroAttack(AttackKind.Normal, engine.Alive[0]));
         }
 
         Assert.Equal(CombatStatus.Victory, engine.Status);
         Assert.Equal(2, all.OfType<EnemyDefeatedEvent>().Count());
         Assert.Single(all.OfType<VictoryEvent>());
-        Assert.Equal(gold + (2 * EnemyCatalog.Thief.Spawn().Gold), hero.Gold);
-        Assert.Throws<InvalidOperationException>(() => engine.HeroAttack(AttackKind.Normal));
+        Assert.Equal(gold + (2 * EnemyCatalog.WildBoar.Gold), hero.Gold);
+        Assert.Throws<InvalidOperationException>(() => engine.HeroAttack(AttackKind.Normal, engine.Enemies[0]));
     }
 
     [Fact]

@@ -137,7 +137,12 @@ złożoność, i systemy, które ją zbudują, są poniżej. Założenia: wdraż
 
 ---
 
-## Milestone 3 – Walka taktyczna
+## Milestone 3 – Walka taktyczna (WDROŻONE)
+
+> Stan: zrobione. Walka grupowa z wyborem celu, sześć statusów, obrona, dziewięć umiejętności wrogów, Ra z
+> trzema fazami (cienie Anubisa, Oko Słońca), 105 testów. Bossowie przestrojeni pod nowe reguły: test pilnuje,
+> że bez sprzętu Ra wygrywa, a rozsądny gracz z pełnym buildem (obrona przed Okiem Słońca, najsłabszy cel
+> pierwszy) przechodzi finał w większości prób.
 
 - **Walka grupowa**: `CombatEngine` trzyma listę żywych wrogów; w turze bohater wybiera cel; wszyscy żywi wrogowie
   atakują w swojej turze. Kolejność z inicjatywy (Dex vs Agility) liczona raz na walkę. Zdarzenia dostają `Target`.

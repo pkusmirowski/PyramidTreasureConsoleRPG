@@ -151,6 +151,9 @@ public sealed class Hero
 
     public IReadOnlyList<Potion> Inventory => inventory;
 
+    /// <summary>Statusy w walce (czyszczone po walce).</summary>
+    public StatusList Statuses { get; } = new();
+
     public const int GearCapacity = 8;
 
     public Weapon? Weapon { get; private set; }
@@ -293,7 +296,7 @@ public sealed class Hero
     public int ShopDiscountPercent => TrinketPower(TrinketEffect.ShopDiscount);
 
     /// <summary>Mnożnik obrażeń bohatera (talenty).</summary>
-    public double DamageMultiplier => (100 + TalentPower(TalentEffect.DamagePercent) + (Hp * 3 < MaxHp ? TalentPower(TalentEffect.DamageWhenLow) : 0)) / 100.0;
+    public double DamageMultiplier => (100 + TalentPower(TalentEffect.DamagePercent) + (Hp * 3 < MaxHp ? TalentPower(TalentEffect.DamageWhenLow) : 0)) / 100.0 * Statuses.DamageMultiplier;
 
     public int Hp
     {
@@ -311,7 +314,7 @@ public sealed class Hero
 
     public int MaxDmg => Definition.BaseMaxDmg + (Power / 2) + (Weapon?.MaxDmgBonus ?? 0);
 
-    public double HitChance => CombatMath.ClampChance(Definition.BaseHitChance + (Level * 1.5) + ExtraHitChance + (Weapon?.HitBonus ?? 0) + TalentPower(TalentEffect.HitFlat));
+    public double HitChance => CombatMath.ClampChance(Definition.BaseHitChance + (Level * 1.5) + ExtraHitChance + (Weapon?.HitBonus ?? 0) + TalentPower(TalentEffect.HitFlat) - Statuses.HitPenalty);
 
     public double CritChance => Math.Clamp(Definition.BaseCritChance + Level + (Weapon?.CritBonus ?? 0) + TrinketPower(TrinketEffect.Crit) + TalentPower(TalentEffect.CritFlat), 0, 75);
 
@@ -366,6 +369,22 @@ public sealed class Hero
         return result;
     }
 
+    /// <summary>Statusy, jakie nakłada dany rodzaj ataku tej klasy przy trafieniu (rodzaj, tury, moc, szansa %).</summary>
+    public (StatusKind Kind, int Turns, int Power, int ChancePercent)? StatusOnHit(AttackKind kind) => (Definition.SpecialAttack, kind) switch
+    {
+        (SpecialAttackKind.TripleCut, AttackKind.Special) => (StatusKind.Bleed, 3, Math.Max(2, MinDmg / 2), 35),
+        (SpecialAttackKind.PoisonedBlade, AttackKind.Special) => (StatusKind.Poison, 3, Math.Max(3, MaxDmg / 3), 100),
+        (SpecialAttackKind.DoubleShot, AttackKind.Strong) => (StatusKind.Stun, 1, 0, 25),
+        _ => null,
+    };
+
+    /// <summary>Koniec walki: statusy i obrona znikają.</summary>
+    public void ClearCombatState()
+    {
+        Statuses.Clear();
+        GuaranteedCrit = false;
+    }
+
     private string SpecialAttackDescription() => Definition.SpecialAttack switch
     {
         SpecialAttackKind.TripleCut => $"3 cięcia po {MinDmg * 6 / 10}-{MaxDmg * 6 / 10} obrażeń, każde z trafieniem {CombatMath.ClampChance(HitChance - 15):0}%",
@@ -394,7 +413,10 @@ public sealed class Hero
         }
     }
 
-    /// <summary>Jedno uderzenie: rzut na trafienie, rzut na krytyk, obrażenia po pancerzu wroga.</summary>
+    /// <summary>Po udanej obronie następny cios jest krytyczny.</summary>
+    public bool GuaranteedCrit { get; set; }
+
+    /// <summary>Jedno uderzenie: rzut na trafienie, rzut na krytyk, obrażenia po pancerzu i obronie wroga.</summary>
     private Strike RollStrike(Enemy enemy, double hitChance, double multiplier, double critChance, string label, IRandomSource rng)
     {
         if (!rng.Chance(CombatMath.ClampChance(hitChance)))
@@ -403,16 +425,24 @@ public sealed class Hero
         }
 
         int raw = (int)Math.Round(rng.Range(MinDmg, MaxDmg) * multiplier * DamageMultiplier);
-        bool critical = rng.Chance(critChance);
+        bool critical = GuaranteedCrit || rng.Chance(critChance);
+        GuaranteedCrit = false;
         if (critical)
         {
             raw *= 2;
         }
 
-        return new Strike(true, critical, CombatMath.ReduceByArmor(raw, enemy.Armor), label);
+        int damage = (int)Math.Round(CombatMath.ReduceByArmor(raw, enemy.Armor) * enemy.Statuses.IncomingMultiplier);
+        return new Strike(true, critical, Math.Max(1, damage), label);
     }
 
-    public void TakeDamage(int damage) => Hp -= Math.Max(0, damage);
+    /// <summary>Obrażenia po uwzględnieniu obrony (Guard). Zwraca faktycznie odjęte HP.</summary>
+    public int TakeDamage(int damage)
+    {
+        int actual = (int)Math.Round(Math.Max(0, damage) * Statuses.IncomingMultiplier);
+        Hp -= actual;
+        return actual;
+    }
 
     public void Heal(int amount) => Hp += Math.Max(0, amount);
 

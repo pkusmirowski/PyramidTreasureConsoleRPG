@@ -91,14 +91,18 @@ public sealed class SpectreGameIO : IGameIO
         ConsolePrompts.WaitForAnyKey();
     }
 
-    public void ShowCombatStatus(Hero hero, Enemy enemy)
+    public void ShowCombatStatus(Hero hero, IReadOnlyList<Enemy> enemies)
     {
         ArgumentNullException.ThrowIfNull(hero);
-        ArgumentNullException.ThrowIfNull(enemy);
+        ArgumentNullException.ThrowIfNull(enemies);
         AnsiConsole.WriteLine();
-        var table = new Table().Border(TableBorder.Rounded).HideHeaders().AddColumn(string.Empty).AddColumn(string.Empty).AddColumn(string.Empty);
-        table.AddRow($"[green]{Markup.Escape(hero.Name)}[/]", HpBar(hero.Hp, hero.MaxHp, "green"), $"[green]{hero.Hp}/{hero.MaxHp} HP[/]");
-        table.AddRow($"[red]{Markup.Escape(enemy.Name)}[/]", HpBar(enemy.Hp, enemy.MaxHp, "red"), $"[red]{enemy.Hp}/{enemy.MaxHp} HP[/]");
+        var table = new Table().Border(TableBorder.Rounded).HideHeaders().AddColumn(string.Empty).AddColumn(string.Empty).AddColumn(string.Empty).AddColumn(string.Empty);
+        table.AddRow($"[green]{Markup.Escape(hero.Name)}[/]", HpBar(hero.Hp, hero.MaxHp, "green"), $"[green]{hero.Hp}/{hero.MaxHp} HP[/]", $"[fuchsia]{Markup.Escape(hero.Statuses.Describe())}[/]");
+        foreach (Enemy enemy in enemies)
+        {
+            table.AddRow($"[red]{Markup.Escape(enemy.Name)}[/]", HpBar(enemy.Hp, enemy.MaxHp, "red"), $"[red]{enemy.Hp}/{enemy.MaxHp} HP[/]", $"[fuchsia]{Markup.Escape(enemy.Statuses.Describe())}[/]");
+        }
+
         AnsiConsole.Write(table);
     }
 

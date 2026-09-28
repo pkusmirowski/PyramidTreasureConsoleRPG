@@ -92,7 +92,7 @@ public sealed class ScriptedGameIO : IGameIO
     {
     }
 
-    public void ShowCombatStatus(Hero hero, Enemy enemy) => Output.Add($"{hero.Hp}/{hero.MaxHp} vs {enemy.Hp}/{enemy.MaxHp}");
+    public void ShowCombatStatus(Hero hero, IReadOnlyList<Enemy> enemies) => Output.Add($"{hero.Hp}/{hero.MaxHp} vs {string.Join(",", enemies.Select(e => e.Hp))}");
 
     public void ShowStats(Hero hero) => Output.Add($"stats {hero.Name}");
 }

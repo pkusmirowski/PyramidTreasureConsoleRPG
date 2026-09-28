@@ -31,7 +31,9 @@ Zapis gry i ustawienia trafiają do katalogu `GreatPyramidTreasureRPG_DataSave` 
 - Reputacja u trzech frakcji (Miasto, Podziemie, Bractwo) rośnie i spada od wyborów w zdarzeniach i zadaniach; otwiera lub zamyka niektóre opcje.
 - Ekwipunek: broń (osobna dla każdej klasy), pancerz i amulet w trzech slotach, torba na 8 przedmiotów, łupy z wrogów, sklepy z innym asortymentem w porcie, Starym Mieście i oazie, ceny zależne od reputacji.
 - Talenty: na 5. i 10. poziomie wybór jednego z dwóch talentów klasy (np. Szał, Mur, Sokole oko, Złodziejski fach).
-- Walka turowa z inicjatywą, miksturami w trakcie walki i ucieczką (poza bossami). Finał (Anubisi i Ra) wymaga dobrego sprzętu i talentów.
+- Walka grupowa: wszyscy wrogowie atakują naraz, a ty wybierasz cel. Statusy (krwawienie, trucizna, ogłuszenie, strach), obrona (połowa obrażeń i gwarantowany krytyk), mikstury w trakcie walki i ucieczka (poza bossami).
+- Wrogowie mają umiejętności: złodziej kradnie złoto i ucieka, wilki atakują stadem, dzik szarżuje, opancerzony blokuje, upadły rycerz straszy, templariusz ogłusza tarczą, Płaczący Mnich lamentuje i leczy się, Anubis wstaje raz z martwych, a Ra ma trzy fazy (cienie Anubisa i Oko Słońca, przed którym trzeba się zasłonić).
+- Finał wymaga dobrego sprzętu i talentów.
 - Tawerna: bar (napoje leczą, jednorazowy miód „Grunwald” wzmacnia na stałe), kasyno (ruletka, jednoręki bandyta, blackjack, kości) i pokoje na górze.
 - Na 20. poziomie, po zadaniach barmana, karawana zabiera bohatera pod piramidę: dwaj Anubisi, a potem bóg Ra.
 - W narracji dowolny klawisz pomija pauzę, `Esc` pomija cały tekst. Prędkość tekstu i muzykę ustawia się w menu głównym.

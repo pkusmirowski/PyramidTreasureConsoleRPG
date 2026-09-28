@@ -159,7 +159,7 @@ public class ItemsAndTalentsTests
         var rng = new ScriptedRandomSource(0, 0, 99, 20, 0, 0, 0, 0, 0);
         var engine = new CombatEngine(hero, [EnemyCatalog.Thief.Spawn()], rng);
         engine.Begin();
-        var events = engine.HeroAttack(AttackKind.Normal);
+        var events = engine.HeroAttack(AttackKind.Normal, engine.Alive[0]);
         Assert.Equal(CombatStatus.Victory, engine.Status);
         Assert.Equal(gold + (EnemyCatalog.Thief.Gold * 120 / 100), hero.Gold);
         Assert.Equal(2, events.OfType<LootEvent>().Count());

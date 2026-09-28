@@ -40,7 +40,8 @@ public interface IGameIO
 
     void PressAnyKey(string text = "Naciśnij dowolny klawisz, aby kontynuować...");
 
-    void ShowCombatStatus(Hero hero, Enemy enemy);
+    /// <summary>Nagłówek walki: bohater i wszyscy żywi wrogowie ze statusami.</summary>
+    void ShowCombatStatus(Hero hero, IReadOnlyList<Enemy> enemies);
 
     void ShowStats(Hero hero);
 }

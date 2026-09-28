@@ -65,7 +65,7 @@ public class ScreenTests
         hero.AddExp(1_000_000);
         GameEvent customs = EventCatalog.All.First(e => e.Id == "port_customs");
         var answers = new List<string> { "2" };
-        answers.AddRange(Enumerable.Repeat("1", 40));
+        answers.AddRange(Enumerable.Repeat("1", 80));
         var io = new ScriptedGameIO([.. answers]);
         var rng = new SeededRandomSource(4);
         CombatStatus? status = new EventScreen(io, rng, new CombatScreen(io, rng)).Run(hero, customs);

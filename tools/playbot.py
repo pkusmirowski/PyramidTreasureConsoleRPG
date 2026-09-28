@@ -53,7 +53,7 @@ def pick(opts, *needles, avoid=()):
 def parse(text):
     for m in re.finditer(r"dzień \d+ – .*?, .*? (\d+) lvl, (\d+)/(\d+) HP, (\d+) złota", text):
         state["level"], state["hp"], state["maxhp"], state["gold"] = int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4))
-    for m in re.finditer(r"^(" + "|".join(map(re.escape, REGIONS)) + r"), dzień", text, re.M):
+    for m in re.finditer(r"=== (" + "|".join(map(re.escape, REGIONS)) + r"), dzień", text):
         state["region"] = m.group(1)
     for m in re.finditer(r"(?:Masz |Tester: |zdrowie \()(\d+)/(\d+)", text):
         state["hp"], state["maxhp"] = int(m.group(1)), int(m.group(2))
@@ -72,10 +72,11 @@ def parse(text):
         state["pending"].add(m.group(1))
     if "Zadanie ukończone:" in text and state["giver"]:
         state["pending"].discard(state["giver"])
+    if "Nie posiadasz żadnych mikstur" in text or "Nie masz żadnych mikstur" in text: state["potions"] = 0
     if "Zostałeś pokonany" in text: state["deaths"] += 1
     if "– do torby." in text or "Kupiłeś:" in text: state["loot_pending"] = True
     if "Gra została zapisana" in text: state["saved"] = True
-    if "Nie możesz tam teraz jechać" in text and state["last_target"]:
+    if "Nie możesz tam teraz jechać" in text and state["last_target"] and "brak złota" not in text:
         state["locked"].add(state["last_target"])
     if "Nowy etap wyprawy" in text:
         state["locked"].clear()
@@ -84,6 +85,8 @@ def parse(text):
             state["giver"] = g
 
 def target_region():
+    if state.get("heal_trip"):
+        return "Port Sokoła"
     for giver in list(state["pending"]):
         return GIVER_REGION[giver]
     lvl = state["level"]
@@ -115,7 +118,16 @@ def decide(text):
         opts = options_of(last, "Twoja tura:")
         if state["hp"] * 100 < state["maxhp"] * 35 and state["potions"] > 0:
             return pick(opts, "Wypij")
+        if "Broń się!" in last or "zbiera moc" in last:
+            return pick(opts, "Obrona")
         return "2" if state["level"] >= 8 else "1"
+    if "Cel:" in last and "Twoja tura:" not in last.split("Cel:")[-1]:
+        opts = options_of(last, "Cel:")
+        best = None
+        for n, t in opts[:-1]:
+            m = re.search(r"– (\d+)/(\d+) HP", t)
+            if m and (best is None or int(m.group(1)) < best[0]): best = (int(m.group(1)), n)
+        return str(best[1]) if best else "1"
     if "Którą miksturę wypić?" in last:
         for n, t in options_of(last, "Którą miksturę wypić?"):
             m = re.search(r"masz: (\d+)", t)
@@ -146,15 +158,19 @@ def decide(text):
         target = target_region()
         state["last_target"] = target
         choice = pick(opts, target, avoid=("tu jesteś",))
-        if choice and "–" not in [t for n, t in opts if str(n) == choice][0].split(")")[-1]:
+        label = [t for n, t in opts if str(n) == choice][0] if choice else ""
+        if choice and "–" not in label.split(")")[-1]:
             return choice
-        state["locked"].add(target)
+        if "brak złota" not in label:
+            state["locked"].add(target)
         return str(len(opts))
     if "Mikstury:" in last:
         opts = options_of(last, "Mikstury:")
-        if state["gold"] >= 130 and state["potions"] < 4:
-            state["gold"] -= 100; state["potions"] += 1
-            return pick(opts, "Duża")
+        if state["potions"] < 4:
+            for name, cost in (("Duża", 130), ("Średnia", 70), ("Mała", 25)):
+                if state["gold"] >= cost:
+                    state["gold"] -= cost - 5; state["potions"] += 1
+                    return pick(opts, name)
         return str(len(opts))
     if "Wyposażenie:" in last and "Torba:" in last:
         opts = options_of(last, "Wyposażenie:")
@@ -163,7 +179,7 @@ def decide(text):
             m = re.search(r"^(.*?) \[(broń|pancerz|amulet)\].*– (\d+) g", t)
             if not m or "nie dla twojej klasy" in t: continue
             name, slot, price = m.group(1), m.group(2), int(m.group(3))
-            if name in state["owned"] or price > state["gold"] - 60: continue
+            if name in state["owned"] or price > state["gold"] - 120: continue
             if slot == "broń" and CLASS_NAME not in t: continue
             best = (price, n, name) if best is None or price > best[0] else best
         if best:
@@ -236,8 +252,14 @@ def decide(text):
         if state["hp"] * 2 < state["maxhp"]:
             if "Tawerna" in last and state["gold"] >= 10: return pick(opts, "Tawerna")
             if state["potions"] > 0 and not state["bag_tried"]: return pick(opts, "Sakwa")
+            if "Sklep" in last and state["gold"] >= 25 and not state.get("heal_shop"):
+                state["heal_shop"] = True; state["shop_mode"] = "gear"
+                return pick(opts, "Sklep")
+            if region != "Port Sokoła" and state["gold"] >= 10:
+                state["heal_trip"] = True
+                return pick(opts, "Mapa")
         else:
-            state["bag_tried"] = False
+            state["bag_tried"] = False; state["heal_shop"] = False; state["heal_trip"] = False
         # 3. zakupy
         if "Sklep" in last and (state["gold"] >= 130 and state["potions"] < 4 or state["gold"] >= 200 and not state.get("shopped_at") == (region, state["gold"] // 200)):
             state["shopped_at"] = (region, state["gold"] // 200)
