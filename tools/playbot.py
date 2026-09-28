@@ -191,6 +191,8 @@ def decide(text):
             return choice
         if "brak złota" not in label:
             state["locked"].add(target)
+        else:
+            state["earn"] = True  # zarób na drogę walcząc na miejscu
         return str(len(opts))
     if "Mikstury:" in last:
         opts = options_of(last, "Mikstury:")
@@ -340,6 +342,9 @@ def decide(text):
             state["went_temple"] = True
             return pick(opts, "Świątynia")
         # 6. podróż albo eksploracja
+        if state.pop("earn", False):
+            state["fights"] += 1
+            return "1"
         target = target_region()
         if target != region:
             return pick(opts, "Mapa")
