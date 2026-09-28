@@ -35,6 +35,7 @@ services.AddSingleton<EventScreen>();
 services.AddSingleton<QuestGiverScreen>();
 services.AddSingleton<QuestLogScreen>();
 services.AddSingleton<MapScreen>();
+services.AddSingleton<TalentScreen>();
 services.AddSingleton<RegionScreen>();
 services.AddSingleton<MainMenuScreen>();
 

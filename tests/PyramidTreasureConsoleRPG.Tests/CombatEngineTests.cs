@@ -16,14 +16,29 @@ public class CombatEngineTests
         return hero;
     }
 
-    [Theory]
-    [MemberData(nameof(Classes))]
-    public void FinalBossFight_EndsWithinBoundedTurns_ForEveryClass(HeroClass heroClass)
+    private static int RaWins(HeroClass heroClass, bool fullBuild)
     {
         int wins = 0;
-        for (int seed = 0; seed < 20; seed++)
+        for (int seed = 0; seed < 30; seed++)
         {
             Hero hero = MaxLevelHero(heroClass);
+            if (fullBuild)
+            {
+                foreach (TalentDefinition talent in TalentCatalog.All.Where(t => t.Class == heroClass).GroupBy(t => t.Level).Select(g => g.First()))
+                {
+                    hero.ChooseTalent(talent.Id);
+                }
+
+                Item weapon = ItemCatalog.All.OfType<Weapon>().First(w => w.ForClass == heroClass && w.Tier == 3);
+                foreach (Item item in new[] { weapon, ItemCatalog.Get(ItemId.TemplarPlate), ItemCatalog.Get(ItemId.Scarab) })
+                {
+                    hero.AddGear(item);
+                    hero.Equip(item);
+                }
+
+                hero.FullHeal();
+            }
+
             for (int i = 0; i < 5; i++)
             {
                 hero.AddPotion(Potion.Large);
@@ -53,7 +68,17 @@ public class CombatEngineTests
             }
         }
 
-        Assert.True(wins >= 10, $"{heroClass} wygrywa z Ra tylko {wins}/20 razy – balans końcówki jest za ostry.");
+        return wins;
+    }
+
+    [Theory]
+    [MemberData(nameof(Classes))]
+    public void FinalBoss_RequiresGearAndTalents(HeroClass heroClass)
+    {
+        int naked = RaWins(heroClass, fullBuild: false);
+        int geared = RaWins(heroClass, fullBuild: true);
+        Assert.True(naked <= 9, $"{heroClass} bez sprzętu wygrywa z Ra {naked}/30 razy – sprzęt nie ma znaczenia.");
+        Assert.True(geared >= 18, $"{heroClass} z pełnym buildem wygrywa z Ra tylko {geared}/30 razy – finał jest za ostry.");
     }
 
     [Fact]

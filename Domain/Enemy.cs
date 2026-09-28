@@ -21,31 +21,35 @@ public sealed record EnemyDefinition(
     int Agility,
     int Exp,
     int Gold,
-    bool IsBoss = false)
+    bool IsBoss = false,
+    IReadOnlyList<LootEntry>? Loot = null)
 {
+    /// <summary>Tabela łupów (pusta, gdy wróg nic nie nosi).</summary>
+    public IReadOnlyList<LootEntry> LootTable => Loot ?? [];
+
     /// <summary>Tworzy żywego przeciwnika z tej definicji.</summary>
     public Enemy Spawn() => new(this);
 }
 
 public static class EnemyCatalog
 {
-    public static EnemyDefinition Thief { get; } = new("Złodziej", EnemyKind.Human, MaxHp: 22, MinDmg: 3, MaxDmg: 9, Armor: 0, Agility: 5, Exp: 200, Gold: 6);
+    public static EnemyDefinition Thief { get; } = new("Złodziej", EnemyKind.Human, MaxHp: 22, MinDmg: 3, MaxDmg: 9, Armor: 0, Agility: 5, Exp: 200, Gold: 6, Loot: [new LootEntry(12, Potion: PotionKind.Small), new LootEntry(4, ItemId.LeatherJerkin)]);
 
-    public static EnemyDefinition Wolf { get; } = new("Wilk", EnemyKind.Beast, MaxHp: 45, MinDmg: 7, MaxDmg: 13, Armor: 0, Agility: 12, Exp: 500, Gold: 9);
+    public static EnemyDefinition Wolf { get; } = new("Wilk", EnemyKind.Beast, MaxHp: 45, MinDmg: 7, MaxDmg: 13, Armor: 0, Agility: 12, Exp: 500, Gold: 9, Loot: [new LootEntry(5, ItemId.WolfBone)]);
 
-    public static EnemyDefinition WildBoar { get; } = new("Dzik", EnemyKind.Beast, MaxHp: 70, MinDmg: 9, MaxDmg: 16, Armor: 5, Agility: 6, Exp: 650, Gold: 12);
+    public static EnemyDefinition WildBoar { get; } = new("Dzik", EnemyKind.Beast, MaxHp: 70, MinDmg: 9, MaxDmg: 16, Armor: 5, Agility: 6, Exp: 650, Gold: 12, Loot: [new LootEntry(20, Potion: PotionKind.Small)]);
 
-    public static EnemyDefinition ArmoredThief { get; } = new("Opancerzony złodziej", EnemyKind.Human, MaxHp: 100, MinDmg: 12, MaxDmg: 20, Armor: 15, Agility: 8, Exp: 1100, Gold: 22);
+    public static EnemyDefinition ArmoredThief { get; } = new("Opancerzony złodziej", EnemyKind.Human, MaxHp: 100, MinDmg: 12, MaxDmg: 20, Armor: 15, Agility: 8, Exp: 1100, Gold: 22, Loot: [new LootEntry(6, ItemId.ChainMail), new LootEntry(4, ItemId.DesertCloak), new LootEntry(10, Potion: PotionKind.Medium)]);
 
-    public static EnemyDefinition FallenKnight { get; } = new("Upadły rycerz", EnemyKind.Undead, MaxHp: 150, MinDmg: 17, MaxDmg: 27, Armor: 20, Agility: 8, Exp: 1800, Gold: 35);
+    public static EnemyDefinition FallenKnight { get; } = new("Upadły rycerz", EnemyKind.Undead, MaxHp: 150, MinDmg: 17, MaxDmg: 27, Armor: 20, Agility: 8, Exp: 1800, Gold: 35, Loot: [new LootEntry(8, ItemId.ChainMail), new LootEntry(4, ItemId.TemplarSword), new LootEntry(12, Potion: PotionKind.Medium)]);
 
-    public static EnemyDefinition Templar { get; } = new("Templariusz", EnemyKind.Human, MaxHp: 180, MinDmg: 20, MaxDmg: 31, Armor: 25, Agility: 10, Exp: 2300, Gold: 45);
+    public static EnemyDefinition Templar { get; } = new("Templariusz", EnemyKind.Human, MaxHp: 180, MinDmg: 20, MaxDmg: 31, Armor: 25, Agility: 10, Exp: 2300, Gold: 45, Loot: [new LootEntry(5, ItemId.TemplarSword), new LootEntry(3, ItemId.TemplarPlate), new LootEntry(4, ItemId.RecurveBow), new LootEntry(4, ItemId.TwinKindjals), new LootEntry(10, Potion: PotionKind.Large)]);
 
-    public static EnemyDefinition CryingMonk { get; } = new("Płaczący Mnich", EnemyKind.Undead, MaxHp: 280, MinDmg: 26, MaxDmg: 40, Armor: 15, Agility: 14, Exp: 3600, Gold: 70);
+    public static EnemyDefinition CryingMonk { get; } = new("Płaczący Mnich", EnemyKind.Undead, MaxHp: 280, MinDmg: 26, MaxDmg: 40, Armor: 15, Agility: 14, Exp: 3600, Gold: 70, Loot: [new LootEntry(8, ItemId.BrotherhoodRobe), new LootEntry(3, ItemId.EyeOfRa), new LootEntry(3, ItemId.Scarab), new LootEntry(12, Potion: PotionKind.Large)]);
 
-    public static EnemyDefinition Anubis { get; } = new("Anubis", EnemyKind.Divine, MaxHp: 500, MinDmg: 32, MaxDmg: 50, Armor: 30, Agility: 16, Exp: 0, Gold: 2500, IsBoss: true);
+    public static EnemyDefinition Anubis { get; } = new("Anubis", EnemyKind.Divine, MaxHp: 900, MinDmg: 58, MaxDmg: 85, Armor: 40, Agility: 16, Exp: 0, Gold: 2500, IsBoss: true, Loot: [new LootEntry(50, ItemId.AnubisFangs), new LootEntry(50, ItemId.PharaohScimitar), new LootEntry(50, ItemId.FalconBow)]);
 
-    public static EnemyDefinition Ra { get; } = new("Bóg Ra", EnemyKind.Divine, MaxHp: 1000, MinDmg: 38, MaxDmg: 60, Armor: 30, Agility: 12, Exp: 0, Gold: 20000, IsBoss: true);
+    public static EnemyDefinition Ra { get; } = new("Bóg Ra", EnemyKind.Divine, MaxHp: 2700, MinDmg: 92, MaxDmg: 138, Armor: 45, Agility: 12, Exp: 0, Gold: 20000, IsBoss: true);
 
     public static IReadOnlyList<EnemyDefinition> All { get; } = [Thief, Wolf, WildBoar, ArmoredThief, FallenKnight, Templar, CryingMonk, Anubis, Ra];
 }

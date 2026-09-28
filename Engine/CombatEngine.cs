@@ -23,6 +23,9 @@ public sealed record FleeAttemptEvent(Enemy Enemy, bool Success) : CombatEvent;
 
 public sealed record EnemyDefeatedEvent(Enemy Enemy, int Gold, int Exp, int LevelsGained, int NewLevel) : CombatEvent;
 
+/// <summary>Łup z wroga. Kept = false, gdy torba była pełna i przedmiot przepadł.</summary>
+public sealed record LootEvent(Enemy Enemy, Item? Item, Potion? Potion, bool Kept) : CombatEvent;
+
 public sealed record HeroDefeatedEvent(Enemy Enemy) : CombatEvent;
 
 public sealed record VictoryEvent : CombatEvent;
@@ -168,10 +171,30 @@ public sealed class CombatEngine
     {
         Enemy enemy = CurrentEnemy;
         killed.Add(enemy.Definition);
-        Hero.Gold += enemy.Gold;
+        int gold = enemy.Gold * (100 + Hero.GoldBonusPercent) / 100;
+        Hero.Gold += gold;
         int before = Hero.Level;
         int gained = enemy.Exp > 0 ? Hero.AddExp(enemy.Exp) : 0;
-        events.Add(new EnemyDefeatedEvent(enemy, enemy.Gold, enemy.Exp, gained, before + gained));
+        events.Add(new EnemyDefeatedEvent(enemy, gold, enemy.Exp, gained, before + gained));
+        foreach (LootEntry entry in enemy.Definition.LootTable)
+        {
+            if (!rng.Chance(entry.ChancePercent))
+            {
+                continue;
+            }
+
+            if (entry.Potion is PotionKind kind)
+            {
+                Potion potion = Potion.Create(kind);
+                Hero.AddPotion(potion);
+                events.Add(new LootEvent(enemy, null, potion, true));
+            }
+            else if (entry.Item is ItemId itemId)
+            {
+                Item item = ItemCatalog.Get(itemId);
+                events.Add(new LootEvent(enemy, item, null, Hero.AddGear(item)));
+            }
+        }
 
         if (pending.Count == 0)
         {

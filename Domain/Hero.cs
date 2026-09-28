@@ -146,8 +146,154 @@ public sealed class Hero
     }
 
     private readonly List<Potion> inventory = new();
+    private readonly List<Item> gear = new();
+    private readonly HashSet<TalentId> talents = new();
 
     public IReadOnlyList<Potion> Inventory => inventory;
+
+    public const int GearCapacity = 8;
+
+    public Weapon? Weapon { get; private set; }
+
+    public Armor? EquippedArmor { get; private set; }
+
+    public Trinket? Trinket { get; private set; }
+
+    /// <summary>Torba na niezałożone wyposażenie.</summary>
+    public IReadOnlyList<Item> Gear => gear;
+
+    public IReadOnlySet<TalentId> Talents => talents;
+
+    public bool HasTalent(TalentId id) => talents.Contains(id);
+
+    /// <summary>Poziomy talentów, które bohater już osiągnął, ale jeszcze nie wybrał.</summary>
+    public IReadOnlyList<int> PendingTalentLevels() =>
+        TalentCatalog.Levels.Where(l => Level >= l && !talents.Any(t => TalentCatalog.Get(t).Level == l)).ToList();
+
+    public void ChooseTalent(TalentId id)
+    {
+        TalentDefinition talent = TalentCatalog.Get(id);
+        if (talent.Class != HeroClass || !PendingTalentLevels().Contains(talent.Level))
+        {
+            throw new InvalidOperationException("Ten talent nie jest dostępny.");
+        }
+
+        talents.Add(id);
+        ClampHp();
+    }
+
+    public bool AddGear(Item item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        if (gear.Count >= GearCapacity)
+        {
+            return false;
+        }
+
+        gear.Add(item);
+        return true;
+    }
+
+    public bool RemoveGear(Item item) => gear.Remove(item);
+
+    public bool CanEquip(Item item) => item is not Weapon weapon || weapon.ForClass == HeroClass;
+
+    /// <summary>Zakłada przedmiot z torby; poprzedni z tego slotu wraca do torby. Zwraca zdjęty przedmiot.</summary>
+    public Item? Equip(Item item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        if (!gear.Contains(item))
+        {
+            throw new InvalidOperationException("Przedmiotu nie ma w torbie.");
+        }
+
+        if (!CanEquip(item))
+        {
+            throw new InvalidOperationException("Ta broń nie pasuje do twojej klasy.");
+        }
+
+        gear.Remove(item);
+        Item? previous = SetSlot(item);
+        if (previous is not null)
+        {
+            gear.Add(previous);
+        }
+
+        ClampHp();
+        return previous;
+    }
+
+    /// <summary>Zdejmuje przedmiot do torby. False, gdy torba pełna lub slot pusty.</summary>
+    public bool Unequip(ItemSlot slot)
+    {
+        Item? current = slot switch
+        {
+            ItemSlot.Weapon => Weapon,
+            ItemSlot.Armor => EquippedArmor,
+            _ => Trinket,
+        };
+        if (current is null || gear.Count >= GearCapacity)
+        {
+            return false;
+        }
+
+        ClearSlot(slot);
+        gear.Add(current);
+        ClampHp();
+        return true;
+    }
+
+    private Item? SetSlot(Item item)
+    {
+        switch (item)
+        {
+            case Weapon weapon:
+                Item? oldWeapon = Weapon;
+                Weapon = weapon;
+                return oldWeapon;
+            case Armor armor:
+                Item? oldArmor = EquippedArmor;
+                EquippedArmor = armor;
+                return oldArmor;
+            case Trinket trinket:
+                Item? oldTrinket = Trinket;
+                Trinket = trinket;
+                return oldTrinket;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(item));
+        }
+    }
+
+    private void ClearSlot(ItemSlot slot)
+    {
+        switch (slot)
+        {
+            case ItemSlot.Weapon:
+                Weapon = null;
+                break;
+            case ItemSlot.Armor:
+                EquippedArmor = null;
+                break;
+            default:
+                Trinket = null;
+                break;
+        }
+    }
+
+    /// <summary>Po zmianie sprzętu lub talentu maksymalne HP może zmaleć – bieżące HP nie może go przekraczać.</summary>
+    private void ClampHp() => hp = Math.Clamp(hp, 0, MaxHp);
+
+    public int TrinketPower(TrinketEffect effect) => Trinket?.Effect == effect ? Trinket.Power : 0;
+
+    public int TalentPower(TalentEffect effect) => talents.Select(TalentCatalog.Get).Where(t => t.Effect == effect).Sum(t => t.Power);
+
+    /// <summary>Procent więcej złota z walk (amulet + talent).</summary>
+    public int GoldBonusPercent => TrinketPower(TrinketEffect.GoldFind) + TalentPower(TalentEffect.GoldPercent);
+
+    public int ShopDiscountPercent => TrinketPower(TrinketEffect.ShopDiscount);
+
+    /// <summary>Mnożnik obrażeń bohatera (talenty).</summary>
+    public double DamageMultiplier => (100 + TalentPower(TalentEffect.DamagePercent) + (Hp * 3 < MaxHp ? TalentPower(TalentEffect.DamageWhenLow) : 0)) / 100.0;
 
     public int Hp
     {
@@ -157,25 +303,25 @@ public sealed class Hero
 
     // --- statystyki pochodne ---
 
-    public int MaxHp => Vit * Definition.HpPerVit;
+    public int MaxHp => ((Vit * Definition.HpPerVit) + TrinketPower(TrinketEffect.MaxHp)) * (100 + TalentPower(TalentEffect.MaxHpPercent)) / 100;
 
     private int Power => (Str * Definition.StrWeight) + (Dex * Definition.DexWeight);
 
-    public int MinDmg => Definition.BaseMinDmg + (Power / 4);
+    public int MinDmg => Definition.BaseMinDmg + (Power / 4) + (Weapon?.MinDmgBonus ?? 0);
 
-    public int MaxDmg => Definition.BaseMaxDmg + (Power / 2);
+    public int MaxDmg => Definition.BaseMaxDmg + (Power / 2) + (Weapon?.MaxDmgBonus ?? 0);
 
-    public double HitChance => CombatMath.ClampChance(Definition.BaseHitChance + (Level * 1.5) + ExtraHitChance);
+    public double HitChance => CombatMath.ClampChance(Definition.BaseHitChance + (Level * 1.5) + ExtraHitChance + (Weapon?.HitBonus ?? 0) + TalentPower(TalentEffect.HitFlat));
 
-    public double CritChance => Math.Clamp(Definition.BaseCritChance + Level, 0, 75);
+    public double CritChance => Math.Clamp(Definition.BaseCritChance + Level + (Weapon?.CritBonus ?? 0) + TrinketPower(TrinketEffect.Crit) + TalentPower(TalentEffect.CritFlat), 0, 75);
 
-    public int Armor => (Dex / Definition.ArmorDexDivisor) + (Definition.ArmorAddsLevel ? Level : 0);
+    public int Armor => (Dex / Definition.ArmorDexDivisor) + (Definition.ArmorAddsLevel ? Level : 0) + (EquippedArmor?.ArmorBonus ?? 0) + TalentPower(TalentEffect.ArmorFlat);
 
     /// <summary>Szansa (w %) na uniknięcie ataku wroga.</summary>
-    public int Evasion => Math.Clamp(Dex / Definition.EvasionDexDivisor, 0, 40);
+    public int Evasion => Math.Clamp((Dex / Definition.EvasionDexDivisor) + (EquippedArmor?.EvasionBonus ?? 0) + TrinketPower(TrinketEffect.Evasion) + TalentPower(TalentEffect.EvasionFlat), 0, 50);
 
     /// <summary>Szansa (w %) na ucieczkę z walki.</summary>
-    public int FleeChance => Math.Clamp(35 + Dex, 20, 80);
+    public int FleeChance => Math.Clamp(35 + Dex + TrinketPower(TrinketEffect.FleeChance) + TalentPower(TalentEffect.FleeFlat), 20, 90);
 
     public int ExpToNextLevel => CombatMath.ExpToNextLevel(Level);
 
@@ -256,7 +402,7 @@ public sealed class Hero
             return new Strike(false, false, 0, label);
         }
 
-        int raw = (int)Math.Round(rng.Range(MinDmg, MaxDmg) * multiplier);
+        int raw = (int)Math.Round(rng.Range(MinDmg, MaxDmg) * multiplier * DamageMultiplier);
         bool critical = rng.Chance(critChance);
         if (critical)
         {
@@ -374,6 +520,11 @@ public sealed class Hero
         Reputation = reputation.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value),
         Flags = flags.ToList(),
         Quests = quests.Select(kv => new QuestSaveEntry { Id = kv.Key.ToString(), Status = (int)kv.Value.Status, Progress = kv.Value.Progress }).ToList(),
+        Weapon = Weapon is null ? null : (int)Weapon.Id,
+        ArmorItem = EquippedArmor is null ? null : (int)EquippedArmor.Id,
+        Trinket = Trinket is null ? null : (int)Trinket.Id,
+        Gear = gear.Select(i => (int)i.Id).ToList(),
+        Talents = talents.Select(t => (int)t).ToList(),
     };
 
     public static Hero Create(HeroClass heroClass, string name) => new(HeroClasses.Get(heroClass), name);
@@ -430,6 +581,39 @@ public sealed class Hero
                 hero.quests[questId] = new QuestProgress { Status = (QuestStatus)entry.Status, Progress = Math.Max(0, entry.Progress) };
             }
         }
+
+        foreach (int id in data.Gear ?? [])
+        {
+            if (Enum.IsDefined((ItemId)id))
+            {
+                hero.AddGear(ItemCatalog.Get((ItemId)id));
+            }
+        }
+
+        if (data.Weapon is int weaponId && Enum.IsDefined((ItemId)weaponId) && ItemCatalog.Get((ItemId)weaponId) is Weapon weapon && weapon.ForClass == hero.HeroClass)
+        {
+            hero.Weapon = weapon;
+        }
+
+        if (data.ArmorItem is int armorId && Enum.IsDefined((ItemId)armorId) && ItemCatalog.Get((ItemId)armorId) is Armor armor)
+        {
+            hero.EquippedArmor = armor;
+        }
+
+        if (data.Trinket is int trinketId && Enum.IsDefined((ItemId)trinketId) && ItemCatalog.Get((ItemId)trinketId) is Trinket trinket)
+        {
+            hero.Trinket = trinket;
+        }
+
+        foreach (int id in data.Talents ?? [])
+        {
+            if (Enum.IsDefined((TalentId)id) && TalentCatalog.Get((TalentId)id).Class == hero.HeroClass)
+            {
+                hero.talents.Add((TalentId)id);
+            }
+        }
+
+        hero.Hp = data.Hp <= 0 ? hero.MaxHp : data.Hp;
 
         if (data.Version < 3)
         {

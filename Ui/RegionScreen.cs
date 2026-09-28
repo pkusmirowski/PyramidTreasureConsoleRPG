@@ -19,7 +19,8 @@ public sealed class RegionScreen(
     EventScreen events,
     QuestGiverScreen questGiver,
     QuestLogScreen questLog,
-    MapScreen map)
+    MapScreen map,
+    TalentScreen talents)
 {
     private readonly IGameIO io = io ?? throw new ArgumentNullException(nameof(io));
     private readonly IRandomSource rng = rng ?? throw new ArgumentNullException(nameof(rng));
@@ -32,6 +33,7 @@ public sealed class RegionScreen(
     private readonly QuestGiverScreen questGiver = questGiver ?? throw new ArgumentNullException(nameof(questGiver));
     private readonly QuestLogScreen questLog = questLog ?? throw new ArgumentNullException(nameof(questLog));
     private readonly MapScreen map = map ?? throw new ArgumentNullException(nameof(map));
+    private readonly TalentScreen talents = talents ?? throw new ArgumentNullException(nameof(talents));
 
     public SessionEnd Run(Hero hero)
     {
@@ -61,6 +63,11 @@ public sealed class RegionScreen(
         else
         {
             options.Add((region.ExploreLabel, () => Explore(hero, region)));
+        }
+
+        if (hero.PendingTalentLevels().Count > 0)
+        {
+            options.Add(("Wybierz talent (nowy!)", Wrap(() => talents.Run(hero))));
         }
 
         options.Add(("Mapa – podróż", () => map.Run(hero)));

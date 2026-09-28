@@ -8,31 +8,116 @@ public sealed class ShopScreen(IGameIO io, IRandomSource rng)
     public void Run(Hero hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
+        RegionDefinition region = RegionCatalog.Get(hero.CurrentRegion);
         while (true)
         {
-            io.Header("Sklep alchemika");
+            io.Header($"Sklep – {region.Name}");
+            int percent = ShopService.PricePercent(hero, region);
+            io.WriteLine($"Twoje złoto: {hero.Gold}   Ceny: {percent}% (reputacja i amulety)   Torba: {hero.Gear.Count}/{Hero.GearCapacity}", ConsoleColor.DarkYellow);
+            int choice = io.Menu("Co chcesz zrobić?", "Kup mikstury", "Kup wyposażenie", "Sprzedaj wyposażenie", "Wyjdź ze sklepu");
+            io.Clear();
+            switch (choice)
+            {
+                case 1:
+                    BuyPotions(hero, region);
+                    break;
+                case 2:
+                    BuyGear(hero, region);
+                    break;
+                case 3:
+                    Sell(hero);
+                    break;
+                default:
+                    io.WriteLine("Wychodzisz ze sklepu...");
+                    return;
+            }
+        }
+    }
+
+    private void BuyPotions(Hero hero, RegionDefinition region)
+    {
+        while (true)
+        {
             io.WriteLine($"Twoje złoto: {hero.Gold}", ConsoleColor.DarkYellow);
-            var options = ShopService.Offers
-                .Select(p => $"{p.Name} – leczy {p.RestoreHp} HP – {p.Price} g (masz: {hero.CountPotions(p.Kind)})")
-                .Append("Wyjdź ze sklepu")
+            var options = ShopService.Potions
+                .Select(p => $"{p.Name} – leczy {p.RestoreHp} HP – {ShopService.Price(hero, region, p.Price)} g (masz: {hero.CountPotions(p.Kind)})")
+                .Append("Wróć")
                 .ToArray();
-            int choice = io.Menu("Co chcesz kupić?", options);
+            int choice = io.Menu("Mikstury:", options);
             io.Clear();
             if (choice == options.Length)
             {
-                io.WriteLine("Wychodzisz ze sklepu...");
                 return;
             }
 
-            PurchaseResult result = ShopService.Buy(hero, ShopService.Offers[choice - 1].Kind);
-            if (result.Outcome == PurchaseOutcome.Bought)
+            Report(hero, ShopService.BuyPotion(hero, region, ShopService.Potions[choice - 1].Kind));
+        }
+    }
+
+    private void BuyGear(Hero hero, RegionDefinition region)
+    {
+        while (true)
+        {
+            IReadOnlyList<Item> stock = ShopService.Stock(region);
+            if (stock.Count == 0)
             {
-                io.ShowSuccess($"Kupiłeś: {result.Potion.Name}. Zostało ci {hero.Gold} złota.");
+                io.ShowInfo("Tutaj nie handluje się wyposażeniem.");
+                return;
             }
-            else
+
+            io.WriteLine($"Twoje złoto: {hero.Gold}   Torba: {hero.Gear.Count}/{Hero.GearCapacity}", ConsoleColor.DarkYellow);
+            var options = stock
+                .Select(i => $"{i.Name} [{ItemCatalog.SlotName(i.Slot)}] {ItemCatalog.Stats(i)} – {ShopService.Price(hero, region, i.Price)} g" + (hero.CanEquip(i) ? "" : " (nie dla twojej klasy)"))
+                .Append("Wróć")
+                .ToArray();
+            int choice = io.Menu("Wyposażenie:", options);
+            io.Clear();
+            if (choice == options.Length)
             {
+                return;
+            }
+
+            Report(hero, ShopService.BuyItem(hero, region, stock[choice - 1]));
+        }
+    }
+
+    private void Sell(Hero hero)
+    {
+        while (true)
+        {
+            if (hero.Gear.Count == 0)
+            {
+                io.ShowInfo("Torba jest pusta. Założone rzeczy najpierw zdejmij w sakwie.");
+                return;
+            }
+
+            var gear = hero.Gear.ToList();
+            var options = gear.Select(i => $"{i.Name} ({ItemCatalog.Stats(i)}) – skup {i.SellPrice} g").Append("Wróć").ToArray();
+            int choice = io.Menu("Co sprzedajesz?", options);
+            io.Clear();
+            if (choice == options.Length)
+            {
+                return;
+            }
+
+            int earned = ShopService.Sell(hero, gear[choice - 1]);
+            io.ShowSuccess($"Sprzedano: {gear[choice - 1].Name} za {earned} g. Masz {hero.Gold} złota.");
+        }
+    }
+
+    private void Report(Hero hero, PurchaseResult result)
+    {
+        switch (result.Outcome)
+        {
+            case PurchaseOutcome.Bought:
+                io.ShowSuccess($"Kupiłeś: {result.Name} za {result.Price} g. Zostało ci {hero.Gold} złota.");
+                break;
+            case PurchaseOutcome.BagFull:
+                io.ShowError("Torba jest pełna. Sprzedaj coś albo załóż.");
+                break;
+            default:
                 io.ShowError(Dialogues.NoGold(rng));
-            }
+                break;
         }
     }
 }

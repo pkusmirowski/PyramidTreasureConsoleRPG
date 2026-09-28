@@ -29,7 +29,9 @@ Zapis gry i ustawienia trafiają do katalogu `GreatPyramidTreasureRPG_DataSave` 
 - Świat to sześć regionów (Port Sokoła, Stare Miasto, Delta i las, Szlak Karawan, Oaza Siwa, Piramida Chufu). Podróż kosztuje dni i złoto, a po drodze zdarzają się walki i zdarzenia z wyborami.
 - Fabułę prowadzą zadania: główną linię daje barman w porcie, poboczne kapitan portu, przemytnik ze Starego Miasta i kapłanka z oazy. Zadania odblokowują kolejne regiony.
 - Reputacja u trzech frakcji (Miasto, Podziemie, Bractwo) rośnie i spada od wyborów w zdarzeniach i zadaniach; otwiera lub zamyka niektóre opcje.
-- Walka turowa z inicjatywą, miksturami w trakcie walki i ucieczką (poza bossami).
+- Ekwipunek: broń (osobna dla każdej klasy), pancerz i amulet w trzech slotach, torba na 8 przedmiotów, łupy z wrogów, sklepy z innym asortymentem w porcie, Starym Mieście i oazie, ceny zależne od reputacji.
+- Talenty: na 5. i 10. poziomie wybór jednego z dwóch talentów klasy (np. Szał, Mur, Sokole oko, Złodziejski fach).
+- Walka turowa z inicjatywą, miksturami w trakcie walki i ucieczką (poza bossami). Finał (Anubisi i Ra) wymaga dobrego sprzętu i talentów.
 - Tawerna: bar (napoje leczą, jednorazowy miód „Grunwald” wzmacnia na stałe), kasyno (ruletka, jednoręki bandyta, blackjack, kości) i pokoje na górze.
 - Na 20. poziomie, po zadaniach barmana, karawana zabiera bohatera pod piramidę: dwaj Anubisi, a potem bóg Ra.
 - W narracji dowolny klawisz pomija pauzę, `Esc` pomija cały tekst. Prędkość tekstu i muzykę ustawia się w menu głównym.
@@ -38,7 +40,7 @@ Zapis gry i ustawienia trafiają do katalogu `GreatPyramidTreasureRPG_DataSave` 
 
 | Katalog | Zawartość |
 |---|---|
-| `Domain/` | Modele i czyste reguły: `Hero`, definicje klas (`HeroClasses`), katalog wrogów (`EnemyCatalog`), regiony (`World/RegionCatalog`), zdarzenia (`Events/EventCatalog`), zadania (`Quests/QuestCatalog`), mikstury, fabuła, teksty, losowość |
+| `Domain/` | Modele i czyste reguły: `Hero`, definicje klas (`HeroClasses`), katalog wrogów z łupami (`EnemyCatalog`), regiony (`World/RegionCatalog`), zdarzenia (`Events/EventCatalog`), zadania (`Quests/QuestCatalog`), przedmioty (`Items/ItemCatalog`), talenty (`Talents/TalentCatalog`), mikstury, fabuła, teksty, losowość |
 | `Engine/` | Logika bez UI: `CombatEngine` (walka jako zdarzenia), `TravelEngine`, `EventEngine`, `QuestEngine`, `CasinoEngine`, serwisy baru, sklepu i noclegu |
 | `Ui/` | Ekrany konsolowe rozmawiające tylko z `IGameIO` (region, mapa, zdarzenia, zleceniodawcy, dziennik, walka, tawerna, kasyno, sklep, sakwa); dwie implementacje: `SpectreGameIO` (domyślna) i `ConsoleGameIO` (`--plain`) |
 | `Infrastructure/` | Zapis gry i ustawień (JSON z generatorem źródeł), odtwarzacz muzyki (NAudio) |

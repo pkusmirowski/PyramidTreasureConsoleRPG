@@ -42,8 +42,12 @@ public sealed record RegionDefinition(
     int EventChancePercent,
     bool HasTavern,
     bool HasShop,
-    IReadOnlyList<QuestGiverId> QuestGivers)
+    IReadOnlyList<QuestGiverId> QuestGivers,
+    IReadOnlyList<ItemId>? ShopStock = null)
 {
+    /// <summary>Wyposażenie w sklepie regionu (mikstury są wszędzie).</summary>
+    public IReadOnlyList<ItemId> Stock => ShopStock ?? [];
+
     public bool IsHome => Id == RegionId.Port;
 
     public bool IsFinal => Id == RegionId.Pyramid;
@@ -70,7 +74,8 @@ public static class RegionCatalog
         EventChancePercent: 35,
         HasTavern: true,
         HasShop: true,
-        [QuestGiverId.Barman, QuestGiverId.Captain]);
+        [QuestGiverId.Barman, QuestGiverId.Captain],
+        [ItemId.MercenaryAxe, ItemId.HuntingBow, ItemId.PoisonedDagger, ItemId.LeatherJerkin, ItemId.DesertCloak, ItemId.WolfBone]);
 
     public static RegionDefinition OldTown { get; } = new(
         RegionId.OldTown,
@@ -92,7 +97,8 @@ public static class RegionCatalog
         EventChancePercent: 40,
         HasTavern: false,
         HasShop: true,
-        [QuestGiverId.Smuggler]);
+        [QuestGiverId.Smuggler],
+        [ItemId.TemplarSword, ItemId.RecurveBow, ItemId.TwinKindjals, ItemId.ChainMail, ItemId.GreedAmulet, ItemId.HasanRing, ItemId.FalconFeather]);
 
     public static RegionDefinition Delta { get; } = new(
         RegionId.Delta,
@@ -161,7 +167,8 @@ public static class RegionCatalog
         EventChancePercent: 35,
         HasTavern: true,
         HasShop: true,
-        [QuestGiverId.Priestess]);
+        [QuestGiverId.Priestess],
+        [ItemId.PharaohScimitar, ItemId.FalconBow, ItemId.AnubisFangs, ItemId.TemplarPlate, ItemId.BrotherhoodRobe, ItemId.EyeOfRa, ItemId.Scarab]);
 
     public static RegionDefinition Pyramid { get; } = new(
         RegionId.Pyramid,

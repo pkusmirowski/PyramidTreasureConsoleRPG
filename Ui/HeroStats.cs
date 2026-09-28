@@ -14,6 +14,8 @@ internal static class HeroStats
         ("Szansa trafienia / krytyk", $"{hero.HitChance:0}% / {hero.CritChance:0}%"),
         ("Pancerz", $"{hero.Armor} (redukcja {100 - (100 * 100 / (100 + hero.Armor))}%)"),
         ("Uniki / ucieczka", $"{hero.Evasion}% / {hero.FleeChance}%"),
+        ("Broń / pancerz / amulet", $"{hero.Weapon?.Name ?? "brak"} / {hero.EquippedArmor?.Name ?? "brak"} / {hero.Trinket?.Name ?? "brak"}"),
+        ("Talenty", hero.Talents.Count == 0 ? "brak" : string.Join(", ", hero.Talents.Select(t => TalentCatalog.Get(t).Name))),
         ("Złoto", hero.Gold.ToString(System.Globalization.CultureInfo.InvariantCulture)),
         ("Mikstury", hero.Inventory.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)),
         ("Etap wyprawy", Story.StageName(hero.Stage)),

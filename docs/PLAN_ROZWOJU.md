@@ -103,7 +103,12 @@ złożoność, i systemy, które ją zbudują, są poniżej. Założenia: wdraż
 
 ---
 
-## Milestone 2 – Ekwipunek, łupy, talenty
+## Milestone 2 – Ekwipunek, łupy, talenty (WDROŻONE)
+
+> Stan: zrobione. 20 przedmiotów w trzech slotach, torba na 8, łupy w tabelach wrogów, sklepy regionalne z cenami
+> od reputacji i amuletu, 12 talentów (poziomy 5 i 10), zapis v4. Mikstury zostały osobnym typem `Potion`
+> (zamiast `Consumable`), bo przenoszenie ich nie dawało graczowi nic, a dotykało zapisu, zdarzeń i bota.
+> Bossowie przestrojeni: bez sprzętu Ra wygrywa, z tierem 3 i talentami jest do przejścia (test pilnuje).
 
 ### Model (Domain/Items)
 - `abstract record Item(ItemId Id, string Name, int Price, ItemSlot Slot)`; `Weapon(MinDmgBonus, MaxDmgBonus,

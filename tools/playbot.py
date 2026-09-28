@@ -21,8 +21,10 @@ REGIONS = ["Port Sokoła", "Stare Miasto", "Delta i las", "Szlak Karawan", "Oaza
 GIVER_REGION = {"Barman": "Port Sokoła", "Kapitan portu": "Port Sokoła", "Przemytnik Hasan": "Stare Miasto", "Kapłanka Neferet": "Oaza Siwa"}
 GIVER_PLACE = {"Barman": "Tawerna", "Kapitan portu": "Kapitanat portu", "Przemytnik Hasan": "Melina Hasana", "Kapłanka Neferet": "Świątynia Bractwa"}
 
+CLASS_NAME = {"1": "Wojownik", "2": "Łucznik", "3": "Asasyn"}[CLASS]
 state = dict(level=1, hp=1, maxhp=1, gold=0, potions=0, region="Port Sokoła", deaths=0, saved=False, fights=0, menus=0,
-             pending=set(), giver=None, locked=set(), want_bar=False, went_temple=False, last_target=None, explores=0)
+             pending=set(), giver=None, locked=set(), want_bar=False, went_temple=False, last_target=None,
+             bag_tried=False, owned=set(), equipped=set(), bought_tier=0, shop_mode=None, bag=0, talents=0)
 
 def send(s):
     log.write(f">>> {s}\n"); log.flush()
@@ -59,11 +61,19 @@ def parse(text):
         state["potions"] = int(m.group(1))
     for m in re.finditer(r"Wypij miksturę \(masz: (\d+)\)", text):
         state["potions"] = int(m.group(1))
+    for m in re.finditer(r"Torba(?: \((\d+)/\d+\))?", text):
+        if m.group(1): state["bag"] = int(m.group(1))
+    for m in re.finditer(r"Kupiłeś: (.*?) za", text):
+        state["owned"].add(m.group(1))
+    for m in re.finditer(r"Łup: (.*?)(?: \(| –|,|\.)", text):
+        state["owned"].add(m.group(1))
+    if "Wybrano talent" in text: state["talents"] += 1
     for m in re.finditer(r"Wróć do zleceniodawcy \((.*?)\)", text):
         state["pending"].add(m.group(1))
     if "Zadanie ukończone:" in text and state["giver"]:
         state["pending"].discard(state["giver"])
     if "Zostałeś pokonany" in text: state["deaths"] += 1
+    if "– do torby." in text or "Kupiłeś:" in text: state["loot_pending"] = True
     if "Gra została zapisana" in text: state["saved"] = True
     if "Nie możesz tam teraz jechać" in text and state["last_target"]:
         state["locked"].add(state["last_target"])
@@ -118,6 +128,16 @@ def decide(text):
         for n, t in opts:
             if "niedostępne" not in t: return str(n)
         return "1"
+    if "Wyposażenie:" in last and "Kup" not in last.split("Wyposażenie:")[-1][:5]:
+        opts = options_of(last, "Wyposażenie:")
+        for n, t in opts:
+            if t.startswith("Załóż:") and "nie dla twojej klasy" not in t:
+                name = t[len("Załóż: "):].split(" [")[0]
+                if name not in state["equipped"]:
+                    state["equipped"].add(name)
+                    return str(n)
+        return str(len(opts))
+    if "Który talent?" in last: return "1"
     if "Rozmowa:" in last:
         opts = options_of(last, "Rozmowa:")
         return pick(opts, "Oddaj:") or pick(opts, "Przyjmij:") or str(len(opts))
@@ -130,12 +150,39 @@ def decide(text):
             return choice
         state["locked"].add(target)
         return str(len(opts))
-    if "Co chcesz kupić?" in last:
-        opts = options_of(last, "Co chcesz kupić?")
+    if "Mikstury:" in last:
+        opts = options_of(last, "Mikstury:")
         if state["gold"] >= 130 and state["potions"] < 4:
             state["gold"] -= 100; state["potions"] += 1
             return pick(opts, "Duża")
         return str(len(opts))
+    if "Wyposażenie:" in last and "Torba:" in last:
+        opts = options_of(last, "Wyposażenie:")
+        best = None
+        for n, t in opts:
+            m = re.search(r"^(.*?) \[(broń|pancerz|amulet)\].*– (\d+) g", t)
+            if not m or "nie dla twojej klasy" in t: continue
+            name, slot, price = m.group(1), m.group(2), int(m.group(3))
+            if name in state["owned"] or price > state["gold"] - 60: continue
+            if slot == "broń" and CLASS_NAME not in t: continue
+            best = (price, n, name) if best is None or price > best[0] else best
+        if best:
+            state["gold"] -= best[0]; state["owned"].add(best[2])
+            return str(best[1])
+        return str(len(opts))
+    if "Co sprzedajesz?" in last:
+        opts = options_of(last, "Co sprzedajesz?")
+        return str(len(opts))
+    if "=== Sklep" in last and "Co chcesz zrobić?" in last:
+        opts = options_of(last, "Co chcesz zrobić?")
+        if state["shop_mode"] is None:
+            state["shop_mode"] = "gear"
+            return pick(opts, "Kup wyposażenie")
+        if state["shop_mode"] == "gear":
+            state["shop_mode"] = "potions"
+            return pick(opts, "Kup mikstury")
+        state["shop_mode"] = None
+        return pick(opts, "Wyjdź")
     if "Witaj w tawernie" in last:
         opts = options_of(last, "Witaj w tawernie")
         if state["want_bar"]:
@@ -158,9 +205,21 @@ def decide(text):
     if "Ile stawiasz?" in last: return "0"
     if "Co chcesz zrobić?" in last:
         opts = options_of(last, "Co chcesz zrobić?")
-        if "Sakwa" in last and "Wypij miksturę" in last and len(opts) == 2:
-            return "2"  # ekran sakwy – wyjdź
+        if "=== Sakwa ===" in last and len(opts) == 3:
+            if state["hp"] * 2 < state["maxhp"] and "Nie posiadasz" not in last and not state["bag_tried"]:
+                state["bag_tried"] = True
+                return "1"
+            if "Torba (" in last and "pusta" not in last and not state.get("gear_tried"):
+                state["gear_tried"] = True
+                return "2"
+            state["gear_tried"] = False
+            return "3"
         region = state["region"]
+        t = pick(opts, "Wybierz talent")
+        if t: return t
+        if state.get("loot_pending"):
+            state["loot_pending"] = False
+            return pick(opts, "Sakwa")
         # 1. zlecenia i wieści
         if "(barman ma wieści!)" in last:
             state["want_bar"] = True
@@ -176,9 +235,13 @@ def decide(text):
         # 2. leczenie
         if state["hp"] * 2 < state["maxhp"]:
             if "Tawerna" in last and state["gold"] >= 10: return pick(opts, "Tawerna")
-            if state["potions"] > 0: return pick(opts, "Sakwa")
-        # 3. zakupy w porcie/oazie
-        if "Sklep" in last and state["gold"] >= 130 and state["potions"] < 4: return pick(opts, "Sklep")
+            if state["potions"] > 0 and not state["bag_tried"]: return pick(opts, "Sakwa")
+        else:
+            state["bag_tried"] = False
+        # 3. zakupy
+        if "Sklep" in last and (state["gold"] >= 130 and state["potions"] < 4 or state["gold"] >= 200 and not state.get("shopped_at") == (region, state["gold"] // 200)):
+            state["shopped_at"] = (region, state["gold"] // 200)
+            return pick(opts, "Sklep")
         # 4. zapis
         if not state["saved"] and state["level"] >= 6: return pick(opts, "Zapisz grę")
         # 5. świątynia w oazie (zadanie główne)

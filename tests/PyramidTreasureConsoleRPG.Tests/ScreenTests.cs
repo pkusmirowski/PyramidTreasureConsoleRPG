@@ -7,7 +7,8 @@ public class ScreenTests
     {
         Hero hero = Hero.Create(HeroClass.Warrior, "Test");
         hero.Gold = 0;
-        var io = new ScriptedGameIO("3", "4");
+        // 1: mikstury, 3: duża (brak złota), 4: wróć, 4: wyjdź
+        var io = new ScriptedGameIO("1", "3", "4", "4");
         new ShopScreen(io, new SeededRandomSource(1)).Run(hero);
 
         Assert.Empty(hero.Inventory);
@@ -20,12 +21,14 @@ public class ScreenTests
     public void ShopScreen_WithGold_SellsPotion()
     {
         Hero hero = Hero.Create(HeroClass.Warrior, "Test");
-        hero.Gold = 100;
-        var io = new ScriptedGameIO("1", "4");
+        hero.Gold = 300;
+        // 1: mikstury, 1: mała, 4: wróć, 2: wyposażenie, 1: topór, 4+: wróć... stock Portu ma 6 pozycji, więc "Wróć" = 7; 4: wyjdź
+        var io = new ScriptedGameIO("1", "1", "4", "2", "1", "7", "4");
         new ShopScreen(io, new SeededRandomSource(1)).Run(hero);
 
         Assert.Equal(1, hero.CountPotions(PotionKind.Small));
-        Assert.Equal(80, hero.Gold);
+        Assert.Single(hero.Gear, g => g.Id == ItemId.MercenaryAxe);
+        Assert.Equal(300 - 20 - 120, hero.Gold);
     }
 
     [Fact]

@@ -31,6 +31,11 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
             }
         }
 
+        if (hero.PendingTalentLevels().Count > 0)
+        {
+            io.WriteLine("Masz nowy talent do wyboru – zajrzyj do menu regionu.", ConsoleColor.Magenta);
+        }
+
         if (engine.Status != CombatStatus.InProgress && engine.Killed.Count > 0)
         {
             io.PressAnyKey();
@@ -121,6 +126,17 @@ public sealed class CombatScreen(IGameIO io, IRandomSource rng)
                     break;
                 case EnemyDefeatedEvent defeated:
                     RenderReward(defeated, engine.Hero);
+                    break;
+                case LootEvent loot:
+                    if (loot.Potion is not null)
+                    {
+                        io.WriteLine($"Łup: {loot.Potion.Name}.", ConsoleColor.DarkYellow);
+                    }
+                    else if (loot.Item is not null)
+                    {
+                        io.WriteLine(loot.Kept ? $"Łup: {loot.Item.Name} ({ItemCatalog.Stats(loot.Item)}) – do torby." : $"Łup: {loot.Item.Name}, ale torba jest pełna. Przepada.", loot.Kept ? ConsoleColor.DarkYellow : ConsoleColor.DarkGray);
+                    }
+
                     break;
                 case HeroDefeatedEvent:
                     io.ShowError("Padasz na ziemię. Ciemność.");
