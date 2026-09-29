@@ -5,6 +5,10 @@ VisualStudioVersion = 17.9.34714.143
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PyramidTreasureConsoleRPG", "PyramidTreasureConsoleRPG.csproj", "{0388482F-A23F-4C7A-9C27-6BD69A9456F1}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PyramidTreasureConsoleRPG.Tests", "tests\PyramidTreasureConsoleRPG.Tests\PyramidTreasureConsoleRPG.Tests.csproj", "{7A2E5B1C-3D4F-4E6A-9B8C-1D2E3F4A5B6C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BalanceSim", "tools\BalanceSim\BalanceSim.csproj", "{B4C1A5E2-6F7D-4A8B-9C0D-1E2F3A4B5C6D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{0388482F-A23F-4C7A-9C27-6BD69A9456F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0388482F-A23F-4C7A-9C27-6BD69A9456F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0388482F-A23F-4C7A-9C27-6BD69A9456F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A2E5B1C-3D4F-4E6A-9B8C-1D2E3F4A5B6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A2E5B1C-3D4F-4E6A-9B8C-1D2E3F4A5B6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A2E5B1C-3D4F-4E6A-9B8C-1D2E3F4A5B6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A2E5B1C-3D4F-4E6A-9B8C-1D2E3F4A5B6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4C1A5E2-6F7D-4A8B-9C0D-1E2F3A4B5C6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4C1A5E2-6F7D-4A8B-9C0D-1E2F3A4B5C6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4C1A5E2-6F7D-4A8B-9C0D-1E2F3A4B5C6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4C1A5E2-6F7D-4A8B-9C0D-1E2F3A4B5C6D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "claude/**"]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+      - name: Restore
+        run: dotnet restore PyramidTreasureConsoleRPG.sln
+      - name: Check formatting
+        run: dotnet format PyramidTreasureConsoleRPG.sln --verify-no-changes --no-restore
+      - name: Build
+        run: dotnet build PyramidTreasureConsoleRPG.sln --no-restore --configuration Release -warnaserror
+      - name: Test
+        run: dotnet test PyramidTreasureConsoleRPG.sln --no-build --configuration Release --logger "trx" --results-directory TestResults
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults
+
+  smoke:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - hero: 1
+            seed: 11
+          - hero: 2
+            seed: 22
+          - hero: 3
+            seed: 33
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+      - name: Build game
+        run: dotnet build PyramidTreasureConsoleRPG.csproj --configuration Release
+      - name: Play through (class ${{ matrix.hero }}, seed ${{ matrix.seed }})
+        env:
+          PLAYBOT_GAME_ARGS: "--seed ${{ matrix.seed }}"
+        run: python3 tools/playbot.py bin/Release/net9.0/PyramidTreasureConsoleRPG.dll ${{ matrix.hero }} 1500
+      - name: Upload bot log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playbot-log-${{ matrix.hero }}
+          path: tools/.playbot-home/*.log
+          include-hidden-files: true
