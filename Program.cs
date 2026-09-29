@@ -18,7 +18,16 @@ else
 {
     services.AddSingleton<IGameIO, SpectreGameIO>();
 }
-services.AddSingleton<IRandomSource, SystemRandomSource>();
+// --seed N: powtarzalna rozgrywka (bot w CI, odtwarzanie błędów).
+int seedIndex = Array.FindIndex(args, a => string.Equals(a, "--seed", StringComparison.OrdinalIgnoreCase));
+if (seedIndex >= 0 && seedIndex + 1 < args.Length && int.TryParse(args[seedIndex + 1], out int seed))
+{
+    services.AddSingleton<IRandomSource>(new SeededRandomSource(seed));
+}
+else
+{
+    services.AddSingleton<IRandomSource, SystemRandomSource>();
+}
 services.AddSingleton<ISaveStore>(new JsonFileSaveStore(dataFolder));
 services.AddSingleton<ISettingsStore>(new JsonSettingsStore(dataFolder));
 services.AddSingleton(sp => sp.GetRequiredService<ISettingsStore>().Load());

@@ -34,7 +34,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        hero: [1, 2, 3]
+        include:
+          - hero: 1
+            seed: 11
+          - hero: 2
+            seed: 22
+          - hero: 3
+            seed: 33
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -42,7 +48,9 @@ jobs:
           dotnet-version: "9.0.x"
       - name: Build game
         run: dotnet build PyramidTreasureConsoleRPG.csproj --configuration Release
-      - name: Play through (class ${{ matrix.hero }})
+      - name: Play through (class ${{ matrix.hero }}, seed ${{ matrix.seed }})
+        env:
+          PLAYBOT_GAME_ARGS: "--seed ${{ matrix.seed }}"
         run: python3 tools/playbot.py bin/Release/net9.0/PyramidTreasureConsoleRPG.dll ${{ matrix.hero }} 1500
       - name: Upload bot log
         if: always()
@@ -50,3 +58,4 @@ jobs:
         with:
           name: playbot-log-${{ matrix.hero }}
           path: tools/.playbot-home/*.log
+          include-hidden-files: true

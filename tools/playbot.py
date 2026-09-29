@@ -14,7 +14,8 @@ TOUR = bool(os.environ.get("PLAYBOT_TOUR"))  # wycieczka po usługach pobocznych
 home = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".playbot-home")
 os.makedirs(home, exist_ok=True)
 env = dict(os.environ, DOTNET_CLI_TELEMETRY_OPTOUT="1", HOME=home, APPDATA=home)
-p = subprocess.Popen(["dotnet", DLL], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
+GAME_ARGS = os.environ.get("PLAYBOT_GAME_ARGS", "").split()  # np. "--seed 7" dla powtarzalnego przebiegu
+p = subprocess.Popen(["dotnet", DLL] + GAME_ARGS, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
 log = open(os.path.join(home, "playbot_%s.log" % CLASS), "w", encoding="utf-8")
 buf = ""
 
@@ -113,9 +114,11 @@ def decide(text):
         if TOUR and state["saved"] and not state.get("tour_reloaded") and not state.get("finished"):
             state["tour_reloaded"] = True
             return "2"
-        if state.get("finished") or state["deaths"] > 0: return "4"
+        if state.get("finished") or state["deaths"] > 0 or state.get("started"): return "4"
         return "1"
-    if "Podaj swoje imię" in last: return "Tester"
+    if "Podaj swoje imię" in last:
+        state["started"] = True
+        return "Tester"
     if "Wybierz klasę" in last: return CLASS
     if "Poziom trudności:" in last: return os.environ.get("PLAYBOT_DIFFICULTY", "2")
     if "Wyruszyć?" in last or "Wejść?" in last:
@@ -396,7 +399,15 @@ def decide(text):
 
 start = time.time()
 idle = 0
+progress_level, progress_menus = 1, 0
+STALL_MENUS = 1500  # tyle decyzji bez awansu = bot się zapętlił; kończymy z diagnostyką zamiast czekać na limit
 while time.time() - start < MAX_SECONDS:
+    if state["level"] > progress_level:
+        progress_level, progress_menus = state["level"], state["menus"]
+    if state["menus"] - progress_menus > STALL_MENUS and not state.get("finished"):
+        print("NO PROGRESS: %d decyzji bez awansu (poziom %d). Ostatni ekran:\n%s" % (STALL_MENUS, state["level"], buf[-2000:] or "(pusty bufor)"))
+        p.kill()
+        break
     chunk = read_chunk()
     if chunk is None: break
     if chunk:
